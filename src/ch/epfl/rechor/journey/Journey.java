@@ -10,6 +10,7 @@ public record Journey(List<Leg> legs) {
     // Constructeur compact
     public Journey {
         Objects.requireNonNull(legs, "legs is null");
+        legs = List.copyOf(legs);
 
     }
 
