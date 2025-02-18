@@ -1,9 +1,8 @@
 package ch.epfl.rechor;
 
-import ch.epfl.rechor.Journey.Journey;
+import ch.epfl.rechor.journey.Vehicle;
 import ch.epfl.rechor.journey.Journey;
 import ch.epfl.rechor.journey.Stop;
-import ch.epfl.rechor.journey.Vehicle;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
@@ -83,8 +82,8 @@ class FormatterFrTest {
         var s1b = new Stop("A", "1", 7, 47);
         var s2 = new Stop("B", null, 8, 48);
         var dT = d.atTime(8, 0);
-        var l1 = new Journey.Leg.Foot(s1, dT, s2, dT.plusMinutes(5));
-        var l2 = new Journey.Leg.Foot(s1, dT, s1b, dT.plusMinutes(3));
+        var l1 = new Vehicle.Leg.Foot(s1, dT, s2, dT.plusMinutes(5));
+        var l2 = new Vehicle.Leg.Foot(s1, dT, s1b, dT.plusMinutes(3));
         assertEquals("trajet à pied (5 min)", FormatterFr.formatLeg(l1));
         assertEquals("changement (3 min)", FormatterFr.formatLeg(l2));
     }
@@ -101,13 +100,13 @@ class FormatterFrTest {
         var r = "IC 1";
         var h = "Rorschach";
 
-        var l1 = new Journey.Leg.Transport(s1, dT, s2, aT, List.of(), Vehicle.TRAIN, r, h);
+        var l1 = new Vehicle.Leg.Transport(s1, dT, s2, aT, List.of(), Vehicle.TRAIN, r, h);
         assertEquals("8h05 Lausanne (voie 70) → Palézieux (arr. 9h12 voie 1)", FormatterFr.formatLeg(l1));
 
-        var l2 = new Journey.Leg.Transport(s3, dT, s4, aT, List.of(), Vehicle.TRAIN, r, h);
+        var l2 = new Vehicle.Leg.Transport(s3, dT, s4, aT, List.of(), Vehicle.TRAIN, r, h);
         assertEquals("8h05 Ecublens VD, EPFL → Chavannes-R., UNIL-Mouline (arr. 9h12)", FormatterFr.formatLeg(l2));
 
-        var l3 = new Journey.Leg.Transport(s1, dT, s4, aT, List.of(), Vehicle.TRAIN, r, h);
+        var l3 = new Vehicle.Leg.Transport(s1, dT, s4, aT, List.of(), Vehicle.TRAIN, r, h);
         assertEquals("8h05 Lausanne (voie 70) → Chavannes-R., UNIL-Mouline (arr. 9h12)", FormatterFr.formatLeg(l3));
     }
 
@@ -120,7 +119,7 @@ class FormatterFrTest {
         var aT = d.atTime(9, 0);
         var r = "IC 1";
         var h = "Rorschach";
-        var l = new Journey.Leg.Transport(dS, dT, aS, aT, List.of(), Vehicle.TRAIN, r, h);
+        var l = new Vehicle.Leg.Transport(dS, dT, aS, aT, List.of(), Vehicle.TRAIN, r, h);
         assertEquals(r + " Direction " + h, FormatterFr.formatRouteDestination(l));
     }
 }
