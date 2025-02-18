@@ -1,4 +1,4 @@
-package ch.epfl.rechor;
+package ch.epfl.rechor.Journey;
 
 import java.util.ArrayList;
 import java.util.List;

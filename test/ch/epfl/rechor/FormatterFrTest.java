@@ -1,5 +1,6 @@
 package ch.epfl.rechor;
 
+import ch.epfl.rechor.Journey.Journey;
 import ch.epfl.rechor.journey.Journey;
 import ch.epfl.rechor.journey.Stop;
 import ch.epfl.rechor.journey.Vehicle;
