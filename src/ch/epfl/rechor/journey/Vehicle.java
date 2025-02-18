@@ -1,5 +1,7 @@
 package ch.epfl.rechor.journey;
 
+import java.util.List;
+
 public enum Vehicle {
     TRAM,
     METRO,
@@ -9,8 +11,7 @@ public enum Vehicle {
     AERIAL_LIFT,
     FUNICULAR;
 
-    // TODO Comment déclarer la variable ??
-    public static final List<Vehicle> ALL = new ArrayList<Vehicle>();
+    public static final List<Vehicle> ALL = List.of(Vehicle.values());
 
 
 }
