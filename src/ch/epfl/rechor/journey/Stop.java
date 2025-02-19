@@ -6,7 +6,9 @@ public record Stop(String name, String platformName, double longitude, double la
     public Stop {
 
 
-
+        if (name == null){
+            throw new NullPointerException();
+        }
 
         if (Math.abs(longitude) > 180 || Math.abs(latitude) > 90) {
             throw new IllegalArgumentException("Longitude or latitude is invalid");
