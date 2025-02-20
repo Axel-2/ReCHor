@@ -61,7 +61,7 @@ public record Journey(List<Leg> legs) {
         return Duration.between(legs.getFirst().depTime(), legs.getLast().arrTime());
     };
 
-    public interface Leg {
+    public sealed interface Leg {
 
         Stop depStop();
         LocalDateTime depTime();
@@ -134,7 +134,7 @@ public record Journey(List<Leg> legs) {
             }
 
             // retourne vrai ssi l'étape est un changement au sein de la même gare à celui de l'arrêt d'arrivée.
-            boolean isTransfer() {
+            public boolean isTransfer() {
                 return depStop.name().equals(arrStop.name());
             }
 
