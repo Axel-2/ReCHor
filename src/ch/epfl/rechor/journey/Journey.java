@@ -36,10 +36,6 @@ public record Journey(List<Leg> legs) {
 
     }
 
-    // TODO : "Journey offre ces classes publiques. Mais Leg aussi ??
-    // Oui car c'est différent, ici c'est voyage alors que dans Leg
-    // c'est étape ! donc refaire les trucs ici aussi.
-
     // Retourne l'arrêt de départ du voyage, c.-à-d. celui de sa première étape,
     public Stop depStop() {
         return legs.getFirst().depStop();
@@ -67,25 +63,6 @@ public record Journey(List<Leg> legs) {
 
     public interface Leg {
 
-        public record IntermediateStop(Stop stop, LocalDateTime arrTime, LocalDateTime depTime) {
-            public IntermediateStop{
-                Objects.requireNonNull(stop, "stop is null");
-                if (depTime.isBefore(arrTime)){
-                    throw new IllegalArgumentException();
-                }
-            }
-        }
-
-        public record Transport(Stop depStop, LocalDateTime depTime, Stop arrStop, LocalDateTime arrTime,
-                                List<IntermediateStop> intermediateStops,
-                                Vehicle vehicle, String route, String destination) {
-
-        }
-
-        public record Foot() {
-
-        }
-
         Stop depStop();
         LocalDateTime depTime();
         Stop arrStop();
@@ -95,6 +72,72 @@ public record Journey(List<Leg> legs) {
 
         default Duration duration() {
             return Duration.between(arrTime(), depTime());
+        }
+
+        public record IntermediateStop(Stop stop, LocalDateTime arrTime, LocalDateTime depTime) {
+
+            public IntermediateStop {
+
+                Objects.requireNonNull(stop, "stop is null");
+
+                // ne pas mettre l'inverse car de cette façon ça valide aussi si
+                // les dates sont les mêmes
+                Preconditions.checkArgument(!arrTime.isBefore(depTime));
+            }
+        }
+
+        public record Transport(Stop depStop, LocalDateTime depTime, Stop arrStop, LocalDateTime arrTime,
+                                List<IntermediateStop> intermediateStops, Vehicle vehicle, String route,
+                                String destination) implements Leg {
+
+            public Transport {
+
+                // chaque objet est non nul
+                Objects.requireNonNull(depStop);
+                Objects.requireNonNull(depTime);
+                Objects.requireNonNull(arrStop);
+                Objects.requireNonNull(arrTime);
+                Objects.requireNonNull(vehicle);
+                Objects.requireNonNull(route);
+                Objects.requireNonNull(destination);
+
+                // pas nécessaire
+                // Objects.requireNonNull(intermediateStops);
+
+                Preconditions.checkArgument(!arrTime.isBefore(depTime));
+
+                // copie profonde
+                intermediateStops = List.copyOf(intermediateStops);
+
+            }
+
+        }
+
+        public record Foot(Stop depStop, LocalDateTime depTime, Stop arrStop, LocalDateTime arrTime) implements Leg {
+
+            public Foot {
+
+                // chaque objet est non nul
+                Objects.requireNonNull(depStop);
+                Objects.requireNonNull(depTime);
+                Objects.requireNonNull(arrStop);
+                Objects.requireNonNull(arrTime);
+
+                Preconditions.checkArgument(!arrTime.isBefore(depTime));
+
+
+            }
+
+            public List<IntermediateStop> intermediateStops() {
+                // retourne une liste vide, car une étape à pied ne comporte jamais d'arrêts intermédiaires
+                return List.of();
+            }
+
+            // retourne vrai ssi l'étape est un changement au sein de la même gare à celui de l'arrêt d'arrivée.
+            boolean isTransfer() {
+                return depStop.name().equals(arrStop.name());
+            }
+
         }
 
     }
