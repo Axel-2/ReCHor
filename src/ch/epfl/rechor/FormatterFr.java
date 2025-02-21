@@ -38,10 +38,11 @@ public final class FormatterFr {
 
     public static String formatTime(LocalDateTime dateTime) {
 
+
         DateTimeFormatter fmt = new DateTimeFormatterBuilder()
-                .appendValue(ChronoField.HOUR_OF_AMPM)
+                .appendValue(ChronoField.HOUR_OF_DAY)
                 .appendLiteral('h')
-                .appendValue(ChronoField.MINUTE_OF_DAY,2)
+                .appendValue(ChronoField.MINUTE_OF_HOUR,2)
                 .toFormatter();
 
         return fmt.format(dateTime);
