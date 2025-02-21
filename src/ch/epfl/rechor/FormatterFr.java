@@ -38,6 +38,7 @@ public final class FormatterFr {
 
     public static String formatTime(LocalDateTime dateTime) {
 
+
         DateTimeFormatter fmt = new DateTimeFormatterBuilder()
                 .appendValue(ChronoField.HOUR_OF_DAY)
                 .appendLiteral('h')
