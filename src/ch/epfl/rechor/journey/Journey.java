@@ -71,7 +71,7 @@ public record Journey(List<Leg> legs) {
         List<IntermediateStop> intermediateStops();
 
         default Duration duration() {
-            return Duration.between(arrTime(), depTime());
+            return Duration.between(depTime(), arrTime());
         }
 
         public record IntermediateStop(Stop stop, LocalDateTime arrTime, LocalDateTime depTime) {

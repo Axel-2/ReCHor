@@ -52,6 +52,10 @@ public final class FormatterFr {
 
     public static String formatPlatformName(Stop stop) {
 
+        if(stop.platformName() == null || stop.platformName().isEmpty()){
+            return "";
+        }
+
         StringBuilder builder = new StringBuilder();
 
         if (Character.isDigit(stop.platformName().charAt(0))){
@@ -69,10 +73,14 @@ public final class FormatterFr {
 
     public static String formatLeg(Journey.Leg.Foot footLeg) {
 
-        // changement (5 min)
-        // trajet à pied (3 min)
+        StringBuilder builder = new StringBuilder();
 
-        return "s";
+        builder.append(footLeg.isTransfer() ? "changement " : "trajet à pied ");
+        builder.append("(");
+        builder.append(formatDuration(footLeg.duration()));
+        builder.append(")");
+
+        return builder.toString();
 
     }
 
