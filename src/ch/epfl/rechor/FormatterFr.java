@@ -9,24 +9,34 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.ChronoField;
+import java.util.Locale;
 
 public final class FormatterFr {
 
 
     public static String formatDuration(Duration duration) {
 
-        DateTimeFormatter fmt = new DateTimeFormatterBuilder()
-                .appendValue(ChronoField.MINUTE_OF_DAY)
-                .appendLiteral(" min")
-                .appendValue(ChronoField.MONTH_OF_YEAR)
-                .appendLiteral('/')
-                .appendValue(ChronoField.YEAR)
-                .toFormatter();
+        int minutes = duration.toMinutesPart();
+
+        // Il ne faut pas utiliser toPart car on peut
+        // dépasser 24h de trajet
+        long hours = duration.toHours();
 
 
+        StringBuilder builder = new StringBuilder();
+
+        if (hours != 0) {
+            builder.append(hours)
+                    .append(" h ");
+        }
+
+        // On met forcément les minutes
+        builder.append(minutes).append(" min");
+
+        var expected = hours + "h" + (minutes < 10 ? "0" : "") + minutes;
 
 
-        return "s";
+        return expected;
     }
 
     public static String formatTime(LocalDateTime dateTime) {
@@ -87,11 +97,12 @@ public final class FormatterFr {
                 .append(" (arr. ")
                 .append(arrTimeString);
 
-                if (leg.arrStop())
-                .append(" voie ")
-                .append(leg.arrStop().platformName())
-                .append(")")
-                .toString();
+        if (leg.arrStop().platformName() != null) {
+            builder.append(" voie ")
+                    .append(leg.arrStop().platformName());
+        }
+
+        builder.append(")");
 
         return builder.toString();
 
