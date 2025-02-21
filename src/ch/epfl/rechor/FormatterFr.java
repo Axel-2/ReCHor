@@ -44,7 +44,7 @@ public final class FormatterFr {
         DateTimeFormatter fmt = new DateTimeFormatterBuilder()
                 .appendValue(ChronoField.HOUR_OF_AMPM)
                 .appendLiteral('h')
-                .appendValue(ChronoField.MINUTE_OF_DAY)
+                .appendValue(ChronoField.MINUTE_OF_DAY,2)
                 .toFormatter();
 
         return fmt.format(dateTime);
