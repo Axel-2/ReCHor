@@ -54,7 +54,7 @@ public class MyIcalBuilderTest {
         // Chaque appel à add ajoute une ligne terminée par un CRLF.
         String expected = "SUMMARY:Réunion de travail" + "\r\n" + expectedDescription;
 
-        assertEquals(expected, builder.toString());
+        assertEquals(expected, builder.build());
     }
 
 }
