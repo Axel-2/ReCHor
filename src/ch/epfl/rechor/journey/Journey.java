@@ -14,7 +14,9 @@ import java.util.Objects;
  */
 public record Journey(List<Leg> legs) {
 
-    // Constructeur compact
+    /**
+     * Constructeur compact, vérifiant les conditions demandées
+     */
     public Journey {
 
 
@@ -44,31 +46,52 @@ public record Journey(List<Leg> legs) {
 
     }
 
-    // Retourne l'arrêt de départ du voyage, c.-à-d. celui de sa première étape,
+    /**
+     * Méthode qui retourne l'arrêt de départ du voyage, c.-à-d. celui de sa première étape,
+     * @return l'arrêt de départ du voyage
+     */
     public Stop depStop() {
         return legs.getFirst().depStop();
     }
 
-    // Retourne l'arrêt d'arrivée du voyage, c.-à-d. celui de sa dernière étape,
+    /**
+     * Méthode qui retourne l'arrêt d'arrivée du voyage, c.-à-d. celui de sa dernière étape,
+     * @return l'arrêt d'arrivée du voyage, c.-à-d. celui de sa dernière étape,
+     */
     public Stop arrStop() {
         return legs.getLast().arrStop();
     };
 
-    // retourne la date/heure de début du voyage, c.-à-d. celle de sa première étape,
+    /**
+     * Méthode qui retourne la date/heure de début du voyage, c.-à-d. celle de sa première étape
+     * @return la date/heure de début du voyage
+     */
     public LocalDateTime depTime() {
         return legs.getFirst().depTime();
     };
 
-    // retourne la date/heure de fin du voyage, c.-à-d. celle de sa dernière étape,
+    /**
+     * Méthode qui retourne la date/heure de fin du voyage, c.-à-d. celle de sa dernière étape,
+     * @return la date/heure de fin du voyage
+     */
     public LocalDateTime arrTime() {
         return legs.getLast().arrTime();
     };
 
-    // etourne la durée totale du voyage, c.-à-d. celle séparant la date/heure de fin de celle de début.
+
+    /**
+     * Calcule la durée d'un voyage c.-à-d. celle séparant la date/heure de fin de celle de début.
+     * @return retourne la durée totale du voyage
+     */
     public Duration duration() {
         return Duration.between(legs.getFirst().depTime(), legs.getLast().arrTime());
     };
 
+    /**
+     * Interface représentant les étapes
+     * @author Yoann Salamin (390522)
+     * @author Axel Verga (398787)
+     */
     public sealed interface Leg {
 
         Stop depStop();
@@ -78,10 +101,22 @@ public record Journey(List<Leg> legs) {
 
         List<IntermediateStop> intermediateStops();
 
+        /**
+         * Calcule la durée d'une étape c.-à-d. celle séparant la date/heure de fin de celle de début.
+         * @return retourne la durée de l'étape
+         */
         default Duration duration() {
             return Duration.between(depTime(), arrTime());
         }
 
+        /**
+         * Arrêt intermédiaire
+         * @param stop (Arrêt où a lieu cette étape intermédiaire)
+         * @param arrTime (temps d'arrivée à l'arrêt)
+         * @param depTime (temps de départ de l'arrêt)
+         * @author Yoann Salamin (390522)
+         * @author Axel Verga (398787)
+         */
         public record IntermediateStop(Stop stop, LocalDateTime arrTime, LocalDateTime depTime) {
 
             public IntermediateStop {
@@ -94,10 +129,24 @@ public record Journey(List<Leg> legs) {
             }
         }
 
+        /**
+         * Etape en transport
+         * @param depStop (Arrêt de départ, non null)
+         * @param depTime (Temps de départ, non null)
+         * @param arrStop (Arrêt d'arrivée, non null)
+         * @param arrTime (Temps d'arrivée, non null)
+         * @param intermediateStops (Arrêts intermédiaires auxquels le moyen de transport s'arrête)
+         * @param vehicle (Véhicule du transport (bus, train ...., non null)
+         * @param route (Route prise, non null)
+         * @param destination (Destination, non null)
+         */
         public record Transport(Stop depStop, LocalDateTime depTime, Stop arrStop, LocalDateTime arrTime,
                                 List<IntermediateStop> intermediateStops, Vehicle vehicle, String route,
                                 String destination) implements Leg {
 
+            /**
+             * Constructeur compact vérifiant la non nullité des paramètres néncessaires
+             */
             public Transport {
 
                 // chaque objet est non nul
@@ -121,8 +170,18 @@ public record Journey(List<Leg> legs) {
 
         }
 
+        /**
+         * Etape à pied
+         * @param depStop (Arrêt de départ, non null)
+         * @param depTime (Temps de départ, non null)
+         * @param arrStop (Arrêt d'arrivée, non null)
+         * @param arrTime (Temps d'arrivée, non null)
+         */
         public record Foot(Stop depStop, LocalDateTime depTime, Stop arrStop, LocalDateTime arrTime) implements Leg {
 
+            /**
+             * Constructeur compact, vérifiant la non nullité des paramètres nécessaires
+             */
             public Foot {
 
                 // chaque objet est non nul
@@ -136,12 +195,19 @@ public record Journey(List<Leg> legs) {
 
             }
 
+            /**
+             * Retourne une liste vide (immuable)
+             * @return la liste
+             */
             public List<IntermediateStop> intermediateStops() {
                 // retourne une liste vide, car une étape à pied ne comporte jamais d'arrêts intermédiaires
                 return List.of();
             }
 
-            // retourne vrai ssi l'étape est un changement au sein de la même gare à celui de l'arrêt d'arrivée.
+            /**
+             * Retourn true si l'étape représente un changement
+             * @return booléen
+             */
             public boolean isTransfer() {
                 return depStop.name().equals(arrStop.name());
             }
