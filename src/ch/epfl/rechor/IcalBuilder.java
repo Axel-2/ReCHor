@@ -5,6 +5,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.ChronoField;
 import java.util.ArrayList;
+import java.util.Objects;
 
 public final class IcalBuilder {
 
@@ -109,6 +110,18 @@ public final class IcalBuilder {
     }
 
     public IcalBuilder end() {
+
+        Objects.requireNonNull(components);
+        Preconditions.checkArgument(!components.isEmpty());
+
+        Component endComponent = components.removeLast();
+
+        stringBuilder
+                .append("END")
+                .append(':')
+                .append(endComponent.name())
+                .append("\r\n");
+
         return this;
 
     }

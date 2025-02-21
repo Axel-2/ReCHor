@@ -8,8 +8,7 @@ import java.time.LocalDateTime;
 import static ch.epfl.rechor.IcalBuilder.Component.*;
 import static ch.epfl.rechor.IcalBuilder.*;
 import static ch.epfl.rechor.IcalBuilder.Name.*;
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class MyIcalBuilderTest {
 
@@ -88,6 +87,46 @@ public class MyIcalBuilderTest {
         // La ligne attendue est "BEGIN:VCALENDAR" suivie d'un CRLF
         String expected = "BEGIN:VCALENDAR\r\n";
 
+        assertEquals(expected, builder.build());
+    }
+
+    @Test
+    void testEndCompletesComponent() {
+        IcalBuilder builder = new IcalBuilder();
+        // On commence un composant, ici VCALENDAR.
+        builder.begin(VCALENDAR);
+        // Puis on termine le dernier composant ouvert.
+        builder.end();
+
+        // Le résultat attendu comporte une ligne de début et une ligne de fin,
+        // chacune se terminant par un CRLF.
+        String expected = "BEGIN:VCALENDAR\r\n" + "END:VCALENDAR\r\n";
+        assertEquals(expected, builder.build());
+    }
+
+    @Test
+    void testEndWithoutBeginThrowsException() {
+        IcalBuilder builder = new IcalBuilder();
+        // Sans aucun composant commencé, l'appel à end() doit lever une exception.
+        assertThrows(IllegalArgumentException.class, () -> builder.end());
+    }
+
+    @Test
+    void testMultipleBeginsAndEnds() {
+        IcalBuilder builder = new IcalBuilder();
+        // Commencer le composant VCALENDAR
+        builder.begin(VCALENDAR);
+        // Commencer ensuite un VEVENT à l'intérieur de VCALENDAR
+        builder.begin(VEVENT);
+        // Terminer le dernier composant ouvert (VEVENT)
+        builder.end();
+        // Terminer le composant VCALENDAR
+        builder.end();
+
+        String expected = "BEGIN:VCALENDAR\r\n" +
+                "BEGIN:VEVENT\r\n" +
+                "END:VEVENT\r\n" +
+                "END:VCALENDAR\r\n";
         assertEquals(expected, builder.build());
     }
 
