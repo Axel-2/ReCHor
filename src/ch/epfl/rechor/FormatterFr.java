@@ -33,10 +33,7 @@ public final class FormatterFr {
         // On met forcément les minutes
         builder.append(minutes).append(" min");
 
-        var expected = hours + "h" + (minutes < 10 ? "0" : "") + minutes;
-
-
-        return expected;
+        return builder.toString();
     }
 
     public static String formatTime(LocalDateTime dateTime) {
