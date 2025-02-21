@@ -43,7 +43,18 @@ public final class FormatterFr {
     }
 
     public static String formatPlatformName(Stop stop) {
-        return "s";
+
+        StringBuilder builder = new StringBuilder();
+
+        if (Character.isDigit(stop.platformName().charAt(0))){
+            builder.append("voie ");
+            builder.append(stop.platformName());
+        }else{
+            builder.append("quai ");
+            builder.append(stop.platformName());
+        }
+
+        return builder.toString();
 
 
     }
@@ -87,7 +98,7 @@ public final class FormatterFr {
                 .append(" (arr. ")
                 .append(arrTimeString);
 
-                if (leg.arrStop())
+                if (leg.arrStop()){
                 .append(" voie ")
                 .append(leg.arrStop().platformName())
                 .append(")")
