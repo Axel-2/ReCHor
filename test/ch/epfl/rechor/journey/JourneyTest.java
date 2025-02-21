@@ -1,6 +1,7 @@
 package ch.epfl.rechor.journey;
 
 import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.time.Duration;
 import java.time.LocalDate;
@@ -9,7 +10,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
 
 class JourneyTest {
     private static List<Journey.Leg> exampleLegs() {
