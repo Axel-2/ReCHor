@@ -1,12 +1,17 @@
 package ch.epfl.rechor.journey;
 
 import ch.epfl.rechor.Preconditions;
-
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * Un voyage, composé de plusieurs étapes
+ * @param legs (les étapes)
+ * @author Yoann Salamin (390522)
+ * @author Axel Verga (398787)
+ */
 public record Journey(List<Leg> legs) {
 
     // Constructeur compact

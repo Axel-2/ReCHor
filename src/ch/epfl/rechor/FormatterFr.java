@@ -2,15 +2,18 @@ package ch.epfl.rechor;
 
 import ch.epfl.rechor.journey.Journey;
 import ch.epfl.rechor.journey.Stop;
-
-import java.time.DateTimeException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.ChronoField;
-import java.util.Locale;
 
+/**
+ * Formateur
+ *
+ * @author Yoann Salamin (390522)
+ * @author Axel Verga (398787)
+ */
 public final class FormatterFr {
 
 
