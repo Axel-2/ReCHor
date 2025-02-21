@@ -16,6 +16,9 @@ public record Journey(List<Leg> legs) {
         // Condition 1 : La liste ne doit pas être nulle
         Objects.requireNonNull(legs, "legs is null");
 
+        // La liste ne doit pas non plus être vide
+        Preconditions.checkArgument(!legs.isEmpty());
+
         // Le reste des conditions se trouvent au sein de la boucle
         // Pour chaque étapes consécutives :
         for (int i = 1; i < legs.size(); i++) {
@@ -24,10 +27,10 @@ public record Journey(List<Leg> legs) {
             Preconditions.checkArgument(legs.get(i).getClass() != legs.get(i - 1).getClass());
 
             // Condition 3 : Sauf début, l'instant de départ est après l'arrivée du précédent
-            Preconditions.checkArgument(legs.get(i).depTime().isBefore(legs.get(i - 1).arrTime()));
+            Preconditions.checkArgument(!legs.get(i).depTime().isBefore(legs.get(i - 1).arrTime()));
 
             // Condition 4 : Sauf début, le départ = l'arivée des étapes précédentes
-            Preconditions.checkArgument(!legs.get(i).depTime().isEqual(legs.get(i - 1).arrTime()));
+            Preconditions.checkArgument(legs.get(i).depStop().equals(legs.get(i - 1).arrStop()));
         }
 
         // Si toutes les conditions sont validées
@@ -71,7 +74,7 @@ public record Journey(List<Leg> legs) {
         List<IntermediateStop> intermediateStops();
 
         default Duration duration() {
-            return Duration.between(arrTime(), depTime());
+            return Duration.between(depTime(), arrTime());
         }
 
         public record IntermediateStop(Stop stop, LocalDateTime arrTime, LocalDateTime depTime) {
@@ -82,7 +85,7 @@ public record Journey(List<Leg> legs) {
 
                 // ne pas mettre l'inverse car de cette façon ça valide aussi si
                 // les dates sont les mêmes
-                Preconditions.checkArgument(!arrTime.isBefore(depTime));
+                Preconditions.checkArgument(!depTime.isBefore(arrTime));
             }
         }
 
