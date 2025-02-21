@@ -13,39 +13,45 @@ public final class JourneyIcalConverter {
     static String toIcalendar(Journey journey){
 
         // Création du builder
-        IcalBuilder builder = new IcalBuilder();
+        IcalBuilder builder = new IcalBuilder()
 
-        // Begin
-        builder.begin(IcalBuilder.Component.VCALENDAR);
+                // Begin
+                .begin(IcalBuilder.Component.VCALENDAR)
 
-        // Version
-        builder.add(IcalBuilder.Name.VERSION, "2.0");
+                // Version
+                .add(IcalBuilder.Name.VERSION, "2.0")
 
-        // Prodid
-        builder.add(IcalBuilder.Name.PRODID, "ReCHor");
+                // Prodid
+                .add(IcalBuilder.Name.PRODID, "ReCHor")
 
-        // Begin 2
-        builder.begin(IcalBuilder.Component.VEVENT);
+                // Begin 2
+                .begin(IcalBuilder.Component.VEVENT)
 
-        // UID
-        builder.add(IcalBuilder.Name.UID, UUID.randomUUID().toString());
+                // UID
+                .add(IcalBuilder.Name.UID, UUID.randomUUID().toString())
 
-        // DTSTAMP
+                // DTSTAMP
+                .add(IcalBuilder.Name.DTSTAMP, LocalDateTime.now())
 
-        // DTSTART
+                // DTSTART
+                .add(IcalBuilder.Name.DTSTART, journey.legs().getFirst().depTime())
 
-        // DTEND
+                // DTEND
+                .add(IcalBuilder.Name.DTEND, journey.legs().getLast().arrTime())
 
-        // SUMMARY
+                // SUMMARY
+                .add(IcalBuilder.Name.SUMMARY, journey.legs().getFirst().depStop().name() + " -> " +
+                        journey.legs().getLast().arrStop().name());
+
 
         // DESCRIPTION
         StringJoiner j = new StringJoiner("\n");
 
         // END 2
-        builder.end();
+        builder.end()
 
         // END
-        builder.end();
+        .end();
 
         return "s";
     }
