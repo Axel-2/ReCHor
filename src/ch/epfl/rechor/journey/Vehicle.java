@@ -2,7 +2,7 @@ package ch.epfl.rechor.journey;
 
 import java.util.List;
 /**
- * Véhicule
+ * Type énuméré des différents véhicules
  * @author Yoann Salamin (390522)
  * @author Axel Verga (398787)
  */
