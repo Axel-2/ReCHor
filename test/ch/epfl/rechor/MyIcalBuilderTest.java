@@ -2,6 +2,9 @@ package ch.epfl.rechor;
 
 import ch.epfl.rechor.journey.Journey;
 import org.junit.jupiter.api.Test;
+
+import java.time.LocalDateTime;
+
 import static ch.epfl.rechor.IcalBuilder.Component.*;
 import static ch.epfl.rechor.IcalBuilder.*;
 import static ch.epfl.rechor.IcalBuilder.Name.*;
@@ -52,7 +55,38 @@ public class MyIcalBuilderTest {
 
         // Assemblage complet attendu des lignes.
         // Chaque appel à add ajoute une ligne terminée par un CRLF.
-        String expected = "SUMMARY:Réunion de travail" + "\r\n" + expectedDescription;
+        String expected = "SUMMARY:Départ du train à renens" + "\r\n" + expectedDescription + "\r\n";;
+
+        assertEquals(expected, builder.build());
+    }
+
+
+    @Test
+    void testIcalBuilderAddLocalDateTime() {
+        IcalBuilder builder = new IcalBuilder();
+
+        // Création d'une date/heure correspondant au 18 février 2025 à 16h13 et 00 secondes
+        LocalDateTime dateTime = LocalDateTime.of(2025, 2, 18, 16, 13, 0);
+
+        // Ajout de la date sous l'attribut DTSTAMP
+        builder.add(DTSTAMP, dateTime);
+
+        // La représentation textuelle attendue est "20250218T161300"
+        // La ligne complète, avec nom et séparateur, se termine par un CRLF ("\r\n")
+        String expected = "DTSTAMP:20250218T161300\r\n";
+
+        assertEquals(expected, builder.build());
+    }
+
+
+    @Test
+    void testBeginAddsCorrectLine() {
+        IcalBuilder builder = new IcalBuilder();
+        // Démarrage du composant VCALENDAR
+        builder.begin(VCALENDAR);
+
+        // La ligne attendue est "BEGIN:VCALENDAR" suivie d'un CRLF
+        String expected = "BEGIN:VCALENDAR\r\n";
 
         assertEquals(expected, builder.build());
     }
