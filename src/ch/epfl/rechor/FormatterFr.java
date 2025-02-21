@@ -15,29 +15,18 @@ public final class FormatterFr {
 
     public static String formatDuration(Duration duration) {
 
-        DateTimeFormatter fmt = new DateTimeFormatterBuilder()
-                .appendValue(ChronoField.HOUR_OF_AMPM)
-                .appendLiteral('/')
-                .appendValue(ChronoField.MONTH_OF_YEAR)
-                .appendLiteral('/')
-                .appendValue(ChronoField.YEAR)
-                .toFormatter();
-
         return "s";
-
     }
 
     public static String formatTime(LocalDateTime dateTime) {
 
         DateTimeFormatter fmt = new DateTimeFormatterBuilder()
                 .appendValue(ChronoField.HOUR_OF_AMPM)
-                .appendLiteral('/')
-                .appendValue(ChronoField.MONTH_OF_YEAR)
-                .appendLiteral('/')
-                .appendValue(ChronoField.YEAR)
+                .appendLiteral('h')
+                .appendValue(ChronoField.MINUTE_OF_DAY)
                 .toFormatter();
 
-        return "s";
+        return fmt.format(dateTime);
 
 
     }
