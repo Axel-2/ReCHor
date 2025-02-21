@@ -39,9 +39,9 @@ public final class FormatterFr {
     public static String formatTime(LocalDateTime dateTime) {
 
         DateTimeFormatter fmt = new DateTimeFormatterBuilder()
-                .appendValue(ChronoField.HOUR_OF_AMPM)
+                .appendValue(ChronoField.HOUR_OF_DAY)
                 .appendLiteral('h')
-                .appendValue(ChronoField.MINUTE_OF_DAY,2)
+                .appendValue(ChronoField.MINUTE_OF_HOUR,2)
                 .toFormatter();
 
         return fmt.format(dateTime);
@@ -78,15 +78,10 @@ public final class FormatterFr {
     public static String formatLeg(Journey.Leg.Transport leg) {
 
         // 16h26 Renens VD (voie 4) → Lausanne (arr. 16h33 voie 5)
-        DateTimeFormatter fmt = new DateTimeFormatterBuilder()
-                .appendValue(ChronoField.HOUR_OF_DAY)
-                .appendLiteral("h")
-                .appendValue(ChronoField.MINUTE_OF_HOUR, 2)
-                .toFormatter();
 
         // depTime
-        String depTimeString = fmt.format(leg.depTime());
-        String arrTimeString = fmt.format(leg.arrTime());
+        String depTimeString = formatTime(leg.depTime());
+        String arrTimeString = formatTime(leg.arrTime());
 
         StringBuilder builder = new StringBuilder()
                 .append(depTimeString)
