@@ -1,5 +1,7 @@
 package ch.epfl.rechor.journey;
 
+import ch.epfl.rechor.Preconditions;
+
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -38,7 +40,7 @@ public record Journey(List<Leg> legs) {
 
     // TODO : "Journey offre ces classes publiques. Mais Leg aussi ??
     // Oui car c'est différent, ici c'est voyage alors que dans Leg
-    // c'est étape ! donc refaire les trucs ici aussi.
+    // c'est étape ! donc refaire les trucs ici aussi. getFirst et getLast()
 //    public Stop depStop(){}
 //
 //    public Stop arrStop(){};
@@ -55,16 +57,16 @@ public record Journey(List<Leg> legs) {
         public record IntermediateStop(Stop stop, LocalDateTime arrTime, LocalDateTime depTime) {
             public IntermediateStop{
                 Objects.requireNonNull(stop, "stop is null");
-                if (depTime.isBefore(arrTime)){
-                    throw new IllegalArgumentException();
-                }
+                Preconditions.checkArgument(arrTime().isBefore(depTime));
             }
         }
 
         public record Transport(Stop depStop, LocalDateTime depTime, Stop arrStop, LocalDateTime arrTime,
                                 List<IntermediateStop> intermediateStops,
                                 Vehicle vehicle, String route, String destination) {
+            public Transport{
 
+            }
         }
 
         public record Foot() {
