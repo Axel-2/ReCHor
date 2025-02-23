@@ -76,7 +76,7 @@ class MyJourneyIcalConverterTest {
         DTEND:20250218T171300
         SUMMARY:Ecublens VD, EPFL -> Romont FR
         DESCRIPTION:16h13 Ecublens VD, EPFL -> Renens VD, gare (arr. 16h19)
-         à pied (3 min)
+         trajet à pied (3 min)
          16h26 Renens VD (voie 4) -> Lausanne (arr. 16h33 voie 5)
          changement (5 min)
          16h40 Lausanne (voie 1) -> Romont FR (arr. 17h13 voie 2)
