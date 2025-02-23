@@ -1,12 +1,12 @@
 package ch.epfl.rechor.journey;
 
 import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
 
 class MyJourneyIcalConverterTest {
 
