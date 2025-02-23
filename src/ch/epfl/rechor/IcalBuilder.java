@@ -51,6 +51,11 @@ public final class IcalBuilder {
         // tant qu'il reste des charactères dans la string initiale
         for (int currentIndex = 0; currentIndex < totalLength; currentIndex += maxStringLength) {
 
+            // après le premier tour de boucle on passe la limite de ligne à 74 char
+            // car l'espace ajouté par le pliage compte comme charachtère ne plus
+            if (currentIndex > 0) {
+                maxStringLength = 74;
+            }
 
             // On doit
             int currentEnd = Math.min(currentIndex+maxStringLength, totalLength);
@@ -59,8 +64,10 @@ public final class IcalBuilder {
                     .append(initialString, currentIndex, currentEnd)
             ;
 
+            // Au dernier tour de boucle on n'ajoute pas d'espace supplémentaire
+            // en début de ligne
             if (currentEnd < initialString.length()) {
-                // saut de ligne avec espace
+                // saut de ligne avec espace à la fin
                 stringBuilder.append("\r\n ");
             } else {
                 // saut de ligne sans espace à la fin

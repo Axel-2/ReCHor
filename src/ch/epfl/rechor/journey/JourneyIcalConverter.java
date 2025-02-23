@@ -40,14 +40,15 @@ public final class JourneyIcalConverter {
                 .add(IcalBuilder.Name.DTEND, journey.legs().getLast().arrTime())
 
                 // SUMMARY
-                .add(IcalBuilder.Name.SUMMARY, journey.legs().getFirst().depStop().name() + " -> " +
+                .add(IcalBuilder.Name.SUMMARY, journey.legs().getFirst().depStop().name() + " → " +
                         journey.legs().getLast().arrStop().name());
 
         // DESCRIPTION
-        //              Création du joiner
-        StringJoiner j = new StringJoiner("\n");
+        // Création du joiner
+        // il faut faire bien attention à escape le \n
+        StringJoiner j = new StringJoiner("\\n");
 
-        //              Formattage selon le type d'étape
+        // Formattage selon le type d'étape
         for (Journey.Leg leg : journey.legs()){
             switch (leg) {
                 case Journey.Leg.Foot f ->
@@ -56,14 +57,14 @@ public final class JourneyIcalConverter {
                         j.add(FormatterFr.formatLeg(t));
             }
         }
-        //              Conversion en string immuable, puis ajout au builder
+        // Conversion en string immuable, puis ajout au builder
         String descriptionContent = j.toString();
         builder.add(IcalBuilder.Name.DESCRIPTION, descriptionContent);
 
-        // END 2
+        // END 1
         builder.end()
 
-        // END
+        // END 2
         .end();
 
         return builder.build();
