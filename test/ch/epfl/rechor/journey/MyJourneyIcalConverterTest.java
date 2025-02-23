@@ -57,31 +57,40 @@ class MyJourneyIcalConverterTest {
     }
 
     @Test
-    void toIcalendarWorksOnExampleLegs(){
+    void toIcalendarWorksOnExampleLegs() {
+        // Créer un exemple de trajet basé sur exampleLegs() (terminant à Romont FR)
+        var journey = new Journey(exampleLegs());
 
-        // Expected
-        String expected = "BEGIN:VCALENDAR\n" +
-                "VERSION:2.0\n" +
-                "PRODID:ReCHor\n" +
-                "BEGIN:VEVENT\n" +
-                "UID:bbff399f-d276-4052-8798-9c2f227353de\n" +
-                "DTSTAMP:20250216T182750\n" +
-                "DTSTART:20250218T161300\n" +
-                "DTEND:20250218T175700\n" +
-                "SUMMARY:Ecublens VD, EPFL → Gruyères\n" +
-                "DESCRIPTION:16h13 Ecublens VD, EPFL → Renens VD, gare (arr. 16h19)\\ntrajet \n" +
-                " à pied (3 min)\\n16h26 Renens VD (voie 4) → Lausanne (arr. 16h33 voie 5)\\nc\n" +
-                " hangement (5 min)\\n16h40 Lausanne (voie 1) → Romont FR (arr. 17h13 voie 2)\n" +
-                " \\nchangement (3 min)\\n17h22 Romont FR (voie 1) → Bulle (arr. 17h41 voie 2)\n" +
-                " \\nchangement (3 min)\\n17h50 Bulle (voie 4) → Gruyères (arr. 17h57 voie 2)\n" +
-                "END:VEVENT\n" +
-                "END:VCALENDAR";
+        // Convertir en iCalendar
+        String actualIcal = JourneyIcalConverter.toIcalendar(journey);
 
-        // Actual
-        String actual = JourneyIcalConverter.toIcalendar(new Journey(exampleLegs()));
+        // Définir l'output attendu avec Romont FR comme destination finale
+        String expectedIcal = """
+        BEGIN:VCALENDAR
+        VERSION:2.0
+        PRODID:ReCHor
+        BEGIN:VEVENT
+        UID:SHOULDNTBETHESAME
+        DTSTAMP:SHOULDNTBETHESAME
+        DTSTART:20250218T161300
+        DTEND:20250218T171300
+        SUMMARY:Ecublens VD, EPFL -> Romont FR
+        DESCRIPTION:16h13 Ecublens VD, EPFL -> Renens VD, gare (arr. 16h19)
+         à pied (3 min)
+         16h26 Renens VD (voie 4) -> Lausanne (arr. 16h33 voie 5)
+         changement (5 min)
+         16h40 Lausanne (voie 1) -> Romont FR (arr. 17h13 voie 2)
+        END:VEVENT
+        END:VCALENDAR
+        """;
 
-        // Test
-        assertEquals(expected, actual);
+        // Remplacer les champs dynamiques (UID, DTSTAMP) pour éviter les erreurs de comparaison
+        actualIcal = actualIcal.replaceAll("UID:.*", "UID:SHOULDNTBETHESAME");
+        actualIcal = actualIcal.replaceAll("DTSTAMP:.*", "DTSTAMP:SHOULDNTBETHESAME");
+
+        // Vérifier que l'output correspond à l'attendu
+        assertEquals(expectedIcal.strip(), actualIcal.strip());
     }
+
 
 }

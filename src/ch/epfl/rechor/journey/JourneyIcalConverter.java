@@ -43,9 +43,22 @@ public final class JourneyIcalConverter {
                 .add(IcalBuilder.Name.SUMMARY, journey.legs().getFirst().depStop().name() + " -> " +
                         journey.legs().getLast().arrStop().name());
 
-
         // DESCRIPTION
+        //              Création du joiner
         StringJoiner j = new StringJoiner("\n");
+
+        //              Formattage selon le type d'étape
+        for (Journey.Leg leg : journey.legs()){
+            switch (leg) {
+                case Journey.Leg.Foot f ->
+                        j.add(FormatterFr.formatLeg(f));
+                case Journey.Leg.Transport t ->
+                        j.add(FormatterFr.formatLeg(t));
+            }
+        }
+        //              Conversion en string immuable, puis ajout au builder
+        String descriptionContent = j.toString();
+        builder.add(IcalBuilder.Name.DESCRIPTION, descriptionContent);
 
         // END 2
         builder.end()
@@ -53,6 +66,6 @@ public final class JourneyIcalConverter {
         // END
         .end();
 
-        return "s";
+        return builder.build();
     }
 }

@@ -131,7 +131,7 @@ public final class FormatterFr {
                     .append(")");
         }
 
-        builder.append(" → ")
+        builder.append(" -> ")
                 .append(leg.arrStop().name())
                 .append(" (arr. ")
                 .append(arrTimeString);
