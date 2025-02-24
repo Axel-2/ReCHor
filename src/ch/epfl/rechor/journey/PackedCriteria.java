@@ -10,21 +10,33 @@ public class PackedCriteria {
 
     public static long pack(int arrMins, int changes, int payload) {
 
-        // Il faut en tout premier translater les minutes de -240
-        arrMins = arrMins - 240;
-
-        // Ensuite on teste si l'heure est valide
+        // arrMin est exprimé en minutes écoulées depuis minuit
+        // On teste si l'heure est valide
         Preconditions.checkArgument(-240 <= arrMins && arrMins < 2880);
+
+        // On translate pour garantir des valeurs positives
+        arrMins += 240;
 
         // TODO changes < 0 nécessaire ou en trop ??
         // On test si les nombres de changements tiennent sur 7 bits
         // 127 est le nombre max sur 7 bits
         Preconditions.checkArgument(changes > 0 && changes <= 127);
 
-        long initialLong = 0;
+        // Long initial
+        long resultLong = 0L;
 
-        initialLong = arrMins << 6;
-        return 0;
+        // ajout de arrMins
+        long arrMinShifted = ((long) arrMins) << 39;
+        resultLong = resultLong | arrMinShifted;
+
+        // Ajout du changes
+        long changesShifted = ((long) changes) << 32;
+        resultLong = changesShifted | resultLong;
+
+        // On ajoute le payload
+        resultLong = payload | resultLong;
+
+        return resultLong;
     }
 
     public static boolean hasDepMins(long criteria){
