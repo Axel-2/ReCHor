@@ -8,8 +8,9 @@ import java.time.LocalDateTime;
 import java.util.StringJoiner;
 import java.util.UUID;
 
-public final class JourneyIcalConverter {
+public class JourneyIcalConverter {
 
+    private JourneyIcalConverter() {}
     static String toIcalendar(Journey journey){
 
         // Création du builder

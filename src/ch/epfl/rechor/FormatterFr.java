@@ -16,6 +16,7 @@ import java.time.temporal.ChronoField;
  */
 public final class FormatterFr {
 
+    private FormatterFr() {}
     /**
      * Formate une durée pour obtenir le format suivant : 12 min ou alors 1 h 3 min
      * @param duration (une durée)

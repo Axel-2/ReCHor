@@ -1,9 +1,8 @@
 package ch.epfl.rechor;
 
-// TODO non instanciable
 public class PackedRange {
 
-    // C'est comme ça qu'on fait ??
+    // rendre la classe non instanciable
     private PackedRange() {
 
     }
