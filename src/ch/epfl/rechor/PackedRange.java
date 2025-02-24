@@ -22,6 +22,8 @@ public class PackedRange {
         // La borne inférieur doit aussi être positive
         Preconditions.checkArgument(startInclusive >= 0);
 
+        // TODO utiliser les fonctions déjà faites de Bits32_24_8
+
         // On met les 24 bits de la borne supérieure dans les 24 bits
         // de poids fort, donc comme il y a 32 bits dans un int on
         // shift de 8 bits à gauche
@@ -33,19 +35,15 @@ public class PackedRange {
     }
 
     public static int length(int interval) {
-
-        // On récupère les 8 bits de poids faible avec le masque OxFF
+        // On récupère les 8 bits de poids faible
         // et c'est ici qu'est stocké la longueur
-        return interval & 0xFF;
+        return Bits32_24_8.unpack8(interval);
     }
 
     public static int startInclusive(int interval) {
 
-        // On redécalle les 24 bits de poids fort de 8 bits
-        // vers la droite pour écraser les 8 premiers bits
-        // et n'avoir plus que l'intervalle de départ
-        // on utilise >>> pour ne pas préserver le signe
-        return interval >>> 8;
+        // On prend les 24 bits de poids fort
+        return Bits32_24_8.unpack24(interval);
     }
 
 

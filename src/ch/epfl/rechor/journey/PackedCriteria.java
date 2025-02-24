@@ -25,6 +25,8 @@ public class PackedCriteria {
         // Long initial
         long resultLong = 0L;
 
+        // TODO voir si Bits32_24_8 peut être utile ??
+
         // ajout de arrMins
         long arrMinShifted = ((long) arrMins) << 39;
         resultLong = resultLong | arrMinShifted;
