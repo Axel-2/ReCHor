@@ -3,7 +3,9 @@ package ch.epfl.rechor;
 
 public final class Bits32_24_8 {
 
+    // Pour rendre la classe non instantiable
     private Bits32_24_8() {}
+
     public static int pack(int bits24, int bits8){
         // Check si les bits respectent la taille voulue
         Preconditions.checkArgument((bits8 >> 8 == 0));

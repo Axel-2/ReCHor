@@ -1,6 +1,8 @@
 package ch.epfl.rechor.journey;
 
-// TODO non instanciable
+
 public class PackedCriteria {
+
+    // Pour rendre la classe non instantiable
     private PackedCriteria() {}
 }

@@ -2,7 +2,7 @@ package ch.epfl.rechor;
 
 public class PackedRange {
 
-    // rendre la classe non instanciable
+    // Pour rendre la classe non instantiable
     private PackedRange() {
 
     }
