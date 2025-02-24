@@ -77,7 +77,7 @@ public class MyPackedRangeTest {
     @Test
     void endExclusiveWorksIndependently() {
         int start = 0;
-        int end   = 1234;
+        int end   = 234;
         int packed = PackedRange.pack(start, end);
 
         // Vérifie simplement la valeur de endExclusive
