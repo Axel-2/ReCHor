@@ -8,9 +8,9 @@ public class MyPackedCriteriaTest {
     @Test
     void exempleDuSite() {
 
-        // TODO c'est pas un long ça mais en gros j'aimerai ajouter 32 0 en plus
         // pour un payload vide
-        long expected = (long) 0b0110100101111001100001100000001;
+        // on ajoute 32 bits à
+        long expected = (long) 0b00000000_00000001_10000110_00000010L << 32;
 
         // 8H00 depuis miniuit
         int a = 8 * 60;
@@ -20,8 +20,29 @@ public class MyPackedCriteriaTest {
 
         int changements = 2;
 
-        long actual = PackedCriteria.pack(a, 2, 0);
+        long actual = PackedCriteria.pack(b, 2, 0);
 
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    void hasdDepMinsFalse() {
+        long packedValue = 0b00000000_00000001_10000110_00000010L << 32;
+
+        boolean value = PackedCriteria.hasDepMins(packedValue);
+
+        // Cela doit être faux car il n y a pas d'heure dans packedValue
+        assertFalse(value);
+    }
+
+    @Test
+    void hadDepsMinsTrue() {
+
+        long packedValue = 0b0_110100101111_001100001100_0000010L << 32;
+
+        boolean value = PackedCriteria.hasDepMins(packedValue);
+
+        assertTrue(value);
     }
 
 }
