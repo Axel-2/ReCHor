@@ -190,5 +190,22 @@ public class MyPackedCriteriaTest {
 
     }
 
+    @Test
+    void getChangesTest() {
+
+        long criteria = 0b0_110100101111_001100001100_0000010_00000000_00000000_00000000_00000000L;
+        long criteria2 = 0b0_110100101111_001100001100_0000010L << 32;
+
+        assertEquals(criteria, criteria2);
+
+        int expectedChanges = 2;
+
+        int actualChanges = PackedCriteria.changes(criteria);
+
+        assertEquals(expectedChanges, actualChanges);
+
+
+    }
+
 
 }

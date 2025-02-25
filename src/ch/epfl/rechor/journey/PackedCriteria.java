@@ -89,7 +89,13 @@ public class PackedCriteria {
     }
 
     public static int changes(long criteria){
-        return 0;
+        // on shift de 32 bits et on prend seulement
+        // les 7 bits de poids faible avec un masque
+        // 0x7F correspond à 127 qui correspond à 7 bits de poids faible
+        long bits32to38 = (criteria >>> 32) & 0x7F;
+
+        // on retourne le résultat converti en int
+        return (int) bits32to38;
     }
 
     public static int payload(long criteria){
