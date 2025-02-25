@@ -102,6 +102,11 @@ public class MyPackedCriteriaTest {
     }
 
     @Test
+    void dominateOrIsEqualWorks(){
+        long criteria1 = 0b0_000000000001_000000000000_0000000_00000000000000000000000000000000L;
+        long criteria2 = 0b0_000000000000_000000000000_0000000_00000000000000000000000000000000L;
+    }
+    @Test
     void withoutDepMinsWorks(){
         long criteria = 0b01011001_10111000_10000110_00000010_11110000_00001111_10101010_01010101L;
 
@@ -132,7 +137,7 @@ public class MyPackedCriteriaTest {
 
         long actual = PackedCriteria.withAdditionalChange(criteria);
 
-        assertEquals(expected, actual, "Le champ de changement (bits 38-32) doit être incrémenté de 1");
+        assertEquals(expected, actual);
     }
 
     @Test
