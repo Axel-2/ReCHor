@@ -10,6 +10,13 @@ public class PackedCriteria {
     // Pour rendre la classe non instantiable
     private PackedCriteria() {}
 
+    /**
+     *
+     * @param arrMins
+     * @param changes
+     * @param payload
+     * @return
+     */
     public static long pack(int arrMins, int changes, int payload) {
 
         // arrMin est exprimé en minutes écoulées depuis minuit
@@ -41,6 +48,12 @@ public class PackedCriteria {
         return resultLong;
     }
 
+    /**
+     * Fonction qui retourne vrai si les critères donnés en paramètres
+     * contiennent une heure de départ
+     * @param criteria  un long représentant les critères empaquetés
+     * @return vrai si criteria contient une heure de départ, faux sinon
+     */
     public static boolean hasDepMins(long criteria) {
 
 
@@ -54,6 +67,11 @@ public class PackedCriteria {
         return bits51to62 != 0;
     }
 
+    /**
+     * Retourne l'heure de départ (en minutes après minuit) des critères empaquetés donnés.
+     * @param criteria criteria un long représentant les critères empaquetés
+     * @return l'heure de départ (en minutes après minuit)
+     */
     public static int depMins(long criteria){
 
         Preconditions.checkArgument(hasDepMins(criteria));
@@ -74,6 +92,11 @@ public class PackedCriteria {
         return depMins;
     }
 
+    /**
+     * Retourne l'heure d'arrivée (en minutes après minuit) des critères empaquetés donnés.
+     * @param criteria un long représentant les critères empaquetés
+     * @return l'heure d'arrivée (en minutes après minuit)
+     */
     public static int arrMins(long criteria) {
         // retourne l'heure d'arrivée (en minutes après minuit) des critères empaquetés donnés
 
