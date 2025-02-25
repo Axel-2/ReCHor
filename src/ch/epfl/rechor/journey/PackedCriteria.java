@@ -111,6 +111,11 @@ public class PackedCriteria {
         return arrMins;
     }
 
+    /**
+     * Retourne le nombre de changements des critères empaquetés donnés.
+     * @param criteria un long représentant les critères empaquetés
+     * @return le nombre de changements
+     */
     public static int changes(long criteria){
         // on shift de 32 bits et on prend seulement
         // les 7 bits de poids faible avec un masque
@@ -121,11 +126,30 @@ public class PackedCriteria {
         return (int) bits32to38;
     }
 
+    /**
+     * Retourne la «charge utile» associée aux critères empaquetés donnés.
+     * @param criteria un long représentant les critères empaquetés
+     * @return a charge utile
+     */
     public static int payload(long criteria){
-        return 0;
+
+        // récupération des 32 bits de poids faible avec le masque 0xFFFFFFFFL
+        // qui a 32 bits de poids faible
+
+        return (int) (criteria & 0xFFFFFFFFL);
     }
 
-    public static boolean dominatesOrIsEqual(long criteria1, long criteria2){
+    /**
+     * Retourne vrai si et seulement si les premiers critères empaquetés dominent ou sont égaux
+     * aux seconds.
+     * La domination est définie de sorte que chaque champ des premiers critères
+     * est supérieur ou égal au champ correspondant des seconds critères.
+     * @param criteria1 un long représentant le premier ensemble de critères empaquetés
+     * @param criteria2 un long représentant le second ensemble de critères empaquetés
+     * @return vrai si criteria1 domine ou est égal à criteria2, faux sinon
+     */
+    public static boolean dominatesOrIsEqual(long criteria1, long criteria2) {
+        // TODO
         return false;
     }
 
@@ -135,6 +159,7 @@ public class PackedCriteria {
      * @return critères sans heure de départ
      */
     public static long withoutDepMins(long criteria){
+        // TODO (AXEL) mettre des commentaires parce que je comprends pas trop comme ça meme chose en bas
         return criteria & ~(0xFFFL << 51);
     }
 

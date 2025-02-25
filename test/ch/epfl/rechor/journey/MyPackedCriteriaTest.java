@@ -208,9 +208,17 @@ public class MyPackedCriteriaTest {
         int actualChanges = PackedCriteria.changes(criteria);
 
         assertEquals(expectedChanges, actualChanges);
+    }
+
+    @Test
+    void payloadWorks() {
+
+        // TODO test commencé mais pas fini
+
+        long criteria = 0b0_110100101111_001100001100_0000010_10100001_10010100_10010001_00010100L;
+
 
 
     }
-
 
 }
