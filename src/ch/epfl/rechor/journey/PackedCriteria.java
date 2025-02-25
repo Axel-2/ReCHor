@@ -34,20 +34,42 @@ public class PackedCriteria {
         return false;
     }
 
+    /**
+     * Retourne des critères empaquetés identiques à ceux donnés, mais sans heure de départ
+     * @param criteria critères
+     * @return critères sans heure de départ
+     */
     public static long withoutDepMins(long criteria){
-        return 0;
+        return criteria & ~(0xFFFL << 51);
     }
 
+    /**
+     * Retourne des critères empaquetés identiques à ceux donnés, mais avec l'heure de départ donnée
+     * @param criteria critères
+     * @param depMins1 heure de départ (son complément) donnée
+     * @return les critères avec l'heure de départ donnée.
+     */
     public static long withDepMins(long criteria, int depMins1){
-        return 0;
+        return (criteria | ((long) depMins1 << 51L));
     }
 
+    /**
+     * Ajoute un changement à un triplet de critère
+     * @param criteria critère
+     * @return le triplet de critère avec un changement de plus
+     */
     public static long withAdditionalChange(long criteria){
-        return 0;
+        return criteria + (1L << 32) ;
     }
 
+    /**
+     * Insère une charge utile dans un triplet de critère
+     * @param criteria critère
+     * @param payload1 charge utile
+     * @return le critère (long) avec la charge utile.
+     */
     public static long withPayload(long criteria, int payload1){
-        return 0;
+        return (criteria & 0xFFFFFFFF00000000L) | (Integer.toUnsignedLong(payload1));
     }
 
 
