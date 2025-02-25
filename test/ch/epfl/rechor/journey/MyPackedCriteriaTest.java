@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class MyPackedCriteriaTest {
 
     @Test
-    void exempleDuSite() {
+    void packedWorksOnWebsiteExample() {
 
         // pour un payload vide
         // on ajoute 32 bits à
@@ -43,6 +43,51 @@ public class MyPackedCriteriaTest {
         boolean value = PackedCriteria.hasDepMins(packedValue);
 
         assertTrue(value);
+    }
+
+    @Test
+    void withoutDepMinsWorks(){
+        long criteria = 0b01011001_10111000_10000110_00000010_11110000_00001111_10101010_01010101L;
+
+        long actual = PackedCriteria.withoutDepMins(criteria);
+        long expected = 0b00000000_00000000_10000110_00000010_11110000_00001111_10101010_01010101L;
+
+        assertEquals(actual, expected);
+
+    }
+
+    @Test
+    void withDepMinsWorks(){
+
+        long criteria = 0b00000000_00000000_10000110_00000010_11110000_00001111_10101010_01010101L;
+        int dep = 0b1011_0011_0111;
+
+        long actual = PackedCriteria.withDepMins(criteria, dep);
+        long expected = 0b01011001_10111000_10000110_00000010_11110000_00001111_10101010_01010101L;
+
+        assertEquals(expected, actual);
+
+    }
+
+    @Test
+    void withAdditionalChangeWorks() {
+        long criteria = 0b00000000_00000001_10000110_00000010_11110000_00001111_10101010_01010101L;
+        long expected = 0b00000000_00000001_10000110_00000011_11110000_00001111_10101010_01010101L;
+
+        long actual = PackedCriteria.withAdditionalChange(criteria);
+
+        assertEquals(expected, actual, "Le champ de changement (bits 38-32) doit être incrémenté de 1");
+    }
+
+    @Test
+    void withPayloadWorks(){
+        long packedValue = 0b00000000_00000001_10000110_00000010L << 32;
+        int payload = 0b01010101_01010101_01010101_01010101;
+
+        long actual = PackedCriteria.withPayload(packedValue,payload);
+        long expected =  0b00000000_00000001_10000110_00000010_01010101_01010101_01010101_01010101L;
+
+        assertEquals(expected, actual);
     }
 
 }
