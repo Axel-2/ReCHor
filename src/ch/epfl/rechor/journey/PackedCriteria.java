@@ -1,17 +1,57 @@
 package ch.epfl.rechor.journey;
 
 
+import ch.epfl.rechor.Bits32_24_8;
+import ch.epfl.rechor.PackedRange;
+import ch.epfl.rechor.Preconditions;
+
 public class PackedCriteria {
 
     // Pour rendre la classe non instantiable
     private PackedCriteria() {}
 
-    public static long pack(int arrMins, int changes, int payload){
-        return 0;
+    public static long pack(int arrMins, int changes, int payload) {
+
+        // arrMin est exprimé en minutes écoulées depuis minuit
+        // On teste si l'heure est valide
+        Preconditions.checkArgument(-240 <= arrMins && arrMins < 2880);
+
+        // On translate pour garantir des valeurs positives
+        arrMins += 240;
+
+        // TODO changes < 0 nécessaire ou en trop ??
+        // On test si les nombres de changements tiennent sur 7 bits
+        // 127 est le nombre max sur 7 bits
+        Preconditions.checkArgument(changes > 0 && changes <= 127);
+
+        // Long initial
+        long resultLong = 0L;
+
+        // ajout de arrMins
+        long arrMinShifted = ((long) arrMins) << 39;
+        resultLong = resultLong | arrMinShifted;
+
+        // Ajout du changes
+        long changesShifted = ((long) changes) << 32;
+        resultLong = changesShifted | resultLong;
+
+        // On ajoute le payload
+        resultLong = (((long) payload)) | resultLong;
+
+        return resultLong;
     }
 
-    public static boolean hasDepMins(long criteria){
-        return false;
+    public static boolean hasDepMins(long criteria) {
+
+
+        // On veut récupérer l'heure de départ qui est
+        // dans les bits 51 à 62
+        // On shift alors de 51 bits vers la droite puis
+        // on masque avec 0xFFF qui représente les 12 premiers bits
+        long bits51to62 = (criteria >>> 51) & 0xFFF;
+
+        // retourne vrai si l'heure n'est pas nulle
+        return bits51to62 != 0;
     }
 
     public static int depMins(long criteria){

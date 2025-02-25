@@ -7,6 +7,19 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class MyPackedRangeTest {
 
     @Test
+    void websiteExample() {
+
+        // Exemple du site directement
+
+        int expectedPacked = 0b00000000000001001101001000101100;
+
+        int actualPacked = PackedRange.pack(1234, 1278);
+
+        assertEquals(expectedPacked, actualPacked);
+
+    }
+
+    @Test
     void packValidRange() {
         int start = 5;
         int end   = 10;
@@ -77,7 +90,7 @@ public class MyPackedRangeTest {
     @Test
     void endExclusiveWorksIndependently() {
         int start = 0;
-        int end   = 1234;
+        int end   = 234;
         int packed = PackedRange.pack(start, end);
 
         // Vérifie simplement la valeur de endExclusive
