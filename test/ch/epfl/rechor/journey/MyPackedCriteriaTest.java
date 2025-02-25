@@ -14,14 +14,14 @@ public class MyPackedCriteriaTest {
 
         // Heure de départ
         // 8H00 depuis miniuit
-        int a = 8 * 60;
+        int depMins = 8 * 60;
 
         // 9h depuis minuit
-        int b = 9 * 60;
+        int arrMins = 9 * 60;
 
         int changements = 2;
 
-        long actual = PackedCriteria.pack(b, 2, 0);
+        long actual = PackedCriteria.pack(arrMins, 2, 0);
 
         assertEquals(expected, actual);
     }
@@ -115,5 +115,35 @@ public class MyPackedCriteriaTest {
         assertEquals(expectedDepartValue, actualDepMins);
 
     }
+
+    @Test
+    void depMinsThrowsError() {
+
+        // doit retourner une erreur si y a pas d'heure de départ
+
+        long packedValue = 0b00000000_00000001_10000110_00000010L << 32;
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            PackedCriteria.depMins(packedValue);
+        });
+
+    }
+
+    @Test
+    void arrMinsExampleWebsite() {
+
+        // packedValue donné en exemple sur le site
+        long criteria = 0b0_110100101111_001100001100_0000010L << 32;
+
+        // L'heure d'arrivée de l'exemple du site
+        // est 9h
+        int expectedArrMins = 9*60;
+
+        int actualArrMins = PackedCriteria.arrMins(criteria);
+
+        assertEquals(expectedArrMins, actualArrMins);
+
+    }
+
 
 }

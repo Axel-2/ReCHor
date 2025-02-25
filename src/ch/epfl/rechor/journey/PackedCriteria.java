@@ -56,8 +56,7 @@ public class PackedCriteria {
 
     public static int depMins(long criteria){
 
-        // TODO
-        Preconditions.checkArgument(true);
+        Preconditions.checkArgument(hasDepMins(criteria));
 
         // retourne l'heure de départ (en minutes après minuit) des critères empaquetés donnés,
         // ou lève IllegalArgumentException si ces critères n'incluent pas une heure de départ,
@@ -66,8 +65,8 @@ public class PackedCriteria {
         // correspondants à l'heure de départ
         long bits51to62 = (criteria >>> 51) & 0xFFF;
 
-        // On ajoute le complément
-        int depMins = (int) bits51to62 + 4095;
+        // On reverse le complément
+        int depMins = 4095 - (int) bits51to62 ;
 
         // on enlève l'offset de 4h
         depMins -= 240;
@@ -75,8 +74,18 @@ public class PackedCriteria {
         return depMins;
     }
 
-    public static int arrMins(long criteria){
-        return 0;
+    public static int arrMins(long criteria) {
+        // retourne l'heure d'arrivée (en minutes après minuit) des critères empaquetés donnés
+
+        // Récupération des bits 39 à 50 avec shift de 39
+        // puis masque des 12 premiers bits
+        long bits39to50 = (criteria >>> 39) & 0xFFFL;
+
+        // on convertis en int puis on enlève l'offset de 4h
+        // pour avoir des minutes après minuit
+        int arrMins = (int) bits39to50 - 240;
+
+        return arrMins;
     }
 
     public static int changes(long criteria){
