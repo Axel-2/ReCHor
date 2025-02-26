@@ -8,9 +8,21 @@ import java.time.LocalDateTime;
 import java.util.StringJoiner;
 import java.util.UUID;
 
+/**
+ * Convertit un voyage en format calendrier
+ * @author Yoann Salamin (390522)
+ * @author Axel Verga (398787)
+ */
 public class JourneyIcalConverter {
 
+    // Pour rendre non instantiable
     private JourneyIcalConverter() {}
+
+    /**
+     * Convertir un voyage en string, qui constituera le contenu du fichier ics
+     * @param journey voyage commplets, ayant une liste d'étapes
+     * @return la string immuable
+     */
     static String toIcalendar(Journey journey){
 
         // Création du builder

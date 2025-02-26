@@ -102,9 +102,39 @@ public class MyPackedCriteriaTest {
     }
 
     @Test
-    void dominateOrIsEqualWorks(){
-        long criteria1 = 0b0_000000000001_000000000000_0000000_00000000000000000000000000000000L;
-        long criteria2 = 0b0_000000000000_000000000000_0000000_00000000000000000000000000000000L;
+    void dominateOrIsEqualRecognizeDominance(){
+        // Trajet pas terrible
+        long criteria1 = 0b0_000000000011_00000000001_0000011_00000000000000000000000000000000L;
+
+        // Trajet dominant
+        long criteria2 = 0b0_000000000001_000000000111_0000011_00000000000000000000000000000000L;
+
+        boolean actual = PackedCriteria.dominatesOrIsEqual(criteria2, criteria1);
+        assertTrue(actual);
+
+    }
+    @Test
+    void dominateOrIsEqualWorksOnEqualsCriteria(){
+        long criteria1 = 0b0_000000000011_00000000001_0000011_00000000000000000000000000000000L;
+
+        // Même données
+        long criteria2 = 0b0_000000000011_00000000001_0000011_00000000000000000000000000000000L;
+
+        boolean shouldBeTrue = PackedCriteria.dominatesOrIsEqual(criteria1, criteria2);
+        assertTrue(shouldBeTrue);
+
+    }
+
+    @Test
+    void dominateOrIsEqualRecognizeNonDominance(){
+        // Trajet avec plus de changements, mais une heure de départ plus tard (donc aucun domine)
+        long criteria1 = 0b0_000000000101_00000010001_0000011_00000000000000000000000000000000L;
+
+        long criteria2 = 0b0_000000000011_00000010001_0000010_00000000000000000000000000000000L;
+
+        boolean actual = PackedCriteria.dominatesOrIsEqual(criteria1, criteria2);
+        assertFalse(actual);
+
     }
     @Test
     void withoutDepMinsWorks(){

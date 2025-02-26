@@ -1,5 +1,10 @@
 package ch.epfl.rechor;
 
+/**
+ * Intervalle empaqueté
+ * @author Yoann Salamin (390522)
+ * @author Axel Verga (398787)
+ */
 public class PackedRange {
 
     // Pour rendre la classe non instantiable
@@ -7,6 +12,13 @@ public class PackedRange {
 
     }
 
+    /**
+     * Crée un intervalle empaqueté dans un int à partir de ses deux bornes
+     * @param startInclusive borne inférieure (incluse)
+     * @param endExclusive borne supérieure (éxclue)
+     * @return la valeur de type int représentant l'intervalle d'entiers allant de
+     * startInclusive (inclus) à endExclusive (exclu)
+     */
     public static int pack(int startInclusive, int endExclusive) {
 
         int intervalleSize = endExclusive - startInclusive;
@@ -40,13 +52,22 @@ public class PackedRange {
         return Bits32_24_8.unpack8(interval);
     }
 
+    /**
+     * Retourne la borne inférieur de l'intervalle en paramètre
+     * @param interval l'intervalle
+     * @return la borne inférieur de l'intervalle en paramètre
+     */
     public static int startInclusive(int interval) {
 
         // On prend les 24 bits de poids fort
         return Bits32_24_8.unpack24(interval);
     }
 
-
+    /**
+     * Retourne la borne supérieure de l'intervalle en paramètre
+     * @param interval l'intervalle
+     * @return la borne supérieure de l'intervalle en paramètre
+     */
     public static int endExclusive(int interval) {
 
         // On utilise les fonctions déjà codées

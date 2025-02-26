@@ -1,21 +1,23 @@
 package ch.epfl.rechor.journey;
 
-
-import ch.epfl.rechor.Bits32_24_8;
-import ch.epfl.rechor.PackedRange;
 import ch.epfl.rechor.Preconditions;
 
+/**
+ * 3 critères empaquetés dans un long
+ * @author Yoann Salamin (390522)
+ * @author Axel Verga (398787)
+ */
 public class PackedCriteria {
 
     // Pour rendre la classe non instantiable
     private PackedCriteria() {}
 
     /**
-     *
-     * @param arrMins
-     * @param changes
-     * @param payload
-     * @return
+     * Pack 3 valeurs aux endroits que l'on veut dans un long
+     * @param arrMins heure d'arrivées (en minute)
+     * @param changes nombre de changements
+     * @param payload charge utile
+     * @return le long représentant l'empaquetage
      */
     public static long pack(int arrMins, int changes, int payload) {
 
@@ -149,7 +151,23 @@ public class PackedCriteria {
      * @return vrai si criteria1 domine ou est égal à criteria2, faux sinon
      */
     public static boolean dominatesOrIsEqual(long criteria1, long criteria2) {
-        // TODO
+
+        // S'assure que les deux ont des heures de départ, lève une IEA sinon.
+        Preconditions.checkArgument(hasDepMins(criteria1));
+        Preconditions.checkArgument(hasDepMins(criteria2));
+
+        // Pour que true soit retourné, il faut que les 3 critères soient supérieurs ou égaux au deuxième long
+        // Rappel : on a pris le complément de l'heure de départ de manière à minimiser tous les critères.
+        // Il faut donc que les trois critères du premier long soient <= les critères du deuxième.
+
+        // 1) Heure de départ
+        if(arrMins(criteria1) <= arrMins(criteria2)){
+            // 2) Heure d'arrivée
+            if (depMins(criteria1) <= depMins(criteria2)){
+                // 3) Changements
+                return changes(criteria1) <= changes(criteria2);
+            }
+        }
         return false;
     }
 
@@ -159,7 +177,7 @@ public class PackedCriteria {
      * @return critères sans heure de départ
      */
     public static long withoutDepMins(long criteria){
-        // TODO (AXEL) mettre des commentaires parce que je comprends pas trop comme ça meme chose en bas
+        // On masque notre long avec 1111_0000_0000_0000_1111_1111....... pour supprimer les 12 bits de l'heure de dép.
         return criteria & ~(0xFFFL << 51);
     }
 
@@ -170,6 +188,8 @@ public class PackedCriteria {
      * @return les critères avec l'heure de départ donnée.
      */
     public static long withDepMins(long criteria, int depMins1){
+
+        // On remplace les bits nuls actuels par ceux de l'heure de départ, à la bonne position
         return (criteria | ((long) depMins1 << 51L));
     }
 
@@ -179,6 +199,7 @@ public class PackedCriteria {
      * @return le triplet de critère avec un changement de plus
      */
     public static long withAdditionalChange(long criteria){
+        // Incrément de 1 le changement, en additionnant 1 au bon endroit
         return criteria + (1L << 32) ;
     }
 
@@ -189,6 +210,8 @@ public class PackedCriteria {
      * @return le critère (long) avec la charge utile.
      */
     public static long withPayload(long criteria, int payload1){
+
+        // On nulifie les 32 bits de droite pour ensuite y mettre la charge utile sans extension de signe.
         return (criteria & 0xFFFFFFFF00000000L) | (Integer.toUnsignedLong(payload1));
     }
 

@@ -7,18 +7,29 @@ import java.time.temporal.ChronoField;
 import java.util.ArrayList;
 import java.util.Objects;
 
+/**
+ * Constructeur de calendrier (format ics)
+ * @author Yoann Salamin (390522)
+ * @author Axel Verga (398787)
+ */
 public final class IcalBuilder {
 
-    // composants commencés mais pas terminés
+    // composants commencés, mais pas terminés
     private ArrayList<Component> components = new ArrayList<Component>();
 
     private StringBuilder stringBuilder = new StringBuilder();
 
+    /**
+     * Représentent un composant ou un objet
+     */
     public enum Component {
         VCALENDAR,
         VEVENT
     }
 
+    /**
+     * Représentent un nom d'une ligne
+     */
     public enum Name {
         BEGIN,
         END,
@@ -32,6 +43,12 @@ public final class IcalBuilder {
         DESCRIPTION
     }
 
+    /**
+     * Ajoute à l'événement en cours de construction une ligne dont le nom et la valeur sont ceux donnés
+     * @param name titre d'une ligne
+     * @param value texte de la ligne
+     * @return un ce même builder
+     */
     public IcalBuilder add(Name name, String value) {
 
         // String initiale sans que les lignes
@@ -80,6 +97,13 @@ public final class IcalBuilder {
 
     }
 
+    /**
+     * Ajoute à l'événement en cours de construction une ligne dont le nom
+     * est celui donné et la valeur est la représentation textuelle de la date/heure donnée
+     * @param name titre d'une ligne
+     * @param dateTime date qui va être formatée
+     * @return ce même builder
+     */
     public IcalBuilder add(Name name, LocalDateTime dateTime) {
 
         DateTimeFormatter fmt = new DateTimeFormatterBuilder()
@@ -101,6 +125,11 @@ public final class IcalBuilder {
         return this;
     }
 
+    /**
+     * Commence un composant en ajoutant une ligne dont le nom est BEGIN et la valeur est le nom du composant donné
+     * @param component composant donné
+     * @return ce même builder
+     */
     public IcalBuilder begin(Component component) {
 
         stringBuilder
@@ -116,6 +145,11 @@ public final class IcalBuilder {
 
     }
 
+    /**
+     *  Termine le dernier composant qui a été commencé précédemment par begin mais pas encore terminé
+     *  par un appel à end précédent, ou lève une IllegalArgumentException s'il n'y en a aucun
+     * @return ce même builder
+     */
     public IcalBuilder end() {
 
         Objects.requireNonNull(components);
@@ -134,6 +168,10 @@ public final class IcalBuilder {
     }
 
 
+    /**
+     * Transforme le builder en string immuable
+     * @return String immuable
+     */
     public String build() {
         return stringBuilder.toString();
     }
