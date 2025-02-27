@@ -160,24 +160,14 @@ public class PackedCriteria {
      * @return vrai si criteria1 domine ou est égal à criteria2, faux sinon
      */
     public static boolean dominatesOrIsEqual(long criteria1, long criteria2) {
-
         // S'assure que les deux ont des heures de départ, lève une IEA sinon.
         Preconditions.checkArgument(hasDepMins(criteria1));
         Preconditions.checkArgument(hasDepMins(criteria2));
 
-        // Pour que true soit retourné, il faut que les 3 critères soient supérieurs ou égaux au deuxième long
-        // Rappel : on a pris le complément de l'heure de départ de manière à minimiser tous les critères.
-        // Il faut donc que les trois critères du premier long soient <= les critères du deuxième.
-
-        // 1) Heure de départ
-        if(arrMins(criteria1) <= arrMins(criteria2)){
-            // 2) Heure d'arrivée
-            if (depMins(criteria1) <= depMins(criteria2)){
-                // 3) Changements
-                return changes(criteria1) <= changes(criteria2);
-            }
-        }
-        return false;
+        // Pour dominer, TOUS les critères doivent être meilleurs ou égaux
+        return arrMins(criteria1) <= arrMins(criteria2) &&
+                depMins(criteria1) >= depMins(criteria2) &&
+                changes(criteria1) <= changes(criteria2);
     }
 
     /**
@@ -202,8 +192,9 @@ public class PackedCriteria {
         depMins1 = 4095 - depMins1;
 
         // On remplace les bits nuls actuels par ceux de l'heure de départ, à la bonne position
-        return (criteria | ((long) depMins1 << 51L));
+        return (criteria & ~(0xFFFL << 51)) | ((long) depMins1 << 51L);
     }
+
 
     /**
      * Ajoute un changement à un triplet de critère

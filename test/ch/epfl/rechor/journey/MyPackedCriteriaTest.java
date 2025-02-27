@@ -250,5 +250,37 @@ public class MyPackedCriteriaTest {
 
 
     }
+    @Test
+    public void testDominatesOrIsEqual() {
+        // Create two criteria:
+        // Let criteria1: arrMins = 800, departure time = 1000.
+        // Let criteria2: arrMins = 850, departure time = 900.
+        int arrMins1 = 800, changes1 = 1, payload1 = 0x11111111;
+        int arrMins2 = 850, changes2 = 2, payload2 = 0x22222222;
+        long crit1 = PackedCriteria.pack(arrMins1, changes1, payload1);
+        long crit2 = PackedCriteria.pack(arrMins2, changes2, payload2);
+        // Set departure times.
+        int dep1 = 650, dep2 = 600;
+        crit1 = PackedCriteria.withDepMins(crit1, dep1);
+        crit2 = PackedCriteria.withDepMins(crit2, dep2);
+        // dominatesOrIsEqual should return true if:
+        // depMins(crit1) <= depMins(crit2) because we take the complement and arrMins(crit1) <= arrMins(crit2).
+        // Here: 1000 >= 900 and 800 <= 850, so expect true.
+        System.out.println("depMins(crit1) = " + PackedCriteria.depMins(crit1));
+        System.out.println("depMins(crit2) = " + PackedCriteria.depMins(crit2));
+        System.out.println("arrMins(crit1) = " + PackedCriteria.arrMins(crit1));
+        System.out.println("arrMins(crit2) = " + PackedCriteria.arrMins(crit2));
+
+        assertTrue(PackedCriteria.dominatesOrIsEqual(crit1, crit2),
+                "dominatesOrIsEqual() should return true for criteria1 dominating criteria2");
+
+        // Now, if we modify crit2 to have a higher departure time, then crit1 should not dominate.
+        crit2 = PackedCriteria.withDepMins(crit2, 700); // now depMins(crit2) = 1100.
+        System.out.println("After modification:");
+        System.out.println("depMins(crit1) = " + PackedCriteria.depMins(crit1));
+        System.out.println("depMins(crit2) = " + PackedCriteria.depMins(crit2));
+        assertFalse(PackedCriteria.dominatesOrIsEqual(crit1, crit2),
+                "dominatesOrIsEqual() should return false when criteria1 does not dominate criteria2");
+    }
 
 }
