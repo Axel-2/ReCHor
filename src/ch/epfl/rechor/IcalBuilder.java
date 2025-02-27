@@ -69,11 +69,12 @@ public final class IcalBuilder {
         for (int currentIndex = 0; currentIndex < totalLength; currentIndex += maxStringLength) {
 
             // après le premier tour de boucle on passe la limite de ligne à 74 char
-            // car l'espace ajouté par le pliage compte comme charachtère ne plus
+            // car l'espace ajouté par le pliage compte comme caractère ne plus
             if (currentIndex > 0) {
                 maxStringLength = 74;
             }
 
+            //TODO le commentaire d'en dessous est incomplet
             // On doit
             int currentEnd = Math.min(currentIndex+maxStringLength, totalLength);
 
@@ -152,6 +153,7 @@ public final class IcalBuilder {
      */
     public IcalBuilder end() {
 
+        //TODO le requireNonNull n'est pas demandé si ?
         Objects.requireNonNull(components);
         Preconditions.checkArgument(!components.isEmpty());
 
@@ -173,6 +175,7 @@ public final class IcalBuilder {
      * @return String immuable
      */
     public String build() {
+        //TODO il manque un checkconditions je crois
         return stringBuilder.toString();
     }
 }

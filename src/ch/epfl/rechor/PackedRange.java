@@ -23,7 +23,7 @@ public class PackedRange {
 
         int intervalleSize = endExclusive - startInclusive;
 
-        // On vérifie que l'iinterval tient sur 8 bits
+        // On vérifie que l'interval tient sur 8 bits
         // càd qu'il doit <= 255 donc <= 0xFF
         Preconditions.checkArgument(intervalleSize <= 0xFF);
 
@@ -32,9 +32,9 @@ public class PackedRange {
         Preconditions.checkArgument(startInclusive  <= 0xFFFFFF);
 
         // La borne inférieur doit aussi être positive
+        // TODO Va voir 3.5, je suis pas sûr que y'a besoin
         Preconditions.checkArgument(startInclusive >= 0);
 
-        // TODO utiliser les fonctions déjà faites de Bits32_24_8
 
         // On met les 24 bits de la borne supérieure dans les 24 bits
         // de poids fort, donc comme il y a 32 bits dans un int on
