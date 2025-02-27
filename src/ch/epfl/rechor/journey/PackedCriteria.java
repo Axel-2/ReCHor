@@ -26,6 +26,10 @@ public class PackedCriteria {
         // On teste si l'heure est valide
         Preconditions.checkArgument(-240 <= arrMins && arrMins < 2880);
 
+        // payload non signé pour éviter les erreurs
+        // d'extensions de signe
+        long unsignedPayload = Integer.toUnsignedLong(payload);
+
         // On translate pour garantir des valeurs positives
         arrMins += 240;
 
@@ -49,8 +53,8 @@ public class PackedCriteria {
         long changesShifted = ((long) changes) << 32;
         resultLong = changesShifted | resultLong;
 
-        // On ajoute le payload
-        resultLong = (((long) payload)) | resultLong;
+        // On ajoute le payload non signé
+        resultLong =  unsignedPayload | resultLong;
 
         return resultLong;
     }
@@ -194,6 +198,9 @@ public class PackedCriteria {
      */
     public static long withDepMins(long criteria, int depMins1){
 
+        depMins1 += 240;
+        depMins1 = 4095 - depMins1;
+
         // On remplace les bits nuls actuels par ceux de l'heure de départ, à la bonne position
         return (criteria | ((long) depMins1 << 51L));
     }
@@ -203,7 +210,7 @@ public class PackedCriteria {
      * @param criteria critère
      * @return le triplet de critère avec un changement de plus
      */
-    public static long withAdditionalChange(long criteria){
+    public static long withAdditionalChange(long criteria) {
         // Incrément de 1 le changement, en additionnant 1 au bon endroit
         return criteria + (1L << 32) ;
     }

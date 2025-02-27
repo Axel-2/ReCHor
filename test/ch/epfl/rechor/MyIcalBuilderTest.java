@@ -1,6 +1,5 @@
 package ch.epfl.rechor;
 
-import ch.epfl.rechor.journey.Journey;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
