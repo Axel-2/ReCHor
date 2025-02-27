@@ -8,16 +8,17 @@ import java.util.ArrayList;
 import java.util.Objects;
 
 /**
- * Constructeur de calendrier (format ics)
+ * Batisseur d'événement au format iCalendar (format ics)
  * @author Yoann Salamin (390522)
  * @author Axel Verga (398787)
  */
 public final class IcalBuilder {
 
     // composants commencés, mais pas terminés
-    private ArrayList<Component> components = new ArrayList<Component>();
+    private final ArrayList<Component> components = new ArrayList<Component>();
 
-    private StringBuilder stringBuilder = new StringBuilder();
+    // String en cours de construction
+    private final StringBuilder icalString = new StringBuilder();
 
     /**
      * Représentent un composant ou un objet
@@ -53,13 +54,13 @@ public final class IcalBuilder {
 
         // String initiale sans que les lignes
         // soient découpées
-        String initialString = new StringBuilder()
+        String stringToAdd = new StringBuilder()
                 .append(name)
                 .append(':')
                 .append(value)
                 .toString();
 
-        int totalLength = initialString.length();
+        int totalLength = stringToAdd.length();
 
         // valeur maximal pour une ligne
         int maxStringLength = 75;
@@ -69,27 +70,26 @@ public final class IcalBuilder {
         for (int currentIndex = 0; currentIndex < totalLength; currentIndex += maxStringLength) {
 
             // après le premier tour de boucle on passe la limite de ligne à 74 char
-            // car l'espace ajouté par le pliage compte comme caractère ne plus
+            // car l'espace ajouté par le pliage compte comme caractère de plus
             if (currentIndex > 0) {
                 maxStringLength = 74;
             }
 
-            //TODO le commentaire d'en dessous est incomplet
-            // On doit
+            // On doit calculer l'indice de fin pour découper la chaîne,
+            // en s'assurant de ne pas dépasser la longueur totale de la chaîne initiale.
             int currentEnd = Math.min(currentIndex+maxStringLength, totalLength);
 
-            stringBuilder
-                    .append(initialString, currentIndex, currentEnd)
-            ;
+            // On ajoute à icalString la sous-chaîne de stringToAdd comprise entre currentIndex  et currentEnd,
+            icalString.append(stringToAdd, currentIndex, currentEnd);
 
             // Au dernier tour de boucle on n'ajoute pas d'espace supplémentaire
             // en début de ligne
-            if (currentEnd < initialString.length()) {
-                // saut de ligne avec espace à la fin
-                stringBuilder.append("\r\n ");
+            if (currentEnd < stringToAdd.length()) {
+                // saut de ligne avec espace en début de ligne
+                icalString.append("\r\n ");
             } else {
-                // saut de ligne sans espace à la fin
-                stringBuilder.append("\r\n");
+                // saut de ligne sans espace en début de nouvelle ligne
+                icalString.append("\r\n");
             }
 
         }
@@ -107,20 +107,30 @@ public final class IcalBuilder {
      */
     public IcalBuilder add(Name name, LocalDateTime dateTime) {
 
+        // on crée un formatteur avec le format demandé
         DateTimeFormatter fmt = new DateTimeFormatterBuilder()
-                .appendValue(ChronoField.YEAR)
+                // année sur 4 chiffres
+                .appendValue(ChronoField.YEAR, 4)
+                // mois sur 2 chiffres
                 .appendValue(ChronoField.MONTH_OF_YEAR, 2)
+                // le jour du mois, sur 2 chiffres (de 01 à 31)
                 .appendValue(ChronoField.DAY_OF_MONTH, 2)
+                // la lettre T
                 .appendLiteral('T')
+                // les heures, sur 2 chiffres (de 00 à 23)
                 .appendValue(ChronoField.HOUR_OF_DAY, 2)
+                // les minutes, sur 2 chiffres (de 00 à 59)
                 .appendValue(ChronoField.MINUTE_OF_HOUR, 2)
+                // les secondes, sur 2 chiffres (de 00 à 59).
                 .appendValue(ChronoField.SECOND_OF_MINUTE, 2)
                 .toFormatter();
 
-        stringBuilder
+        // Ici pas besoin de plier une ligne car un dateTime ne sera jamais trop long
+        icalString
                 .append(name)
                 .append(':')
                 .append(fmt.format(dateTime))
+                // CRLF
                 .append("\r\n");
 
         return this;
@@ -133,13 +143,16 @@ public final class IcalBuilder {
      */
     public IcalBuilder begin(Component component) {
 
-        stringBuilder
+        icalString
                 .append("BEGIN")
                 .append(':')
+                // nom du composant
                 .append(component.name())
+                // CRLF
                 .append("\r\n");
 
-        // ajouter dans la liste
+        // ajouter dans la liste components pour que la fonction
+        // end() puisse savoir avec quel composant fermer
         components.add(component);
 
         return this;
@@ -153,16 +166,21 @@ public final class IcalBuilder {
      */
     public IcalBuilder end() {
 
-        //TODO le requireNonNull n'est pas demandé si ?
-        Objects.requireNonNull(components);
+        // TODO le requireNonNull n'est pas demandé
+        // J'ai commenté mais on demandera
+        // Objects.requireNonNull(components);
+
+        // lève une IllegalArgumentException si aucun composant
+        // reste dans la liste
         Preconditions.checkArgument(!components.isEmpty());
 
+        // on prend le dernier composant de la liste
         Component endComponent = components.removeLast();
-
-        stringBuilder
+        icalString
                 .append("END")
                 .append(':')
                 .append(endComponent.name())
+                // CRLF
                 .append("\r\n");
 
         return this;
@@ -175,7 +193,13 @@ public final class IcalBuilder {
      * @return String immuable
      */
     public String build() {
-        //TODO il manque un checkconditions je crois
-        return stringBuilder.toString();
+
+        // lève une IllegalArgumentException si un composant qui a été commencé par un appel à begin n'a, à ce stade,
+        // pas été terminé par un appel à end.
+        // C'est le cas si la liste components n'est pas vide
+        Preconditions.checkArgument(components.isEmpty());
+
+        // on retourne la string finale
+        return icalString.toString();
     }
 }

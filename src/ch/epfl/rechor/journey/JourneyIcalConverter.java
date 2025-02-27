@@ -23,10 +23,7 @@ public class JourneyIcalConverter {
      * @param journey voyage commplets, ayant une liste d'étapes
      * @return la string immuable
      */
-    static String toIcalendar(Journey journey){
-
-
-    public static String toIcalendar(Journey journey){
+    public static String toIcalendar(Journey journey) {
 
         // Création du builder
         IcalBuilder builder = new IcalBuilder()
@@ -50,16 +47,24 @@ public class JourneyIcalConverter {
                 .add(IcalBuilder.Name.DTSTAMP, LocalDateTime.now())
 
                 // DTSTART
-                .add(IcalBuilder.Name.DTSTART, journey.legs().getFirst().depTime())
+                .add(IcalBuilder.Name.DTSTART, journey.depTime())
 
                 // DTEND
-                .add(IcalBuilder.Name.DTEND, journey.legs().getLast().arrTime())
+                .add(IcalBuilder.Name.DTEND, journey.arrTime())
 
                 // SUMMARY
-                .add(IcalBuilder.Name.SUMMARY, journey.legs().getFirst().depStop().name() + " → " +
-                        journey.legs().getLast().arrStop().name());
+                .add(
+                        IcalBuilder.Name.SUMMARY,
+                        new StringBuilder()
+                                .append(journey.depStop().name())
+                                .append(" → ")
+                                .append(journey.arrStop().name())
+                                .toString()
+                );
+
 
         // DESCRIPTION
+
         // Création du joiner
         // il faut faire bien attention à escape le \n
         StringJoiner j = new StringJoiner("\\n");
@@ -73,6 +78,7 @@ public class JourneyIcalConverter {
                         j.add(FormatterFr.formatLeg(t));
             }
         }
+
         // Conversion en string immuable, puis ajout au builder
         String descriptionContent = j.toString();
         builder.add(IcalBuilder.Name.DESCRIPTION, descriptionContent);

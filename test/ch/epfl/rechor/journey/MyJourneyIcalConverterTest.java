@@ -10,6 +10,7 @@ import java.util.List;
 
 class MyJourneyIcalConverterTest {
 
+    // Example pris des anciens tests et légérement modifié
     private static List<Journey.Leg> exampleLegs() {
         var s1 = new Stop("Ecublens VD, EPFL", null, 6.566141, 46.522196);
         var s2 = new Stop("Renens VD, gare", null, 6.578519, 46.537619);
@@ -23,6 +24,7 @@ class MyJourneyIcalConverterTest {
         var s10 = new Stop("Gruyères", "2",6.911811, 46.693508);
 
         var d = LocalDate.of(2025, Month.FEBRUARY, 18);
+
         var l1 = new Journey.Leg.Transport(
                 s1,
                 d.atTime(16, 13),
@@ -99,13 +101,13 @@ class MyJourneyIcalConverterTest {
 
     @Test
     void toIcalendarWorksOnExampleLegs() {
-        // Créer un exemple de trajet basé sur exampleLegs() (terminant à Romont FR)
+
+        // Créer un exemple de trajet basé sur exampleLegs()
         var journey = new Journey(exampleLegs());
 
         // Convertir en iCalendar
         String actualIcal = JourneyIcalConverter.toIcalendar(journey);
-        System.out.println(actualIcal);
-        // Définir l'output attendu avec Romont FR comme destination finale
+
         String expectedIcal =
                 "BEGIN:VCALENDAR\r\n" +
                 "VERSION:2.0\r\n" +
@@ -159,7 +161,6 @@ class MyJourneyIcalConverterTest {
         // Convertir le trajet en format iCalendar
         String actualIcal = JourneyIcalConverter.toIcalendar(journey);
 
-        // Définir l'output attendu
         String expectedIcal =
                 "BEGIN:VCALENDAR\r\n" +
                         "VERSION:2.0\r\n" +
