@@ -60,7 +60,7 @@ public record Journey(List<Leg> legs) {
      */
     public Stop arrStop() {
         return legs.getLast().arrStop();
-    };
+    }
 
     /**
      * Méthode qui retourne la date/heure de début du voyage, c.-à-d. celle de sa première étape
@@ -68,7 +68,7 @@ public record Journey(List<Leg> legs) {
      */
     public LocalDateTime depTime() {
         return legs.getFirst().depTime();
-    };
+    }
 
     /**
      * Méthode qui retourne la date/heure de fin du voyage, c.-à-d. celle de sa dernière étape,
@@ -76,7 +76,7 @@ public record Journey(List<Leg> legs) {
      */
     public LocalDateTime arrTime() {
         return legs.getLast().arrTime();
-    };
+    }
 
 
     /**
@@ -85,7 +85,7 @@ public record Journey(List<Leg> legs) {
      */
     public Duration duration() {
         return Duration.between(legs.getFirst().depTime(), legs.getLast().arrTime());
-    };
+    }
 
     /**
      * Interface représentant les étapes

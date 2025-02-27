@@ -83,7 +83,7 @@ public class PackedCriteria {
      * @param criteria criteria un long représentant les critères empaquetés
      * @return l'heure de départ (en minutes après minuit)
      */
-    public static int depMins(long criteria){
+    public static int depMins(long criteria) {
 
         Preconditions.checkArgument(hasDepMins(criteria));
 
@@ -172,7 +172,7 @@ public class PackedCriteria {
         // 1) Heure de départ
         if(arrMins(criteria1) <= arrMins(criteria2)){
             // 2) Heure d'arrivée
-            if (depMins(criteria1) <= depMins(criteria2)){
+            if (depMins(criteria1) >= depMins(criteria2)){
                 // 3) Changements
                 return changes(criteria1) <= changes(criteria2);
             }
@@ -196,7 +196,11 @@ public class PackedCriteria {
      * @param depMins1 heure de départ (son complément) donnée
      * @return les critères avec l'heure de départ donnée.
      */
-    public static long withDepMins(long criteria, int depMins1){
+    public static long withDepMins(long criteria, int depMins1) {
+
+        // depMins1 est exprimé en minutes écoulées depuis minuit
+        // On teste si l'heure est valide
+        Preconditions.checkArgument(-240 <= depMins1 && depMins1 < 2880);
 
         depMins1 += 240;
         depMins1 = 4095 - depMins1;
