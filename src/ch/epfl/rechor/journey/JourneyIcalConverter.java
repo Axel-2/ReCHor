@@ -25,6 +25,9 @@ public class JourneyIcalConverter {
      */
     static String toIcalendar(Journey journey){
 
+
+    public static String toIcalendar(Journey journey){
+
         // Création du builder
         IcalBuilder builder = new IcalBuilder()
 

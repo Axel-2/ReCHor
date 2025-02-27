@@ -12,6 +12,7 @@ public class PackedCriteria {
     // Pour rendre la classe non instantiable
     private PackedCriteria() {}
 
+    // TODO commentaires
     /**
      * Pack 3 valeurs aux endroits que l'on veut dans un long
      * @param arrMins heure d'arrivées (en minute)
