@@ -14,6 +14,7 @@ public class MyPackedRangeTest {
         int expectedPacked = 0b00000000000001001101001000101100;
 
         int actualPacked = PackedRange.pack(1234, 1278);
+        System.out.printf("s");
 
         assertEquals(expectedPacked, actualPacked);
 

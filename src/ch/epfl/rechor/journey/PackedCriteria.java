@@ -22,6 +22,10 @@ public class PackedCriteria {
      */
     public static long pack(int arrMins, int changes, int payload) {
 
+        // changes doit être sur 7 bits
+        Preconditions.checkArgument(0 <= changes && changes <= 127);
+
+
         // arrMin est exprimé en minutes écoulées depuis minuit
         // On teste si l'heure est valide
         Preconditions.checkArgument(-240 <= arrMins && arrMins < 2880);
@@ -40,7 +44,8 @@ public class PackedCriteria {
         // 7 bits suffisent à le représenter ".
         // On test si les nombres de changements tiennent sur 7 bits
         // 127 est le nombre max sur 7 bits
-        Preconditions.checkArgument(changes > 0 && changes <= 127);
+
+        Preconditions.checkArgument(changes >= 0 && changes <= 127);
 
         // Long initial
         long resultLong = 0L;
@@ -195,8 +200,23 @@ public class PackedCriteria {
         depMins1 += 240;
         depMins1 = 4095 - depMins1;
 
-        // On remplace les bits nuls actuels par ceux de l'heure de départ, à la bonne position
-        return (criteria & ~(0xFFFL << 51)) | ((long) depMins1 << 51L);
+
+        // Création du masque pour les 12 bits réservés à l'heure de départ.
+        // 0xFFF correspond à 12 bits à 1, on décale ce masque de 51 bits vers la gauche
+        // pour le positionner correctement dans la structure des critères.
+        long mask = 0xFFFL << 51;
+
+
+        // Efface la partie des critères correspondant à l'heure de départ.
+        // L'opération & avec l'inverse du masque (~mask) met à zéro ces 12 bits.
+        long clearedCriteria = criteria & ~mask;
+
+        // Prépare la nouvelle valeur de l'heure de départ en décalant la valeur ajustée
+        // de 51 bits vers la gauche pour qu'elle occupe la bonne position.
+        long newDepMins = ((long) depMins1) << 51;
+
+        // Combine les critères nettoyés avec la nouvelle valeur de l'heure de départ.
+        return clearedCriteria | newDepMins;
     }
 
 
@@ -207,7 +227,13 @@ public class PackedCriteria {
      */
     public static long withAdditionalChange(long criteria) {
         // Incrément de 1 le changement, en additionnant 1 au bon endroit
-        return criteria + (1L << 32) ;
+
+        // (1L << 32) place le bit 1 à la position 32.
+        long changeIncrement = 1L << 32;
+
+        long updatedCriteria = criteria + changeIncrement;
+
+        return updatedCriteria;
     }
 
     /**
@@ -217,9 +243,17 @@ public class PackedCriteria {
      * @return le critère (long) avec la charge utile.
      */
     public static long withPayload(long criteria, int payload1){
+        // Création du masque pour conserver uniquement les 32 bits de gauche
+        // Le masque 0xFFFFFFFF00000000L a des 1 sur les bits 32 à 63 et 0 sur les bits 0 à 31.
+        long mask = 0xFFFFFFFF00000000L;
 
-        // On nulifie les 32 bits de droite pour ensuite y mettre la charge utile sans extension de signe.
-        return (criteria & 0xFFFFFFFF00000000L) | (Integer.toUnsignedLong(payload1));
+        // Efface les 32 bits de droite du critère en appliquant le masque.
+        long clearedCriteria = criteria & mask;
+
+        long unsignedPayload = Integer.toUnsignedLong(payload1);
+
+        // Combine le critère nettoyé avec le payload
+        return clearedCriteria | unsignedPayload;
     }
 
 

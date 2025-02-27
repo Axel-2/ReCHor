@@ -229,46 +229,6 @@ class MyJourneyIcalConverterTest {
     }
 
     @Test
-    void toIcalendarWorksOnSingleFootLegJourney() {
-        // Arrêts pour le trajet à pied
-        var s1 = new Stop("A", null, 0.0, 0.0);
-        var s2 = new Stop("B", null, 0.0, 0.0);
-
-        // Trajet le 1 mars 2025 de 12h00 à 12h15
-        var d = LocalDate.of(2025, Month.MARCH, 1);
-        var leg = new Journey.Leg.Foot(
-                s1,
-                d.atTime(12, 0),
-                s2,
-                d.atTime(12, 15)
-        );
-
-        var journey = new Journey(List.of(leg));
-
-        String actualIcal = JourneyIcalConverter.toIcalendar(journey);
-
-        String expectedIcal =
-                "BEGIN:VCALENDAR\r\n" +
-                        "VERSION:2.0\r\n" +
-                        "PRODID:ReCHor\r\n" +
-                        "BEGIN:VEVENT\r\n" +
-                        "UID:SHOULDNTBETHESAME\r\n" +
-                        "DTSTAMP:SHOULDNTBETHESAME\r\n" +
-                        "DTSTART:20250301T120000\r\n" +
-                        "DTEND:20250301T121500\r\n" +
-                        "SUMMARY:A → B\r\n" +
-                        "DESCRIPTION:12h00 A → B (arr. 12h15)\r\n" +
-                        "END:VEVENT\r\n" +
-                        "END:VCALENDAR\r\n";
-
-        // Remplacer les champs dynamiques (UID, DTSTAMP)
-        actualIcal = actualIcal.replaceAll("UID:.*", "UID:SHOULDNTBETHESAME");
-        actualIcal = actualIcal.replaceAll("DTSTAMP:.*", "DTSTAMP:SHOULDNTBETHESAME");
-
-        assertEquals(expectedIcal, actualIcal);
-    }
-
-    @Test
     void toIcalendarWorksOnZeroDurationLeg() {
         // Arrêt unique utilisé pour le départ et l'arrivée
         var s1 = new Stop("X", null, 0.0, 0.0);

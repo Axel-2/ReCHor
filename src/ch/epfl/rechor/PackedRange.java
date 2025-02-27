@@ -20,30 +20,25 @@ public class PackedRange {
      * startInclusive (inclus) à endExclusive (exclu)
      */
     public static int pack(int startInclusive, int endExclusive) {
-        // TODO Le prof a dit que "l'idée est d'utiliser la méthode pack de Bits32_24_8"
+
         int intervalleSize = endExclusive - startInclusive;
 
         // On vérifie que l'interval tient sur 8 bits
         // càd qu'il doit <= 255 donc <= 0xFF
-        Preconditions.checkArgument(intervalleSize <= 0xFF);
+        Preconditions.checkArgument(intervalleSize <= 0xFF && intervalleSize >= 0);
 
         // Ici on fait le même test mais cette fois ci avec 24 bits
         // pour la borne inférieure
         Preconditions.checkArgument(startInclusive  <= 0xFFFFFF);
 
-        // La borne inférieur doit aussi être positive
-        // TODO Va voir 3.5, je suis pas sûr que y'a besoin
+        // leur borne inférieure est toujours positive ou nulle, et plus petite que 224,
         Preconditions.checkArgument(startInclusive >= 0);
 
-
-        // On met les 24 bits de la borne supérieure dans les 24 bits
-        // de poids fort, donc comme il y a 32 bits dans un int on
-        // shift de 8 bits à gauche
-        startInclusive = startInclusive << 8;
-
-        // Ensuite on pack les deux variables dans le même int avec un OR
+        // on pack les deux variables dans le même int
         // ce qui est notre résulta final
-        return startInclusive | intervalleSize;
+        int packedInt =  Bits32_24_8.pack(startInclusive, intervalleSize);
+
+        return packedInt;
     }
 
     public static int length(int interval) {
