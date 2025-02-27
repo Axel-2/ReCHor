@@ -20,7 +20,7 @@ public class PackedRange {
      * startInclusive (inclus) à endExclusive (exclu)
      */
     public static int pack(int startInclusive, int endExclusive) {
-
+        // TODO Le prof a dit que "l'idée est d'utiliser la méthode pack de Bits32_24_8"
         int intervalleSize = endExclusive - startInclusive;
 
         // On vérifie que l'interval tient sur 8 bits

@@ -104,7 +104,7 @@ class MyJourneyIcalConverterTest {
 
         // Convertir en iCalendar
         String actualIcal = JourneyIcalConverter.toIcalendar(journey);
-
+        System.out.println(actualIcal);
         // Définir l'output attendu avec Romont FR comme destination finale
         String expectedIcal =
                 "BEGIN:VCALENDAR\r\n" +
