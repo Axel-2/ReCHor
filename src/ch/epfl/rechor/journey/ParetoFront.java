@@ -32,6 +32,7 @@ public final class ParetoFront {
      * @return la taille (int)
      */
     public int size() {
+
         return packed_criterias.length;
     }
 
@@ -264,10 +265,26 @@ public final class ParetoFront {
          */
         public ParetoFront build() {
 
+            // la dernière étape est de récréer un tableau final qui a
+            // exactement la bonne taille
+            long[] finalPackedCriteriaArray = new long[effectiveSize];
+
+
+            // on part du début dans les deux cas
+            int srcPos = 0;
+            int desPos = 0;
+
+            // on fait la copie de notre ancien tableau dans le nouveau
+            // tableau qui a maitenant la bonne taille
+            System.arraycopy(arrayInConstruction, srcPos, finalPackedCriteriaArray, desPos, effectiveSize);
+
+
+            // finalement on crée notre instance
             ParetoFront paretoFront = new ParetoFront(
-                    this.arrayInConstruction
+                    finalPackedCriteriaArray
             );
 
+            // et on la retourne
             return  paretoFront;
         }
     }
