@@ -284,6 +284,7 @@ class MyParetoFrontTest {
     public void testFullyDominatesTrue() {
         // Créer un builder contenant des tuples dominants
         ParetoFront.Builder dominantBuilder = new ParetoFront.Builder();
+        // Créer des critères avec heure de départ
         long criteria1 = PackedCriteria.pack(10, 2, 100);
         criteria1 = PackedCriteria.withDepMins(criteria1, 4);
         dominantBuilder.add(criteria1);
@@ -291,28 +292,34 @@ class MyParetoFrontTest {
         long criteria2 = PackedCriteria.pack(12, 1, 90);
         criteria2 = PackedCriteria.withDepMins(criteria2, 5);
         dominantBuilder.add(criteria2);
-        dominantBuilder.add(12, 1, 90);
 
         // Créer un builder qui est complètement dominé
         ParetoFront.Builder dominatedBuilder = new ParetoFront.Builder();
-        dominatedBuilder.add(15, 3, 120);
-        dominatedBuilder.add(14, 2, 110);
+        // Ajouter des critères SANS heure de départ (ils recevront l'heure fixée par fullyDominates)
+        dominatedBuilder.add(PackedCriteria.pack(15, 3, 120));
+        dominatedBuilder.add(PackedCriteria.pack(14, 2, 110));
 
-        // Vérifier que dominantBuilder domine complètement dominatedBuilder avec un depMins donné
+        // Vérifier que dominantBuilder domine complètement dominatedBuilder avec depMins=8
         assertTrue(dominantBuilder.fullyDominates(dominatedBuilder, 8),
                 "Le builder dominant devrait dominer le builder dominé");
     }
 
     @Test
     public void testFullyDominatesFalse() {
-        // Créer un builder contenant des tuples dominants
+        // Créer un builder contenant des tuples dominants avec heures de départ
         ParetoFront.Builder dominantBuilder = new ParetoFront.Builder();
-        dominantBuilder.add(10, 2, 100);
-        dominantBuilder.add(12, 1, 90);
+        long criteria1 = PackedCriteria.pack(10, 2, 100);
+        criteria1 = PackedCriteria.withDepMins(criteria1, 4);
+        dominantBuilder.add(criteria1);
+
+        long criteria2 = PackedCriteria.pack(12, 1, 90);
+        criteria2 = PackedCriteria.withDepMins(criteria2, 5);
+        dominantBuilder.add(criteria2);
 
         // Créer un builder qui n'est pas totalement dominé
         ParetoFront.Builder nonDominatedBuilder = new ParetoFront.Builder();
-        nonDominatedBuilder.add(8, 3, 80);  // Ce tuple ne devrait pas être dominé
+        // Ce tuple ne devrait pas être dominé car son heure d'arrivée est très tôt
+        nonDominatedBuilder.add(PackedCriteria.pack(8, 3, 80));
 
         // Vérifier que dominantBuilder ne domine pas totalement nonDominatedBuilder
         assertFalse(dominantBuilder.fullyDominates(nonDominatedBuilder, 5),
@@ -321,10 +328,11 @@ class MyParetoFrontTest {
 
     @Test
     public void testFullyDominatesWithEmptyBuilder() {
-        // Créer un builder contenant des tuples
+        // Créer un builder contenant des tuples avec heures de départ
         ParetoFront.Builder dominantBuilder = new ParetoFront.Builder();
-        dominantBuilder.add(10, 2, 100);
-        dominantBuilder.add(12, 1, 90);
+        long criteria1 = PackedCriteria.pack(10, 2, 100);
+        criteria1 = PackedCriteria.withDepMins(criteria1, 4);
+        dominantBuilder.add(criteria1);
 
         // Créer un builder vide
         ParetoFront.Builder emptyBuilder = new ParetoFront.Builder();
@@ -336,13 +344,19 @@ class MyParetoFrontTest {
 
     @Test
     public void testFullyDominatesWithSelf() {
-        // Créer un builder contenant des tuples
+        // Créer un builder contenant des tuples avec heures de départ
         ParetoFront.Builder builder = new ParetoFront.Builder();
-        builder.add(10, 2, 100);
-        builder.add(12, 1, 90);
+        long criteria1 = PackedCriteria.pack(10, 2, 100);
+        criteria1 = PackedCriteria.withDepMins(criteria1, 4);
+        builder.add(criteria1);
+
+        long criteria2 = PackedCriteria.pack(12, 1, 90);
+        criteria2 = PackedCriteria.withDepMins(criteria2, 5);
+        builder.add(criteria2);
 
         // Un builder ne peut pas se dominer lui-même totalement
         assertFalse(builder.fullyDominates(builder, 10),
                 "Un builder ne devrait pas totalement se dominer lui-même");
     }
+
 }
