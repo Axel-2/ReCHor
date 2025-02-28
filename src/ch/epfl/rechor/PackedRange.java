@@ -24,7 +24,7 @@ public class PackedRange {
         int intervalleSize = endExclusive - startInclusive;
 
         // On vérifie que l'interval tient sur 8 bits
-        // càd qu'il doit <= 255 donc <= 0xFF
+        // c.-à-d. qu'il doit <= 255 donc <= 0xFF
         Preconditions.checkArgument(intervalleSize <= 0xFF && intervalleSize >= 0);
 
         // Ici on fait le même test mais cette fois ci avec 24 bits
@@ -35,7 +35,7 @@ public class PackedRange {
         Preconditions.checkArgument(startInclusive >= 0);
 
         // on pack les deux variables dans le même int
-        // ce qui est notre résulta final
+        // ce qui est notre résultat final
         int packedInt =  Bits32_24_8.pack(startInclusive, intervalleSize);
 
         return packedInt;
@@ -48,9 +48,9 @@ public class PackedRange {
     }
 
     /**
-     * Retourne la borne inférieur de l'intervalle en paramètre
+     * Retourne la borne inférieure de l'intervalle en paramètre
      * @param interval l'intervalle
-     * @return la borne inférieur de l'intervalle en paramètre
+     * @return la borne inférieure de l'intervalle en paramètre
      */
     public static int startInclusive(int interval) {
 
