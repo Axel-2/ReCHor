@@ -106,47 +106,78 @@ public final class ParetoFront {
     }
 
     /**
-     * Builder statiquement imbriqué de ParetoFront
+     * Classe qui représente un bâtisseur de frontière de Pareto
      */
-    public final static class Builder{
+    public final static class Builder {
+
+        // TODO à la fin voir ce qu'on peut evtl mettre en final
 
         // Tableau de type long qui contient les tuples
+        // en cours de construction
         private long[] arrayInConstruction;
         private int effectiveSize;
 
+        // capacité initiale du tableau de pareto
+        private final int INITIAL_CAPACITY = 2;
+
+        // TODO voir si cette variable peut rester local
+        private int capacity;
+
         /**
-         * Constructeur par défaut
+         * Constructeur par défaut qui retourne un bâtisseur
+         * dont la frontière en cours de construction est vide
          */
-        public Builder(){
-            this.arrayInConstruction = new long[2];
-            this.effectiveSize =0;
+        public Builder() {
+
+            // on remet la capacité initiale
+            capacity = INITIAL_CAPACITY;
+
+            // on crée juste un tableau vide
+            this.arrayInConstruction = new long[capacity];
+
+            // la taille effective est nulle par défaut
+            this.effectiveSize = 0;
         }
 
         /**
-         * Constructeur de copie
-         * @param that objet que l'on veut copier
+         * Constructeur de copie qui retourne un nouveau bâtisseur
+         * avec les mêmes attributs que celui reçu en argument
+         * @param that bâtisseur à copier
          */
-        public Builder(Builder that){
+        public Builder(Builder that) {
             this.arrayInConstruction = that.arrayInConstruction.clone();
             this.effectiveSize = that.effectiveSize;
-
         }
 
         /**
-         * Retourne true si le tableau en cours de construction est vide, false sinon
-         * @return (booléen)
+         * Fonction qui retourne true si le tableau en cours de construction est vide, false sinon
+         * @return vrai si le tableau en cours de construction est vide
          */
-        public boolean isEmpty(){
+        public boolean isEmpty() {
+
+            // On contrôle cela avec la valeur d' effectiveSize
+            // Attention de pas faire ce test avec tableau.length car cela ne
+            // représente pas la taille effective
             return effectiveSize == 0;
         }
 
         /**
-         * vide la frontière en cours de construction en supprimant tous ses éléments
-         * @return ce builder
+         * Fonction qui vide la frontière en cours de construction en supprimant tous ses éléments
+         * @return l'instance courante du bâtisseur
          */
-        public Builder clear(){
-            this.arrayInConstruction = new long[2];
+        public Builder clear() {
+
+            // TODO on répète le code du constructeur voir si il y a une autre solution
+
+            // on remet la capacité initiale
+            capacity = INITIAL_CAPACITY;
+
+            // on réinitialise les instances de classe
+            // donc on refait comme dans le constructeur
+            this.arrayInConstruction = new long[capacity];
             this.effectiveSize = 0;
+
+            // on renvoi l'instance nettoyée
             return this;
         }
     }
