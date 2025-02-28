@@ -263,6 +263,47 @@ public final class ParetoFront {
         }
 
         /**
+         * Retourne vrai si et seulement si la totalité des tuples de la frontière donnée,
+         * une fois que leur heure de départ a été fixée sur celle donnée,
+         * sont dominés par au moins un tuple du récepteur
+         * @param that frontière donnée
+         * @param depMins minutes de départ à partir desquelles on va se caler pour comparer la dominance
+         * @return (booléen) indiquant des deux
+         */
+        boolean fullyDominates(Builder that, int depMins){
+
+            // Pour chacun des tuples de that
+            for (long thatValue : that.arrayInConstruction){
+
+                boolean hasBeenDominated = false;
+
+                // On prend sa version modifiée selon depMins donné
+                long modifiedValue = PackedCriteria.withDepMins(thatValue, depMins);
+
+                // On la compare avec tous nos tuples de this
+                for (long thisValue : this.arrayInConstruction){
+
+                    // Si this domine that
+                    if(PackedCriteria.dominatesOrIsEqual(thisValue, modifiedValue)){
+
+                        // On modifie la variable
+                        hasBeenDominated = true;
+                        break;
+                    }
+                }
+
+                // Si un that n'a été dominé par aucun this
+                if (!hasBeenDominated) {return false;}
+
+            }
+
+            // Si aucun that ne s'est pas fait dominer, c'est que tous ceux
+            // de that se font dominés par au moins un de true
+            // C'est donc que this domine that, et faut retourner true
+            return true;
+        }
+
+        /**
          * Appelle la méthode accept de l'action de type LongConsumer donnée avec chacun des critères de la frontière
          * @param action action
          */
@@ -305,6 +346,7 @@ public final class ParetoFront {
             // et on la retourne
             return  paretoFront;
         }
+
     }
 
 }

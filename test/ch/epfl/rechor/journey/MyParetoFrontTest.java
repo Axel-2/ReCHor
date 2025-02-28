@@ -243,4 +243,70 @@ class MyParetoFrontTest {
         builder.clear();
         assertTrue(builder.isEmpty());
     }
+
+    @Test
+    public void testFullyDominatesTrue() {
+        // Créer un builder contenant des tuples dominants
+        ParetoFront.Builder dominantBuilder = new ParetoFront.Builder();
+        long criteria1 = PackedCriteria.pack(10, 2, 100);
+        criteria1 = PackedCriteria.withDepMins(criteria1, 4);
+        dominantBuilder.add(criteria1);
+
+        long criteria2 = PackedCriteria.pack(12, 1, 90);
+        criteria2 = PackedCriteria.withDepMins(criteria2, 5);
+        dominantBuilder.add(criteria2);
+        dominantBuilder.add(12, 1, 90);
+
+        // Créer un builder qui est complètement dominé
+        ParetoFront.Builder dominatedBuilder = new ParetoFront.Builder();
+        dominatedBuilder.add(15, 3, 120);
+        dominatedBuilder.add(14, 2, 110);
+
+        // Vérifier que dominantBuilder domine complètement dominatedBuilder avec un depMins donné
+        assertTrue(dominantBuilder.fullyDominates(dominatedBuilder, 8),
+                "Le builder dominant devrait dominer le builder dominé");
+    }
+
+    @Test
+    public void testFullyDominatesFalse() {
+        // Créer un builder contenant des tuples dominants
+        ParetoFront.Builder dominantBuilder = new ParetoFront.Builder();
+        dominantBuilder.add(10, 2, 100);
+        dominantBuilder.add(12, 1, 90);
+
+        // Créer un builder qui n'est pas totalement dominé
+        ParetoFront.Builder nonDominatedBuilder = new ParetoFront.Builder();
+        nonDominatedBuilder.add(8, 3, 80);  // Ce tuple ne devrait pas être dominé
+
+        // Vérifier que dominantBuilder ne domine pas totalement nonDominatedBuilder
+        assertFalse(dominantBuilder.fullyDominates(nonDominatedBuilder, 5),
+                "Le builder dominant ne devrait pas totalement dominer nonDominatedBuilder");
+    }
+
+    @Test
+    public void testFullyDominatesWithEmptyBuilder() {
+        // Créer un builder contenant des tuples
+        ParetoFront.Builder dominantBuilder = new ParetoFront.Builder();
+        dominantBuilder.add(10, 2, 100);
+        dominantBuilder.add(12, 1, 90);
+
+        // Créer un builder vide
+        ParetoFront.Builder emptyBuilder = new ParetoFront.Builder();
+
+        // Un builder vide est toujours dominé, donc fullyDominates doit retourner true
+        assertTrue(dominantBuilder.fullyDominates(emptyBuilder, 0),
+                "Un builder vide devrait toujours être dominé");
+    }
+
+    @Test
+    public void testFullyDominatesWithSelf() {
+        // Créer un builder contenant des tuples
+        ParetoFront.Builder builder = new ParetoFront.Builder();
+        builder.add(10, 2, 100);
+        builder.add(12, 1, 90);
+
+        // Un builder ne peut pas se dominer lui-même totalement
+        assertFalse(builder.fullyDominates(builder, 10),
+                "Un builder ne devrait pas totalement se dominer lui-même");
+    }
 }
