@@ -258,6 +258,10 @@ public final class ParetoFront {
          * @return builder actuel
          */
         public Builder addAll(Builder that) {
+
+            // TODO essaie de ne pas build si on arrive à résoudre le problème de forEach
+            // il faut d'abord build avant d'appliquer le forEach sinon
+            // on va itérer sur des valeurs nulles du tableau qu'on ne veut pas
             that.forEach(value -> this.add(value));
             return this;
         }
@@ -309,11 +313,12 @@ public final class ParetoFront {
          */
         public void forEach(LongConsumer action) {
 
-            // On parcout tous les tuples de l'array
-            for (long tuple: arrayInConstruction) {
+            // attention on ne doit pas parcourir tout l'array en construction
+            // car il a des 0 en trop, il faut donc s'arrêter à la taille effective
+            for (int i = 0; i < this.effectiveSize; ++i) {
 
                 // et on appelle l'action sur chaque tuple
-                action.accept(tuple);
+                action.accept(arrayInConstruction[i]);
             }
 
         }

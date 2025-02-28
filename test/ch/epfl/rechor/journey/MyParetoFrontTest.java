@@ -9,8 +9,50 @@ import java.util.NoSuchElementException;
 import static org.junit.jupiter.api.Assertions.*;
 
 class MyParetoFrontTest {
-    // TODO faire des tests alors que constructeur privé..
 
+    // ==========================================================================
+    // SECTION 1 : Tests liés au constructeur par défaut, à clear() et addAll()
+    // ==========================================================================
+
+    @Test
+    void builder_defaultConstructor_createsEmptyBuilder() {
+        ParetoFront.Builder builder = new ParetoFront.Builder();
+        assertTrue(builder.isEmpty());
+    }
+
+    @Test
+    void builder_clear_makesBuilderEmpty() {
+        ParetoFront.Builder builder = new ParetoFront.Builder();
+        // TODO: ajouter des éléments si nécessaire avant de tester clear()
+        builder.clear();
+        assertTrue(builder.isEmpty());
+    }
+
+    @Test
+    void testAddAllMethod() {
+        ParetoFront.Builder builder1 = new ParetoFront.Builder();
+        ParetoFront.Builder builder2 = new ParetoFront.Builder();
+
+        // deux critères qui ne se dominent pas
+        long crit1 = PackedCriteria.pack(450, 3, 0);
+        long crit2 = PackedCriteria.pack(470, 2, 0);
+
+        builder1.add(crit1);
+        builder2.add(crit2);
+
+        // Ajoute tous les éléments de builder2 dans builder1
+        builder1.addAll(builder2);
+
+        ParetoFront front = builder1.build();
+        assertEquals(2, front.size(), "Après addAll, la frontière doit contenir la réunion des tuples non dominés");
+    }
+
+
+    // ==========================================================================
+    // SECTION 2 : Tests sur la taille (size) de la frontière
+    // ==========================================================================
+
+    @Test
     void testEmptyFront() {
         // 1. Vérifie que ParetoFront.EMPTY est vide
         assertEquals(0, ParetoFront.EMPTY.size(), "ParetoFront.EMPTY doit avoir une taille de 0");
@@ -100,32 +142,60 @@ class MyParetoFrontTest {
     }
 
     @Test
-    void testClearBuilder() {
-        ParetoFront.Builder builder = new ParetoFront.Builder();
-        long crit1 = PackedCriteria.pack(450, 3, 0);
-        long crit2 = PackedCriteria.pack(470, 2, 0);
-        builder.add(crit1).add(crit2);
-        assertFalse(builder.isEmpty(), "Le bâtisseur ne doit pas être vide après ajout d'éléments");
-        builder.clear();
-        ParetoFront front = builder.build();
-        assertEquals(0, front.size(), "Après clear, la frontière de Pareto doit être vide");
+    void size() {
+        ParetoFront.Builder paretoBuilder = new ParetoFront.Builder();
+
+        int arrMins = 450, arrMins2 = 470, arrMins3 = 500;
+        int changes = 3, changes2 = 2, changes3 = 8;
+        int payload = 0;
+
+        long baseExampleCriteria = PackedCriteria.pack(arrMins, changes, payload);
+        long equalCriteria = PackedCriteria.pack(arrMins2, changes2, payload);
+        long dominatedCriteria = PackedCriteria.pack(arrMins3, changes3, payload);
+
+        paretoBuilder
+                .add(baseExampleCriteria)
+                // ajoute à double donc ne doit pas être compté
+                .add(baseExampleCriteria)
+                // on ajoute un critère qui n'est pas dominé par l'autre (égal)
+                .add(equalCriteria)
+                // on ajoute un critère dominé que ne doit pas être compté
+                .add(dominatedCriteria);
+
+        ParetoFront paretoFront = paretoBuilder.build();
+
+        // on doit donc normalement en avoir 2
+        int expectedSize = 2;
+        int currentSize = paretoFront.size();
+
+        assertEquals(expectedSize, currentSize);
     }
 
+
+    // ==========================================================================
+    // SECTION 3 : Tests de la fonctionnalité get() et de forEach()
+    // ==========================================================================
+
     @Test
-    void testAddAllMethod() {
-        ParetoFront.Builder builder1 = new ParetoFront.Builder();
-        ParetoFront.Builder builder2 = new ParetoFront.Builder();
+    void testGetFunctionality() {
+        // Ajout de plusieurs tuples et vérification que get() renvoie le bon tuple.
+        // les 3 ne doivent pas se dominer entre eux
+        ParetoFront.Builder builder = new ParetoFront.Builder();
+        long t1 = PackedCriteria.pack(450, 3, 100); // tuple : arrivée 450, 3 changements, payload 100
+        long t2 = PackedCriteria.pack(470, 2, 200); // tuple : arrivée 470, 2 changements, payload 200
+        long t3 = PackedCriteria.pack(480, 1, 300); // tuple : arrivée 480, 1 changement, payload 300
 
-        long crit1 = PackedCriteria.pack(450, 3, 0);
-        long crit2 = PackedCriteria.pack(470, 2, 0);
+        builder.add(t1).add(t2).add(t3);
+        ParetoFront front = builder.build();
 
-        builder1.add(crit1);
-        builder2.add(crit2);
+        // Vérification que chaque tuple peut être retrouvé via get(arrMins, changes)
+        assertEquals(t1, front.get(450, 3), "Le tuple (450, 3) doit être présent et correspondre à t1");
+        assertEquals(t2, front.get(470, 2), "Le tuple (470, 2) doit être présent et correspondre à t2");
+        assertEquals(t3, front.get(480, 1), "Le tuple (480, 1) doit être présent et correspondre à t3");
 
-        // Ajoute tous les éléments de builder2 dans builder1
-        builder1.addAll(builder2);
-        ParetoFront front = builder1.build();
-        assertEquals(2, front.size(), "Après addAll, la frontière doit contenir la réunion des tuples non dominés");
+        // Vérification qu'un tuple non ajouté lève une exception
+        assertThrows(NoSuchElementException.class, () -> front.get(500, 5),
+                "get() doit lancer une exception pour un tuple inexistant");
     }
 
     @Test
@@ -143,6 +213,38 @@ class MyParetoFrontTest {
     }
 
     @Test
+    void forEachEmpty() {
+        // ForEach de EMPTY donne une liste vide
+        List<Long> collected = new ArrayList<>();
+        ParetoFront.EMPTY.forEach(value -> collected.add(value));
+        assertTrue(collected.isEmpty());
+    }
+
+    @Test
+    void testForEachFunctionality() {
+        // Ajout de tuples dans un ordre aléatoire.
+        ParetoFront.Builder builder = new ParetoFront.Builder();
+        long t1 = PackedCriteria.pack(480, 1, 300); // plus "élevé"
+        long t2 = PackedCriteria.pack(450, 3, 100); // plus "faible"
+        long t3 = PackedCriteria.pack(470, 2, 200); // intermédiaire
+
+        builder.add(t1).add(t2).add(t3);
+        ParetoFront front = builder.build();
+
+        // Collecte des tuples via forEach.
+        List<Long> collected = new ArrayList<>();
+        front.forEach(collected::add);
+
+        // L'ordre d'itération doit être lexicographique, c'est-à-dire équivalent à l'ordre naturel
+        // des valeurs empaquetées. Ici, on s'attend à obtenir t2, t3, puis t1 (si t2 < t3 < t1).
+        List<Long> expected = new ArrayList<>();
+        expected.add(t2);
+        expected.add(t3);
+        expected.add(t1);
+        assertEquals(expected, collected, "La méthode forEach doit itérer les tuples en ordre lexicographique");
+    }
+
+    @Test
     void testGetMethodThrowsExceptionForMissingTuple() {
         // Vérifie que get(...) lance une exception quand le tuple demandé n'existe pas
         ParetoFront.Builder builder = new ParetoFront.Builder();
@@ -154,94 +256,28 @@ class MyParetoFrontTest {
                 "get(arrMins, changes) doit lancer NoSuchElementException si le tuple n'existe pas");
     }
 
-    @Test
-    void size() {
 
-        ParetoFront.Builder paretoBuilder = new ParetoFront.Builder();
-
-        int arrMins = 450, arrMins2 =  470, arrMins3 = 500;
-        int changes = 3, changes2 = 2, changes3 = 8;
-        int payload = 0;
-
-        long baseExampleCriteria = PackedCriteria.pack(arrMins, changes, payload);
-        long equalCriteria = PackedCriteria.pack(arrMins2, changes2, payload);
-        long dominatedCriteria = PackedCriteria.pack(arrMins3, changes3, payload);
-
-        paretoBuilder
-                .add(baseExampleCriteria)
-                // ajoute à double donc ne doit pas être compté
-                .add(baseExampleCriteria)
-                // on ajoute un critère qui n'est pas dominé par l'autre (égal)
-                .add(equalCriteria)
-                // on ajoute un critère dominé que ne doit pas être compté
-                .add(dominatedCriteria)
-        ;
-
-        ParetoFront paretoFront = paretoBuilder.build();
-
-        // on doit donc normalement en avoir 2
-        int expectedSize = 2;
-
-        int currentSize = paretoFront.size();
-
-        assertEquals(expectedSize, currentSize);
-    }
+    // ==========================================================================
+    // SECTION 4 : Tests concernant l'ajout de critères dominants ou dominés
+    // ==========================================================================
 
     @Test
-    void get() {
-
-        // 1. Emptys
-        // Get un tableau EMPTY lève l'exception
-        assertThrows(NoSuchElementException.class, () -> ParetoFront.EMPTY.get(600, 2));
-
-        // 2. Tester avec des Pareto non empty :
-
-        ParetoFront.Builder paretoBuilder = new ParetoFront.Builder();
-
-        int arrMins = 1500;
-        int changes = 7;
-        int payload = 0;
-
-        long criteria = PackedCriteria.pack(arrMins, changes, payload);
-
-        paretoBuilder.add(criteria);
-
-        ParetoFront paretoFront = paretoBuilder.build();
-        long expectedGotCriteria = paretoFront.get(arrMins, changes);
-
-        assertEquals(criteria, expectedGotCriteria);
-    }
-
-    @Test
-    void forEach() {
-
-        // ForEach de EMPTY donne une liste vide
-        List<Long> collected = new ArrayList<>();
-        ParetoFront.EMPTY.forEach(value -> {collected.add(value);});
-        assertTrue(collected.isEmpty());
-
-        // TODO
-    }
-
-    @Test
-    void testToString() {
-        // TODO
-    }
-
-    @Test
-    void builder_defaultConstructor_createsEmptyBuilder() {
+    void testAddBetterCriterionRemovesWorse() {
+        // Ajout d'un critère initial, puis d'un meilleur critère qui le domine.
         ParetoFront.Builder builder = new ParetoFront.Builder();
-        assertTrue(builder.isEmpty());
+        long tWorse = PackedCriteria.pack(460, 4, 0);
+        long tBetter = PackedCriteria.pack(450, 3, 0);
 
-        // TODO
-    }
+        builder.add(tWorse);
+        ParetoFront front1 = builder.build();
+        assertEquals(tWorse, front1.get(460, 4), "Avant ajout du meilleur, tWorse doit être présent.");
 
-    @Test
-    void builder_clear_makesBuilderEmpty() {
-        ParetoFront.Builder builder = new ParetoFront.Builder();
-        //TODO add des trucs ici
-        builder.clear();
-        assertTrue(builder.isEmpty());
+        builder.add(tBetter);
+        ParetoFront front2 = builder.build();
+        assertEquals(1, front2.size(), "Après ajout d'un meilleur critère, la frontière doit contenir uniquement le meilleur.");
+        assertEquals(tBetter, front2.get(450, 3), "Le critère meilleur doit être accessible via get().");
+        assertThrows(NoSuchElementException.class, () -> front2.get(460, 4),
+                "Le critère dominé (tWorse) ne doit plus être accessible.");
     }
 
     @Test

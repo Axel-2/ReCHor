@@ -43,6 +43,7 @@ class MyTripsTest {
 
         assertThrows(IndexOutOfBoundsException.class, () -> trips.routeId(-1));
         assertThrows(IndexOutOfBoundsException.class, () -> trips.routeId(3));
+
     }
 
     @Test
