@@ -41,4 +41,19 @@ class MyParetoFrontTest {
     @Test
     void testToString() {
     }
+
+    @Test
+    void builder_defaultConstructor_createsEmptyBuilder() {
+        ParetoFront.Builder builder = new ParetoFront.Builder();
+        assertTrue(builder.isEmpty());
+    }
+
+    @Test
+    void builder_clear_makesBuilderEmpty() {
+        ParetoFront.Builder builder = new ParetoFront.Builder();
+        //TODO add des trucs ici
+        builder.clear();
+        assertTrue(builder.isEmpty());
+    }
+
 }

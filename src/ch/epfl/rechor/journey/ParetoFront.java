@@ -91,7 +91,6 @@ public final class ParetoFront {
          * Constructeur par défaut
          */
         public Builder(){
-            // TODO pas sûr de la taille
             this.arrayInConstruction = new long[2];
             this.effectiveSize =0;
         }
@@ -111,11 +110,17 @@ public final class ParetoFront {
          * @return (booléen)
          */
         public boolean isEmpty(){
-            return arrayInConstruction.length == 0;
+            return effectiveSize == 0;
         }
 
+        /**
+         * vide la frontière en cours de construction en supprimant tous ses éléments
+         * @return ce builder
+         */
         public Builder clear(){
-            return null;
+            this.arrayInConstruction = new long[2];
+            this.effectiveSize = 0;
+            return this;
         }
     }
 
