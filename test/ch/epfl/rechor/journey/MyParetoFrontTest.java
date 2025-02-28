@@ -15,18 +15,20 @@ class MyParetoFrontTest {
     void size() {
 
         // S'assure que EMPTY est bien de taille zero
-        assertEquals(0,ParetoFront.EMPTY.size());
+        assertEquals(0, ParetoFront.EMPTY.size());
 
+        // TODO Tests avec des Pareto non empty
 
     }
 
     @Test
     void get() {
-
         // Get un tableau EMPTY lève l'exception
         assertThrows(NoSuchElementException.class, () -> {
             ParetoFront.EMPTY.get(600, 2);
         });
+
+        // TODO tester avec des Pareto non empty
     }
 
     @Test
