@@ -205,34 +205,53 @@ public final class ParetoFront {
         public Builder add(long packedTuple) {
 
             // Vérifions qu'aucun tuple ne domine packedTuple
-            for (long tupleOnArray : arrayInConstruction){
+            for (int i = 0; i < effectiveSize; i++){
                 // Est-ce que le tuple déja présent domine le nouveau ?
-                if (PackedCriteria.dominatesOrIsEqual(tupleOnArray, packedTuple)){
+                if (PackedCriteria.dominatesOrIsEqual(arrayInConstruction[i], packedTuple)){
                     // On ne veut pas l'ajouter, on ne modifie rien et on retourne cette instance
                     return this;
                 }
             }
 
+            // Vérifier qu'il y a de la place, et augmenter la taille sinon
+            if (effectiveSize == arrayInConstruction.length){
+                this.capacity *= 2;
+                long[] newArrayInConstruction = new long[capacity];
+                System.arraycopy(arrayInConstruction, 0,newArrayInConstruction, 0, effectiveSize);
+                arrayInConstruction = newArrayInConstruction;
+            }
+
             // La vérification est passée, on peut donc l'ajouter, trouvons le bon endroit
             // Selon l'ordre lexicographique, qui est ici l'ordre croissant car c'est des nombres positifs
             int position = 0;
-            while (packedTuple > arrayInConstruction[position]){
-                position += 1;
+            while (packedTuple > arrayInConstruction[position] && position < effectiveSize){
+                position++;
             }
 
-            // Ajoutons-le à cette position, après avoir décalé celui déjà présent (et tous ceux qui suivent)
-            // TODO il faut décaler pour pas supprimer celui d'avant
-            arrayInConstruction[position] = packedTuple;
-            this.effectiveSize += 1;
 
-            // Supprimons tous ceux qui se font dominer (ils se trouvent forcément après, voir théorie)
-            for (int i = position + 1; i <= effectiveSize; i++){
-                if (PackedCriteria.dominatesOrIsEqual(packedTuple, arrayInConstruction[i])){
-                    // TODO supprimer le critère dominé (arrayInConstruction[i])
+            // La partie de droite reste la même, on copie (en pensant bien à mettre à droite l'ancien index "position")
+            System.arraycopy(arrayInConstruction, position, arrayInConstruction,
+                    position + 1, effectiveSize - position);
+
+            // On insère enfin le tuple à la bonne position
+            arrayInConstruction[position] = packedTuple;
+
+            // On oublie pas de mettre à jour la taille occupée
+            effectiveSize ++;
+
+
+            // Supprimer les éléments dominés
+            int i = position + 1;
+            while (i < effectiveSize) {
+                if (PackedCriteria.dominatesOrIsEqual(packedTuple, arrayInConstruction[i])) {
+                    System.arraycopy(arrayInConstruction, i + 1,
+                            arrayInConstruction, i, effectiveSize - i - 1);
+                    effectiveSize--;
+                } else {
+                    i++;
                 }
             }
 
-            // TODO supprimer ça, c'est juste pour par avoir d'erreur
             return this;
 
 
