@@ -24,7 +24,7 @@ public final class ParetoFront {
 
         // il ne faut pas copier les critères
         this.packed_criterias = packed_criterias;
-        // TODO La méthode build  doit garantir ...
+        // TODO La méthode build du builder  doit garantir l'immuabilité...
     }
 
     /**
@@ -184,21 +184,6 @@ public final class ParetoFront {
 
 
         /**
-         * Appelle la méthode accept de l'action de type LongConsumer donnée avec chacun des critères de la frontière
-         * @param action action
-         */
-        public void forEach(LongConsumer action) {
-
-            // On parcout tous les tuples de l'array
-            for (long tuple: arrayInConstruction) {
-
-                // et on appelle l'action sur chaque tuple
-                action.accept(tuple);
-            }
-
-        }
-
-        /**
          * Ajoute à la frontière le tuple de critères empaquetés donné
          * @param packedTuple tuple de critère empaqueté
          * @return le builder mis à jour
@@ -245,19 +230,52 @@ public final class ParetoFront {
             int i = position + 1;
             while (i < effectiveSize) {
                 if (PackedCriteria.dominatesOrIsEqual(packedTuple, arrayInConstruction[i])) {
-                    System.arraycopy(arrayInConstruction, i + 1,
-                            arrayInConstruction, i, effectiveSize - i - 1);
+                    System.arraycopy(arrayInConstruction, i + 1, arrayInConstruction, i, effectiveSize - i - 1);
                     effectiveSize--;
                 } else {
                     i++;
                 }
             }
-
             return this;
-
-
         }
 
+        /**
+         * Surcharge de add
+         * @param arrMins heure d'arrivée en minute
+         * @param changes nombre de changement (int)
+         * @param payload charge utile
+         * @return le builder
+         */
+        public Builder add(int arrMins, int changes, int payload) {
+            long packedTuple = PackedCriteria.pack(arrMins, changes, payload);
+            return add(packedTuple);
+        }
+
+        /**
+         * Ajoute à la frontière tous les tuples
+         * présents dans la frontière en cours de construction par le bâtisseur donné
+         * @param that autre builder
+         * @return builder actuel
+         */
+        public Builder addAll(Builder that) {
+            that.forEach(value -> this.add(value));
+            return this;
+        }
+
+        /**
+         * Appelle la méthode accept de l'action de type LongConsumer donnée avec chacun des critères de la frontière
+         * @param action action
+         */
+        public void forEach(LongConsumer action) {
+
+            // On parcout tous les tuples de l'array
+            for (long tuple: arrayInConstruction) {
+
+                // et on appelle l'action sur chaque tuple
+                action.accept(tuple);
+            }
+
+        }
 
         /**
          * Fonction qui retourne la frontière de Pareto en cours de construction par ce bâtisseur
