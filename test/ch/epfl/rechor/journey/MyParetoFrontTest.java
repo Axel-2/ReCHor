@@ -300,7 +300,7 @@ class MyParetoFrontTest {
         dominatedBuilder.add(PackedCriteria.pack(14, 2, 110));
 
         // Vérifier que dominantBuilder domine complètement dominatedBuilder avec depMins=8
-        assertTrue(dominantBuilder.fullyDominates(dominatedBuilder, 8),
+        assertTrue(dominantBuilder.fullyDominates(dominatedBuilder, 2),
                 "Le builder dominant devrait dominer le builder dominé");
     }
 
