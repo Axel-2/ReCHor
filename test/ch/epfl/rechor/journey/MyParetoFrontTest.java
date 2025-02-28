@@ -20,18 +20,55 @@ class MyParetoFrontTest {
         // TODO Tests avec des Pareto non empty
         ParetoFront.Builder paretoBuilder = new ParetoFront.Builder();
 
-        
+        int arrMins = 450;
+        int changes = 3;
+        int payload = 0;
+
+        long criteria = PackedCriteria.pack(arrMins, changes, 0);
+
+        // On ajoute 4x le même critère
+        paretoBuilder
+                .add(criteria)
+                .add(criteria)
+                .add(criteria)
+                .add(criteria)
+        ;
+
+        ParetoFront paretoFront = paretoBuilder.build();
+
+        int expectedSize = 4;
+        int currentSize = paretoFront.size();
+
+        assertEquals(expectedSize, currentSize);
+
+
+
 
     }
 
     @Test
     void get() {
-        // Get un tableau EMPTY lève l'exception
-        assertThrows(NoSuchElementException.class, () -> {
-            ParetoFront.EMPTY.get(600, 2);
-        });
 
-        // TODO tester avec des Pareto non empty
+        // 1. Emptys
+        // Get un tableau EMPTY lève l'exception
+        assertThrows(NoSuchElementException.class, () -> ParetoFront.EMPTY.get(600, 2));
+
+        // 2. Tester avec des Pareto non empty :
+
+        ParetoFront.Builder paretoBuilder = new ParetoFront.Builder();
+
+        int arrMins = 1500;
+        int changes = 7;
+        int payload = 0;
+
+        long criteria = PackedCriteria.pack(arrMins, changes, payload);
+
+        paretoBuilder.add(criteria);
+
+        ParetoFront paretoFront = paretoBuilder.build();
+        long expectedGotCriteria = paretoFront.get(arrMins, changes);
+
+        assertEquals(criteria, expectedGotCriteria);
     }
 
     @Test
@@ -65,7 +102,4 @@ class MyParetoFrontTest {
         builder.clear();
         assertTrue(builder.isEmpty());
     }
-
-
-
 }
