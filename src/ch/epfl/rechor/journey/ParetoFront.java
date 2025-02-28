@@ -180,6 +180,22 @@ public final class ParetoFront {
             // on renvoi l'instance nettoyée
             return this;
         }
+
+
+        /**
+         * Appelle la méthode accept de l'action de type LongConsumer donnée avec chacun des critères de la frontière
+         * @param action action
+         */
+        public void forEach(LongConsumer action) {
+
+            // On parcout tous les tuples de l'array
+            for (long tuple: arrayInConstruction) {
+
+                // et on appelle l'action sur chaque tuple
+                action.accept(tuple);
+            }
+
+        }
     }
 
 }

@@ -18,6 +18,9 @@ class MyParetoFrontTest {
         assertEquals(0, ParetoFront.EMPTY.size());
 
         // TODO Tests avec des Pareto non empty
+        ParetoFront.Builder paretoBuilder = new ParetoFront.Builder();
+
+        
 
     }
 
@@ -38,16 +41,21 @@ class MyParetoFrontTest {
         List<Long> collected = new ArrayList<>();
         ParetoFront.EMPTY.forEach(value -> {collected.add(value);});
         assertTrue(collected.isEmpty());
+
+        // TODO
     }
 
     @Test
     void testToString() {
+        // TODO
     }
 
     @Test
     void builder_defaultConstructor_createsEmptyBuilder() {
         ParetoFront.Builder builder = new ParetoFront.Builder();
         assertTrue(builder.isEmpty());
+
+        // TODO
     }
 
     @Test
@@ -57,5 +65,7 @@ class MyParetoFrontTest {
         builder.clear();
         assertTrue(builder.isEmpty());
     }
+
+
 
 }
