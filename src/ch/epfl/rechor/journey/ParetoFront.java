@@ -196,6 +196,46 @@ public final class ParetoFront {
             }
 
         }
+
+        /**
+         * Ajoute à la frontière le tuple de critères empaquetés donné
+         * @param packedTuple tuple de critère empaqueté
+         * @return le builder mis à jour
+         */
+        public Builder add(long packedTuple) {
+
+            // Vérifions qu'aucun tuple ne domine packedTuple
+            for (long tupleOnArray : arrayInConstruction){
+                // Est-ce que le tuple déja présent domine le nouveau ?
+                if (PackedCriteria.dominatesOrIsEqual(tupleOnArray, packedTuple)){
+                    // On ne veut pas l'ajouter, on ne modifie rien et on retourne cette instance
+                    return this;
+                }
+            }
+
+            // La vérification est passée, on peut donc l'ajouter, trouvons le bon endroit
+            // Selon l'ordre lexicographique, qui est ici l'ordre croissant car c'est des nombres positifs
+            int position = 0;
+            while (packedTuple > arrayInConstruction[position]){
+                position += 1;
+            }
+
+            // Ajoutons-le à cette position
+            arrayInConstruction[position] = packedTuple;
+            this.effectiveSize += 1;
+
+            // Supprimons tous ceux qui se font dominer (ils se trouvent forcément après, voir théorie)
+            for (int i = position + 1; i <= effectiveSize; i++){
+                if (PackedCriteria.dominatesOrIsEqual(packedTuple, arrayInConstruction[i])){
+                    // TODO supprimer le critère dominé (arrayInConstruction[i])
+                }
+            }
+
+            // TODO supprimer ça, c'est juste pour par avoir d'erreur
+            return this;
+
+
+        }
     }
 
 }
