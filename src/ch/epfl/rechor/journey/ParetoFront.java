@@ -256,6 +256,20 @@ public final class ParetoFront {
 
 
         }
+
+
+        /**
+         * Fonction qui retourne la frontière de Pareto en cours de construction par ce bâtisseur
+         * @return une instance de ParetoFront avec les paramètres du batisseur
+         */
+        public ParetoFront build() {
+
+            ParetoFront paretoFront = new ParetoFront(
+                    this.arrayInConstruction
+            );
+
+            return  paretoFront;
+        }
     }
 
 }
