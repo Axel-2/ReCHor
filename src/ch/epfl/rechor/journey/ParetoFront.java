@@ -204,7 +204,8 @@ public final class ParetoFront {
                 position += 1;
             }
 
-            // Ajoutons-le à cette position
+            // Ajoutons-le à cette position, après avoir décalé celui déjà présent (et tous ceux qui suivent)
+            // TODO il faut décaler pour pas supprimer celui d'avant
             arrayInConstruction[position] = packedTuple;
             this.effectiveSize += 1;
 
