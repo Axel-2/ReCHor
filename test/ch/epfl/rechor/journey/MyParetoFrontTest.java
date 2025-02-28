@@ -11,6 +11,11 @@ import static org.junit.jupiter.api.Assertions.*;
 class MyParetoFrontTest {
     // TODO faire des tests alors que constructeur privé..
 
+    // ----------------------------------------------------------------------
+    // Test de size()
+    // ----------------------------------------------------------------------
+
+    @Test
     void testEmptyFront() {
         // 1. Vérifie que ParetoFront.EMPTY est vide
         assertEquals(0, ParetoFront.EMPTY.size(), "ParetoFront.EMPTY doit avoir une taille de 0");
@@ -128,6 +133,31 @@ class MyParetoFrontTest {
         assertEquals(2, front.size(), "Après addAll, la frontière doit contenir la réunion des tuples non dominés");
     }
 
+    // ----------------------------------------------------------------------
+
+    @Test
+    void testGetFunctionality() {
+
+        // Ajout de plusieurs tuples et vérification que get() renvoie le bon tuple.
+        // les 3 ne doivent pas se dominer entre eux
+        ParetoFront.Builder builder = new ParetoFront.Builder();
+        long t1 = PackedCriteria.pack(450, 3, 100); // tuple : arrivée 450, 3 changements, payload 100
+        long t2 = PackedCriteria.pack(470, 2, 200); // tuple : arrivée 470, 2 changements, payload 200
+        long t3 = PackedCriteria.pack(480, 1, 300); // tuple : arrivée 480, 4 changements, payload 300
+
+        builder.add(t1).add(t2).add(t3);
+        ParetoFront front = builder.build();
+
+        // Vérification que chaque tuple peut être retrouvé via get(arrMins, changes)
+        assertEquals(t1, front.get(450, 3), "Le tuple (450, 3) doit être présent et correspondre à t1");
+        assertEquals(t2, front.get(470, 2), "Le tuple (470, 2) doit être présent et correspondre à t2");
+        assertEquals(t3, front.get(480, 1), "Le tuple (480, 4) doit être présent et correspondre à t3");
+
+        // Vérification qu'un tuple non ajouté lève une exception
+        assertThrows(NoSuchElementException.class, () -> front.get(500, 5),
+                "get() doit lancer une exception pour un tuple inexistant");
+    }
+
     @Test
     void testForEachIteration() {
         // Vérifie que forEach parcourt bien tous les éléments de la frontière
@@ -187,30 +217,6 @@ class MyParetoFrontTest {
         assertEquals(expectedSize, currentSize);
     }
 
-    @Test
-    void get() {
-
-        // 1. Emptys
-        // Get un tableau EMPTY lève l'exception
-        assertThrows(NoSuchElementException.class, () -> ParetoFront.EMPTY.get(600, 2));
-
-        // 2. Tester avec des Pareto non empty :
-
-        ParetoFront.Builder paretoBuilder = new ParetoFront.Builder();
-
-        int arrMins = 1500;
-        int changes = 7;
-        int payload = 0;
-
-        long criteria = PackedCriteria.pack(arrMins, changes, payload);
-
-        paretoBuilder.add(criteria);
-
-        ParetoFront paretoFront = paretoBuilder.build();
-        long expectedGotCriteria = paretoFront.get(arrMins, changes);
-
-        assertEquals(criteria, expectedGotCriteria);
-    }
 
     @Test
     void forEach() {
@@ -220,11 +226,6 @@ class MyParetoFrontTest {
         ParetoFront.EMPTY.forEach(value -> {collected.add(value);});
         assertTrue(collected.isEmpty());
 
-        // TODO
-    }
-
-    @Test
-    void testToString() {
         // TODO
     }
 
