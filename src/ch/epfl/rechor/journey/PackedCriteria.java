@@ -165,14 +165,23 @@ public class PackedCriteria {
      * @return vrai si criteria1 domine ou est égal à criteria2, faux sinon
      */
     public static boolean dominatesOrIsEqual(long criteria1, long criteria2) {
-        // S'assure que les deux ont des heures de départ, lève une IEA sinon.
-        Preconditions.checkArgument(hasDepMins(criteria1));
-        Preconditions.checkArgument(hasDepMins(criteria2));
+        // S'assure que, soit les deux ont une heure de départ, soit aucun des deux
+        Preconditions.checkArgument((hasDepMins(criteria1) & hasDepMins(criteria2)) |
+                (!hasDepMins(criteria1) & !hasDepMins(criteria2)));
 
-        // Pour dominer, TOUS les critères doivent être meilleurs ou égaux
-        return arrMins(criteria1) <= arrMins(criteria2) &&
-                depMins(criteria1) >= depMins(criteria2) &&
-                changes(criteria1) <= changes(criteria2);
+        // Aucun des deux n'a une heure de départ
+        if (!hasDepMins(criteria1) && !hasDepMins(criteria2)){
+            return arrMins(criteria1) <= arrMins(criteria2) &&
+                    changes(criteria1) <= changes(criteria2);
+        }
+
+        // Les deux ont une heure de départ
+        else{
+            // Pour dominer, TOUS les critères doivent être meilleurs ou égaux
+            return arrMins(criteria1) <= arrMins(criteria2) &&
+                    depMins(criteria1) >= depMins(criteria2) &&
+                    changes(criteria1) <= changes(criteria2);
+        }
     }
 
     /**
@@ -255,8 +264,5 @@ public class PackedCriteria {
         // Combine le critère nettoyé avec le payload
         return clearedCriteria | unsignedPayload;
     }
-
-
-
 
 }

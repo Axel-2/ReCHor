@@ -279,4 +279,34 @@ public class MyPackedCriteriaTest {
                 "dominatesOrIsEqual() should return false when criteria1 does not dominate criteria2");
     }
 
-}
+    @Test
+    void dominatesOrIsEqual_handlesCriteriaWithoutDepartureTime() {
+        // Création de deux critères sans heure de départ
+        long criteria1 = PackedCriteria.withoutDepMins(PackedCriteria.pack(600, 2, 0));
+        long criteria2 = PackedCriteria.withoutDepMins(PackedCriteria.pack(630, 3, 0));
+
+        // Vérifie que criteria1 domine bien criteria2
+        assertTrue(PackedCriteria.dominatesOrIsEqual(criteria1, criteria2));
+
+        // Vérifie qu'un critère moins bon ne domine pas un critère meilleur
+        assertFalse(PackedCriteria.dominatesOrIsEqual(criteria2, criteria1));
+    }
+
+    @Test
+    void dominatesOrIsEqual_throwsExceptionIfOnlyOneCriteriaHasDepartureTime() {
+        // Un critère avec heure de départ
+        long criteriaWithDepTime = PackedCriteria.withDepMins(PackedCriteria.pack(600, 2, 0), 300);
+
+        // Un critère sans heure de départ
+        long criteriaWithoutDepTime = PackedCriteria.withoutDepMins(PackedCriteria.pack(600, 2, 0));
+
+        // Vérifie que l'exception est bien levée
+        assertThrows(IllegalArgumentException.class, () -> {
+            PackedCriteria.dominatesOrIsEqual(criteriaWithDepTime, criteriaWithoutDepTime);
+        });
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            PackedCriteria.dominatesOrIsEqual(criteriaWithoutDepTime, criteriaWithDepTime);
+        });
+    }
+    }
