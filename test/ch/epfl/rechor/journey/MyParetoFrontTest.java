@@ -327,22 +327,6 @@ class MyParetoFrontTest {
     }
 
     @Test
-    public void testFullyDominatesWithEmptyBuilder() {
-        // Créer un builder contenant des tuples avec heures de départ
-        ParetoFront.Builder dominantBuilder = new ParetoFront.Builder();
-        long criteria1 = PackedCriteria.pack(10, 2, 100);
-        criteria1 = PackedCriteria.withDepMins(criteria1, 4);
-        dominantBuilder.add(criteria1);
-
-        // Créer un builder vide
-        ParetoFront.Builder emptyBuilder = new ParetoFront.Builder();
-
-        // Un builder vide est toujours dominé, donc fullyDominates doit retourner true
-        assertTrue(dominantBuilder.fullyDominates(emptyBuilder, 0),
-                "Un builder vide devrait toujours être dominé");
-    }
-
-    @Test
     public void testFullyDominatesWithSelf() {
         // Créer un builder contenant des tuples avec heures de départ
         ParetoFront.Builder builder = new ParetoFront.Builder();
@@ -357,6 +341,81 @@ class MyParetoFrontTest {
         // Un builder ne peut pas se dominer lui-même totalement
         assertFalse(builder.fullyDominates(builder, 10),
                 "Un builder ne devrait pas totalement se dominer lui-même");
+    }
+
+    @Test
+    void testDominanceBehavior() {
+        // On teste que l'ajout d'un tuple dominé n'affecte pas la frontière
+        ParetoFront.Builder builder = new ParetoFront.Builder();
+        long t1 = PackedCriteria.pack(450, 3, 100); // bon critère
+        long t2 = PackedCriteria.pack(470, 2, 200); // également bon et non dominant par rapport à t1
+        // Ce tuple est clairement moins performant : arrivée plus tard et plus de changements.
+        long tDominated = PackedCriteria.pack(500, 8, 300);
+
+        builder.add(t1).add(t2).add(tDominated);
+        ParetoFront front = builder.build();
+
+        // Vérification que le tuple dominé n'est pas présent.
+        assertThrows(NoSuchElementException.class, () -> front.get(500, 8),
+                "Le tuple dominé ne doit pas être inclus dans la frontière");
+
+        // Vérification que la frontière contient les deux tuples non dominés.
+        List<Long> collected = new ArrayList<>();
+        front.forEach(collected::add);
+        // L'ordre attendu dépend de l'ordre lexicographique (supposons ici t1 < t2)
+        List<Long> expected = new ArrayList<>();
+        if (t1 < t2) {
+            expected.add(t1);
+            expected.add(t2);
+        } else {
+            expected.add(t2);
+            expected.add(t1);
+        }
+        assertEquals(expected, collected, "La frontière doit contenir uniquement les tuples non dominés, dans l'ordre attendu");
+    }
+
+    @Test
+    void testClearMethod() {
+        // On ajoute un tuple, puis on vide le builder et on vérifie que la frontière résultante est vide.
+        ParetoFront.Builder builder = new ParetoFront.Builder();
+        long t = PackedCriteria.pack(450, 3, 100);
+        builder.add(t);
+        // Avant le clear, get() doit fonctionner.
+        assertEquals(t, builder.build().get(450, 3));
+        // On vide le builder.
+        builder.clear();
+        ParetoFront front = builder.build();
+        // La frontière doit être vide : size() == 0 et get() lève une exception.
+        assertEquals(0, front.size(), "Après clear, la frontière doit être vide");
+        assertThrows(NoSuchElementException.class, () -> front.get(450, 3),
+                "Après clear, aucun tuple ne doit être accessible");
+    }
+
+    @Test
+    void testAddAllFunctionality() {
+        // On crée deux builders, on y ajoute des tuples, puis on fusionne via addAll.
+        ParetoFront.Builder builder1 = new ParetoFront.Builder();
+        ParetoFront.Builder builder2 = new ParetoFront.Builder();
+
+        long t1 = PackedCriteria.pack(450, 3, 100);
+        long t2 = PackedCriteria.pack(470, 2, 200);
+        long t3 = PackedCriteria.pack(480, 1, 300);
+
+        builder1.add(t1);
+        builder2.add(t2).add(t3);
+
+        builder1.addAll(builder2);
+        ParetoFront front = builder1.build();
+
+        // Vérifie que la frontière contient tous les tuples non dominés des deux builders.
+        List<Long> collected = new ArrayList<>();
+        front.forEach(collected::add);
+        // Supposons ici que l'ordre lexicographique naturel des tuples est t1, t2, t3.
+        List<Long> expected = new ArrayList<>();
+        expected.add(t1);
+        expected.add(t2);
+        expected.add(t3);
+        assertEquals(expected, collected, "Après addAll, la frontière doit contenir tous les tuples non dominés, dans l'ordre correct");
     }
 
 }

@@ -276,11 +276,6 @@ public final class ParetoFront {
          */
         boolean fullyDominates(Builder that, int depMins){
 
-            // TODO vérif si y'a besoin
-            if (that.isEmpty()) {
-                return true; // Un Builder vide est toujours dominé
-            }
-
             // Pour chacun des tuples de that
             for (long thatValue : that.arrayInConstruction){
 
