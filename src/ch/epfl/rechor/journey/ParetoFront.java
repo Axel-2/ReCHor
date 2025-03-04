@@ -168,8 +168,6 @@ public final class ParetoFront {
          */
         public Builder clear() {
 
-            // TODO on répète le code du constructeur voir si il y a une autre solution
-
             // on remet la capacité initiale
             capacity = INITIAL_CAPACITY;
 
@@ -292,7 +290,6 @@ public final class ParetoFront {
          */
         public Builder addAll(Builder that) {
 
-            // TODO essaie de ne pas build si on arrive à résoudre le problème de forEach
             // il faut d'abord build avant d'appliquer le forEach sinon
             // on va itérer sur des valeurs nulles du tableau qu'on ne veut pas
             that.forEach(value -> this.add(value));
