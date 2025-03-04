@@ -210,7 +210,8 @@ public final class ParetoFront {
             // La vérification est passée, on peut donc l'ajouter, trouvons le bon endroit
             // Selon l'ordre lexicographique, qui est ici l'ordre croissant car c'est des nombres positifs
             int position = 0;
-            while (packedTuple > arrayInConstruction[position] && position < effectiveSize){
+            while (PackedCriteria.withPayload(packedTuple, 0)>
+                    PackedCriteria.withPayload(arrayInConstruction[position], 0) && position < effectiveSize){
                 position++;
             }
 
