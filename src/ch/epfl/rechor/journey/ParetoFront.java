@@ -249,7 +249,14 @@ public final class ParetoFront {
 
             // On oublie pas de mettre à jour la taille occupée
             effectiveSize ++;
-            
+
+            int dst = insertionPosition;
+            for (int src = insertionPosition; src < arrayInConstruction.length; src += 1) {
+                if (PackedCriteria.dominatesOrIsEqual(packedTuple, arrayInConstruction[src])) continue;
+                if (dst != src) arrayInConstruction[dst] = arrayInConstruction[src];
+                dst += 1;
+            }
+            System.arraycopy(arrayInConstruction, 1, arrayInConstruction, 1, dst - insertionPosition);
 
 
             return this;
