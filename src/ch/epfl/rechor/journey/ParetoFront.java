@@ -277,7 +277,7 @@ public final class ParetoFront {
         boolean fullyDominates(Builder that, int depMins){
 
             // Pour chacun des tuples de that
-            for (long thatValue : that.arrayInConstruction){
+            for (long thatValue : that.arrayInConstruction) {
 
                 boolean hasBeenDominated = false;
 
