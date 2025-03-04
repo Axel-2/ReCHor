@@ -171,6 +171,10 @@ class MyParetoFrontTest {
         assertEquals(expectedSize, currentSize);
     }
 
+    void testAddM() {
+
+    }
+
 
     // ==========================================================================
     // SECTION 3 : Tests de la fonctionnalité get() et de forEach()

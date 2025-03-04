@@ -229,22 +229,23 @@ public final class ParetoFront {
             }
 
 
-            int dst = insertionPosition;
-            for (int src = insertionPosition; src < arrayInConstruction.length; src += 1) {
+            // nombre de valeurs conservées dans le tableau final
+            int nbOfConservatedValue = insertionPosition;
+
+            // Compactage
+            for (int src = insertionPosition; src < effectiveSize; src += 1) {
 
                 if (PackedCriteria.dominatesOrIsEqual(packedTuple, arrayInConstruction[src])) {
                     continue;
                 }
 
-                if (dst != src) {
-                    arrayInConstruction[dst] = arrayInConstruction[src];
+                if (nbOfConservatedValue != src) {
+                    arrayInConstruction[nbOfConservatedValue] = arrayInConstruction[src];
                 }
 
-                dst += 1;
+                nbOfConservatedValue += 1;
             }
 
-            // nombre de valeurs conservées dans le tableau final
-            int nbOfConservatedValue = dst;
 
             // on met à jour la taille effective avec le nombre calculé plus haut
             effectiveSize = nbOfConservatedValue;
