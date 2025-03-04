@@ -229,12 +229,13 @@ public final class ParetoFront {
             }
 
 
-
             int dst = insertionPosition;
             for (int src = insertionPosition; src < arrayInConstruction.length; src += 1) {
+
                 if (PackedCriteria.dominatesOrIsEqual(packedTuple, arrayInConstruction[src])) {
                     continue;
                 }
+
                 if (dst != src) {
                     arrayInConstruction[dst] = arrayInConstruction[src];
                 }
@@ -242,18 +243,31 @@ public final class ParetoFront {
                 dst += 1;
             }
 
+            // nombre de valeurs conservées dans le tableau final
+            int nbOfConservatedValue = dst;
+
+            // on met à jour la taille effective avec le nombre calculé plus haut
+            effectiveSize = nbOfConservatedValue;
+
             // Vérifier qu'il y a de la place, et augmenter la taille sinon
+            // s'ils sont égaux, on augmente pour pouvoir ajouter la nouvelle valeur.
             if (effectiveSize == arrayInConstruction.length){
                 this.capacity *= 2;
                 long[] newArrayInConstruction = new long[capacity];
                 System.arraycopy(arrayInConstruction, 0,newArrayInConstruction, 0, effectiveSize);
                 arrayInConstruction = newArrayInConstruction;
             }
+
+
+            // Déplacer les éléments pour laisser un trou à insertionPosition :
+            System.arraycopy(arrayInConstruction, insertionPosition, arrayInConstruction, insertionPosition + 1, effectiveSize - insertionPosition);
+
             // On insère enfin le tuple à la bonne position
             arrayInConstruction[insertionPosition] = packedTuple;
 
             // On oublie pas de mettre à jour la taille occupée
-            effectiveSize ++;
+            effectiveSize++;
+
             return this;
         }
 
