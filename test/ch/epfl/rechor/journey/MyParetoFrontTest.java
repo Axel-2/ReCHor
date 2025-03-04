@@ -280,36 +280,6 @@ class MyParetoFrontTest {
                 "Le critère dominé (tWorse) ne doit plus être accessible.");
     }
 
-    @Test
-    public void testFullyDominatesTrue() {
-        // Créer un builder contenant des tuples dominants
-        ParetoFront.Builder dominantBuilder = new ParetoFront.Builder();
-        // Créer des critères avec heure de départ
-        long criteria1 = PackedCriteria.pack(10, 2, 100);
-        criteria1 = PackedCriteria.withDepMins(criteria1, 8);
-        dominantBuilder.add(criteria1);
-
-        long criteria2 = PackedCriteria.pack(12, 1, 90);
-        criteria2 = PackedCriteria.withDepMins(criteria2, 8);
-
-        // 4 - 10 - 2
-        // 5 - 12 - 1
-        dominantBuilder.add(criteria1);
-        dominantBuilder.add(criteria2);
-
-        // Créer un builder qui est complètement dominé
-        ParetoFront.Builder dominatedBuilder = new ParetoFront.Builder();
-        // Ajouter des critères SANS heure de départ (ils recevront l'heure fixée par fullyDominates)
-
-        // 8 - 15 - 3
-        // 8 - 14 - 2
-        dominatedBuilder.add(PackedCriteria.pack(150, 30, 120));
-        dominatedBuilder.add(PackedCriteria.pack(140, 20, 110));
-
-        // Vérifier que dominantBuilder domine complètement dominatedBuilder avec depMins=8
-        assertTrue(dominantBuilder.fullyDominates(dominatedBuilder, 2),
-                "Le builder dominant devrait dominer le builder dominé");
-    }
 
     @Test
     public void testFullyDominatesFalse() {

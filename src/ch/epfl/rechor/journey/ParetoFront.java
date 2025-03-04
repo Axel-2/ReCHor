@@ -230,7 +230,7 @@ public final class ParetoFront {
 
 
             int dst = insertionPosition;
-            for (int src = insertionPosition; src < arrayInConstruction.length; src += 1) {
+            for (int src = insertionPosition; src < effectiveSize; src += 1) {
 
                 if (PackedCriteria.dominatesOrIsEqual(packedTuple, arrayInConstruction[src])) {
                     continue;
