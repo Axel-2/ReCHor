@@ -237,6 +237,8 @@ public final class ParetoFront {
                 arrayInConstruction = newArrayInConstruction;
             }
 
+
+
             // La partie de droite reste la même, on copie (en pensant bien à mettre à droite l'ancien index "position")
             // Le but est ici de décaler la partie de droite vers le haut pour laisser place au nouvel élément
             System.arraycopy(arrayInConstruction, insertionPosition, arrayInConstruction,
