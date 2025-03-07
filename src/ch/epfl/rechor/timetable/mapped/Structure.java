@@ -1,5 +1,7 @@
 package ch.epfl.rechor.timetable.mapped;
 
+import ch.epfl.rechor.Preconditions;
+
 import java.util.Objects;
 
 /**
@@ -9,7 +11,6 @@ import java.util.Objects;
  */
 public class Structure {
     short[] firstBytePositions;
-    // TODO Int ou Byte ?
     int totalSize;
 
     /**
@@ -99,9 +100,7 @@ public class Structure {
      */
     public int offset(int fieldIndex, int elementIndex) {
         // Vérifie que l'index du champ est valide
-        if (fieldIndex >= firstBytePositions.length || fieldIndex < 0 ) {
-            throw new IndexOutOfBoundsException("Index du champ invalide");
-        }
+        Preconditions.checkArgument(fieldIndex >= 0 && fieldIndex < firstBytePositions.length);
 
         // Retourne l'index correspondant dans le tableau de donnée aplati.
         return firstBytePositions[fieldIndex] + (elementIndex * totalSize);
