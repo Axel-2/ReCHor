@@ -79,6 +79,42 @@ class MyBufferedStationsTest {
         assertThrows(IndexOutOfBoundsException.class, () -> bufferedStations.latitude(size));
     }
 
+    /**
+     * Teste le comportement lorsque l'index de chaîne référencé par une station est invalide.
+     * Ici, on crée un buffer pour une station dont le NAME_ID est 7 alors que la table contient 7 éléments (indices 0 à 6).
+     */
+    @Test
+    void testStationNameIndexOutOfBound() {
+        byte[] data = new byte[]{
+                0x00, 0x07,             // NAME_ID = 7 (invalide)
+                0x00, 0x00, 0x00, 0x00,   // LON = 0
+                0x00, 0x00, 0x00, 0x00    // LAT = 0
+        };
+        ByteBuffer buffer = ByteBuffer.wrap(data);
+        BufferedStations bufferedStations = new BufferedStations(exempleStringTable, buffer);
+        // Lors de l'accès au nom, on s'attend à une exception puisque l'index 7 n'existe pas dans la table
+        assertThrows(IndexOutOfBoundsException.class, () -> bufferedStations.name(0));
+    }
+
+    /**
+     * Teste une station avec des coordonnées nulles.
+     * On construit une station dont les octets de longitude et latitude valent 0,
+     * ce qui devrait donner 0.0 en degrés.
+     */
+    @Test
+    void testStationWithZeroCoordinates() {
+        byte[] data = new byte[]{
+                0x00, 0x04,             // NAME_ID = 4 -> "Lausanne" dans notre table d'exemple
+                0x00, 0x00, 0x00, 0x00,   // LON = 0
+                0x00, 0x00, 0x00, 0x00    // LAT = 0
+        };
+        ByteBuffer buffer = ByteBuffer.wrap(data);
+        BufferedStations bufferedStations = new BufferedStations(exempleStringTable, buffer);
+        assertEquals("Lausanne", bufferedStations.name(0));
+        assertEquals(0.0, bufferedStations.longitude(0));
+        assertEquals(0.0, bufferedStations.latitude(0));
+    }
+
 
 
 
