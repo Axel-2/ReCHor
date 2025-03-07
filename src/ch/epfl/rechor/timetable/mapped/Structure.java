@@ -37,7 +37,7 @@ public class Structure {
      * @param type type du champ
      */
     public record Field(int index, FieldType type){
-        public Field() {
+        public Field {
             Objects.requireNonNull(type, "le type ne doit pas être null");
         }
     }
@@ -59,7 +59,7 @@ public class Structure {
     public Structure(Field... fields) {;
 
         // Création du tableau, qui a une taille égale au nombre de champs
-        short[] firstBytePositions = new short[fields.length];
+        this.firstBytePositions = new short[fields.length];
 
         // Initialisation de la taille, qui va être incrémentée, mais qui commence à 0.
         int size = 0;
@@ -99,11 +99,11 @@ public class Structure {
      */
     public int offset(int fieldIndex, int elementIndex) {
         // Vérifie que l'index du champ est valide
-        if (fieldIndex < 0 || fieldIndex >= firstBytePositions.length) {
-            throw new IndexOutOfBoundsException("Index du champ invalide : " + fieldIndex);
+        if (fieldIndex >= firstBytePositions.length || fieldIndex < 0 ) {
+            throw new IndexOutOfBoundsException("Index du champ invalide");
         }
 
-        // Calcule l'offset du champ dans l'élément `elementIndex`
+        // Retourne l'index correspondant dans le tableau de donnée aplati.
         return firstBytePositions[fieldIndex] + (elementIndex * totalSize);
     }
 
