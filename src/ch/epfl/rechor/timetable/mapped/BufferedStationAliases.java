@@ -29,6 +29,12 @@ public final class BufferedStationAliases implements StationAliases {
     );
 
     // unique constructeur publique
+
+    /**
+     * Constructeur de BufferedStationAliases
+     * @param stringTable une table de chaine de charactères qui contient les noms d'alias
+     * @param buffer le buffer correspondant aux données aplaties
+     */
     public BufferedStationAliases(List<String> stringTable, ByteBuffer buffer) {
 
         this.stringTable = stringTable;
@@ -83,6 +89,6 @@ public final class BufferedStationAliases implements StationAliases {
      */
     @Override
     public int size() {
-        return 0;
+        return stationAliasesStructuredBuffer.size();
     }
 }

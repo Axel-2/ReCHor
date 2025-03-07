@@ -10,8 +10,9 @@ import java.util.Objects;
  * @author Axel Verga (398787)
  */
 public class Structure {
-    short[] firstBytePositions;
-    int totalSize;
+
+    private final short[] firstBytePositions;
+    private final int totalSize;
 
     /**
      * Type énuméré des différentes tailles d'octet

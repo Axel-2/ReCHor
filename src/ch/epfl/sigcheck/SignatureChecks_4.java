@@ -61,7 +61,7 @@ final class SignatureChecks_4 {
 
     void checkBufferedPlatforms() {
         v06 = (ch.epfl.rechor.timetable.Platforms) v16;
-        //v16 = new ch.epfl.rechor.timetable.mapped.BufferedPlatforms(v13, v11);
+        v16 = new ch.epfl.rechor.timetable.mapped.BufferedPlatforms(v13, v11);
         v08 = v16.name(v03);
         v03 = v16.size();
         v03 = v16.stationId(v03);

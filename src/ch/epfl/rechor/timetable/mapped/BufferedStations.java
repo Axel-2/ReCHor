@@ -40,7 +40,11 @@ public final class BufferedStations implements Stations {
     private List<String> stringTable;
     private ByteBuffer buffer;
 
-    // unique constructeur publlique
+    /**
+     * Constructeur de BufferedStations
+     * @param stringTable une table de chaine de char qui correspond aux nom des stations
+     * @param buffer un buffer qui correspond aux données aplaties
+     */
     public BufferedStations(List<String> stringTable, ByteBuffer buffer) {
 
         this.stringTable = stringTable;
@@ -59,9 +63,10 @@ public final class BufferedStations implements Stations {
     @Override
     public String name(int id) {
 
-        // On récupère l'id du nom dans la zable
+        // On récupère l'id du nom dans la table
         int nameId = structuredBuffer.getU16(NAME_ID, id);
 
+        // on récupère ensuite la string dans la table à l'aide de l'id
         String name = stringTable.get(nameId);
 
         return name;
@@ -106,8 +111,6 @@ public final class BufferedStations implements Stations {
 
         // on reconverti en degré avec la constante
         double latInDegree = CONVERSION_CONST * latitudeCustomUnit;
-
-        // TODO est-ce qu'il faut arrondir ?
 
         return latInDegree;
     }
