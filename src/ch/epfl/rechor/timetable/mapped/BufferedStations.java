@@ -22,11 +22,13 @@ public final class BufferedStations implements Stations {
     private int LON = 1;
     private int LAT = 2;
 
-    Structure stationStructure = new Structure(
+    private Structure stationStructure = new Structure(
             field(NAME_ID, U16),
             field(LON, S32),
             field(LAT, S32)
     );
+
+    private StructuredBuffer structuredBuffer;
 
 
     // TODO IMMUTABILITé ?
@@ -38,7 +40,8 @@ public final class BufferedStations implements Stations {
     public BufferedStations(List<String> stringTable, ByteBuffer buffer) {
 
         this.stringTable = stringTable;
-        this.buffer = buffer;
+
+        this.structuredBuffer = new StructuredBuffer(stationStructure, buffer);
 
     }
 
@@ -51,7 +54,14 @@ public final class BufferedStations implements Stations {
      */
     @Override
     public String name(int id) {
-        return "";
+
+        // On récupère l'id du nom dans la zable
+        int nameId = structuredBuffer.getU16(NAME_ID, id);
+
+        String name = stringTable.get(nameId);
+
+        return name;
+
     }
 
     /**

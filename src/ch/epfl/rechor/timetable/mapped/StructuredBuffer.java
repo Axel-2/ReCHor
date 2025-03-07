@@ -23,7 +23,8 @@ public class StructuredBuffer {
         // lève une IllegalArgumentException si le nombre d'octets de
         // ce tableau n'est pas un multiple de la taille totale de la structure.
         int nbOfByteInBuffer = buffer.capacity();
-        Preconditions.checkArgument(structure.totalSize() % nbOfByteInBuffer == 0);
+
+        Preconditions.checkArgument(nbOfByteInBuffer % structure.totalSize() == 0);
 
         // on stock les variables dans notre instance
         this.structure = structure;
@@ -62,7 +63,7 @@ public class StructuredBuffer {
         // TODO preconditions
 
 
-        int offset = Structure.offset(fieldIndex, elementIndex);
+        int offset = structure.offset(fieldIndex, elementIndex);
 
         // la méthode get de buffer nous donne le byte
         // à l'index donné
