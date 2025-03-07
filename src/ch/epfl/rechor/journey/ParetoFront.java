@@ -307,18 +307,18 @@ public final class ParetoFront {
         boolean fullyDominates(Builder that, int depMins){
 
             // Pour chacun des tuples de that
-            for (long thatValue : that.arrayInConstruction) {
+            for (int i = 0; i < that.effectiveSize; i++) {
 
                 boolean hasBeenDominated = false;
 
                 // On prend sa version modifiée selon depMins donné
-                long modifiedValue = PackedCriteria.withDepMins(thatValue, depMins);
+                long modifiedValue = PackedCriteria.withDepMins(that.arrayInConstruction[i], depMins);
 
                 // On la compare avec tous nos tuples de this
-                for (long thisValue : this.arrayInConstruction){
+                for (int j = 0; j < this.effectiveSize; j++){
 
                     // Si this domine that
-                    if(PackedCriteria.dominatesOrIsEqual(thisValue, modifiedValue)){
+                    if(PackedCriteria.dominatesOrIsEqual(this.arrayInConstruction[j], modifiedValue)){
 
                         // On modifie la variable
                         hasBeenDominated = true;
@@ -380,6 +380,18 @@ public final class ParetoFront {
 
             // et on la retourne
             return  paretoFront;
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder sb = new StringBuilder();
+            for (long pc : arrayInConstruction) {
+                sb.append(PackedCriteria.arrMins(pc))
+                        .append("|")
+                        .append(PackedCriteria.changes(pc))
+                        .append("  ");
+            }
+            return sb.toString();
         }
 
     }
