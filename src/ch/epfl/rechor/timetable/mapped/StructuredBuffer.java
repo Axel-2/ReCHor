@@ -13,8 +13,8 @@ import java.nio.ByteBuffer;
  */
 public class StructuredBuffer {
 
-    private Structure structure;
-    private ByteBuffer buffer;
+    private final Structure structure;
+    private final ByteBuffer buffer;
 
     // unique constructeur publique
     public StructuredBuffer(Structure structure, ByteBuffer buffer) {

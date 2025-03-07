@@ -22,6 +22,10 @@ public final class BufferedStations implements Stations {
     private int LON = 1;
     private int LAT = 2;
 
+    // constante de conversion utilisée
+    // pour longitude et latitude
+    private final double CONVERSION_CONST = Math.scalb(360, -32);
+
     private Structure stationStructure = new Structure(
             field(NAME_ID, U16),
             field(LON, S32),
@@ -73,7 +77,17 @@ public final class BufferedStations implements Stations {
      */
     @Override
     public double longitude(int id) {
-        return 0;
+
+        // TODO tests ?
+
+        // on récupère la longitude qui est encodé avec une unité spéciale
+        // la longitude est encodée sur 4 octets
+        int longitudeCustomUnit = structuredBuffer.getS32(LON, id);
+
+        // on reconverti en degré avec la constante
+        double longInDegree = CONVERSION_CONST * longitudeCustomUnit;
+
+        return longInDegree;
     }
 
     /**
@@ -85,7 +99,17 @@ public final class BufferedStations implements Stations {
      */
     @Override
     public double latitude(int id) {
-        return 0;
+
+        // on récupère la laltiude qui est encodé avec une unité spéciale
+        // la latitude est encodée sur 4 octets
+        int latitudeCustomUnit = structuredBuffer.getS32(LAT, id);
+
+        // on reconverti en degré avec la constante
+        double latInDegree = CONVERSION_CONST * latitudeCustomUnit;
+
+        // TODO est-ce qu'il faut arrondir ?
+
+        return latInDegree;
     }
 
     /**
@@ -96,6 +120,9 @@ public final class BufferedStations implements Stations {
      */
     @Override
     public int size() {
-        return 0;
+
+        // on peut utiliser la méthode structuredBuffer
+        // qui fait exacement ce qu'on veut
+        return structuredBuffer.size();
     }
 }
