@@ -3,7 +3,28 @@ package ch.epfl.rechor.timetable.mapped;
 
 import ch.epfl.rechor.timetable.Platforms;
 
+import java.nio.ByteBuffer;
+import java.util.List;
+
 public final class BufferedPlatforms implements Platforms {
+    private final static int NAME_ID = 0;
+    private final static int STATION_ID = 1;
+
+    private List<String> stringTable;
+    private StructuredBuffer structuredBuffer;
+
+
+    public BufferedPlatforms(List<String> stringTable, ByteBuffer buffer) {
+
+        this.stringTable = stringTable;
+
+        // Structure d'une plateforme
+        Structure platformStructure = new Structure(
+                Structure.field(NAME_ID, Structure.FieldType.U16),
+                Structure.field(STATION_ID, Structure.FieldType.U16));
+
+        this.structuredBuffer = new StructuredBuffer(platformStructure, buffer);
+    }
 
     /**
      * Fonction qui retourne le nom de la voie (p. ex. 70) ou du quai (p. ex. A), qui peut être vide
@@ -14,7 +35,12 @@ public final class BufferedPlatforms implements Platforms {
      */
     @Override
     public String name(int id) {
-        return "";
+
+        // On récupère l'index du nom dans la chaîne de caractère, en cherchant l'info dans notre tableau (buffer)
+        int nameIndex = structuredBuffer.getU16(NAME_ID, id);
+
+        // on retourne le nom correspondant
+        return stringTable.get(nameIndex);
     }
 
     /**
@@ -26,7 +52,7 @@ public final class BufferedPlatforms implements Platforms {
      */
     @Override
     public int stationId(int id) {
-        return 0;
+        return structuredBuffer.getU16(STATION_ID, id);
     }
 
     /**
@@ -37,6 +63,6 @@ public final class BufferedPlatforms implements Platforms {
      */
     @Override
     public int size() {
-        return 0;
+        return structuredBuffer.size();
     }
 }

@@ -18,9 +18,9 @@ import static ch.epfl.rechor.timetable.mapped.Structure.field;
  */
 public final class BufferedStations implements Stations {
 
-    private int NAME_ID = 0;
-    private int LON = 1;
-    private int LAT = 2;
+    private final static int NAME_ID = 0;
+    private final static int LON = 1;
+    private final static int LAT = 2;
 
     // constante de conversion utilisée
     // pour longitude et latitude
