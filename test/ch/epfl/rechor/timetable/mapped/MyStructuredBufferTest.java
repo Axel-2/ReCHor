@@ -88,22 +88,27 @@ class MyStructuredBufferTest {
      * Teste que les accès avec des indices invalides (champ ou élément) lèvent
      * bien une IndexOutOfBoundsException.
      */
+
     @Test
-    public void testInvalidIndices() {
-        // Création d'un buffer pour un seul élément (taille = 10 octets)
-        byte[] data = new byte[10];
+    void testInvalidIndices() {
+        // Création d'un buffer de 12 octets (permettant de stocker 2 éléments de la structure)
+        byte[] data = new byte[12];
         ByteBuffer buffer = ByteBuffer.wrap(data);
+
+        // Définition d'une structure avec deux champs
         Structure structure = new Structure(
-                Structure.field(0, Structure.FieldType.U16),
-                Structure.field(1, Structure.FieldType.S32)
+                Structure.field(0, Structure.FieldType.U16), // Champ 1 (2 octets)
+                Structure.field(1, Structure.FieldType.S32)  // Champ 2 (4 octets)
         );
+
+        // Création du StructuredBuffer
         StructuredBuffer sb = new StructuredBuffer(structure, buffer);
 
         // Vérification du nombre d'éléments
-        assertEquals(1, sb.size(), "Le buffer doit contenir 1 élément");
+        assertEquals(2, sb.size(), "Le buffer doit contenir 2 éléments");
 
-        // Accès à un élément inexistant (indice 1 alors que seul 0 est valide)
-        assertThrows(IndexOutOfBoundsException.class, () -> sb.getU16(0, 1),
+        // Accès à un élément inexistant (indice 2 alors que seuls 0 et 1 existent)
+        assertThrows(IndexOutOfBoundsException.class, () -> sb.getU16(0, 2),
                 "Accéder à un élément inexistant doit lever une exception");
 
         // Accès à un champ inexistant (indice 2 alors que seuls 0 et 1 existent)
