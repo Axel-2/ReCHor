@@ -136,12 +136,12 @@ class MyStructureTest {
         assertEquals(12, structure.totalSize(), "La taille totale devrait être 12 (1 + 2 + 4 + 1 + 4).");
     }
 
-    @Test
-    void testFieldTypeSize() {
-        assertEquals(1, Structure.FieldType.U8.size(), "U8 devrait avoir une taille de 1.");
-        assertEquals(2, Structure.FieldType.U16.size(), "U16 devrait avoir une taille de 2.");
-        assertEquals(4, Structure.FieldType.S32.size(), "S32 devrait avoir une taille de 4.");
-    }
+//    @Test
+//    void testFieldTypeSize() {
+//        assertEquals(1, Structure.FieldType.U8.size(), "U8 devrait avoir une taille de 1.");
+//        assertEquals(2, Structure.FieldType.U16.size(), "U16 devrait avoir une taille de 2.");
+//        assertEquals(4, Structure.FieldType.S32.size(), "S32 devrait avoir une taille de 4.");
+//    }
 
     @Test
     void testStructureWithSingleLargeField() {

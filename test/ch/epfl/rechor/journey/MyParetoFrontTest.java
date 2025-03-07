@@ -284,6 +284,16 @@ class MyParetoFrontTest {
                 "Le critère dominé (tWorse) ne doit plus être accessible.");
     }
 
+    @Test
+    public void fullyDominateEmptyBuilder() {
+
+        ParetoFront.Builder builder1 = new ParetoFront.Builder();
+        ParetoFront.Builder builder2 = new ParetoFront.Builder();
+
+        assertEquals(true, builder1.fullyDominates(builder2, 0));
+
+    }
+
 
     @Test
     public void testFullyDominatesFalse() {

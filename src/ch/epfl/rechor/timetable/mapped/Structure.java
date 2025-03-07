@@ -18,19 +18,9 @@ public class Structure {
      * Type énuméré des différentes tailles d'octet
      */
     public enum FieldType {
-        U8(1),
-        U16(2),
-        S32(4);
-
-        private final int size;
-
-        FieldType(int size){
-            this.size = size;
-        }
-
-        public int size(){
-            return this.size;
-        }
+        U8,
+        U16,
+        S32;
     }
 
     /**
@@ -77,8 +67,16 @@ public class Structure {
             firstBytePositions[i] = (short) size;
 
             // 3) Ajoute à la taille actuelle (mesurée en nombre d'octet), la taille du champ d'index i
-            size += fields[i].type().size();
 
+            switch (fields[i].type()) {
+
+                // TODO VARIABLES CONST
+                // ajouter la bonne taille en fonction du nombre d'octets
+                case U16 -> size += 2;
+                case U8 -> size += 1;
+                case S32 -> size += 4;
+
+            }
         }
         // Nous avons notre taille finale, l'incrémentation est finie. On l'injecte dans l'attribut
         this.totalSize = size;
