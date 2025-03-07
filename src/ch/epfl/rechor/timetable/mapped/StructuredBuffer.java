@@ -60,7 +60,7 @@ public class StructuredBuffer {
     public int getU8(int fieldIndex, int elementIndex) {
 
         // TODO preconditions
-        
+
 
         int offset = Structure.offset(fieldIndex, elementIndex);
 
@@ -73,6 +73,42 @@ public class StructuredBuffer {
 
         return unsignedU8;
 
+    }
+
+    /**
+     * Fonction qui fait la même chose que getU8 mais pour un champ de type U16
+     *
+     * @param fieldIndex champ d'index voulu
+     * @param elementIndex élément d'index du tableau
+     * @return entier u8 correspondant aux paramètres voulus
+     */
+    public int getU16(int fieldIndex, int elementIndex) {
+
+        int offset = structure.offset(fieldIndex, elementIndex);
+
+        // on fait la même chose mais cette fois avec un u16
+        short u16 = buffer.getShort(offset);
+
+        int unsignedU16 = Short.toUnsignedInt(u16);
+
+        return unsignedU16;
+    }
+
+    /**
+     * Fonction qui fait la même chose que getU8 mais pour un champ de type S32.
+     *
+     * @param fieldIndex champ d'index voulu
+     * @param elementIndex élément d'index du tableau
+     * @return entier u8 correspondant aux paramètres voulus
+     */
+    public int getS32(int fieldIndex, int elementIndex) {
+
+        int offset = structure.offset(fieldIndex, elementIndex);
+
+        // on récupère un int
+        int i32 = buffer.getInt(offset);
+
+        return i32;
     }
 
 }

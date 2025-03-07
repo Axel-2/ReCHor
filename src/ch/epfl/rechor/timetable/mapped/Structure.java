@@ -37,7 +37,7 @@ public class Structure {
      * @param type type du champ
      */
     public record Field(int index, FieldType type){
-        public Field() {
+        public Field {
             Objects.requireNonNull(type, "le type ne doit pas être null");
         }
     }
@@ -97,7 +97,7 @@ public class Structure {
      * @param elementIndex index de l'élément
      * @return index correspondant aux paramètres
      */
-    public int offset(int fieldIndex, int elementIndex) {
+    public static int offset(int fieldIndex, int elementIndex) {
         // Vérifie que l'index du champ est valide
         if (fieldIndex < 0 || fieldIndex >= firstBytePositions.length) {
             throw new IndexOutOfBoundsException("Index du champ invalide : " + fieldIndex);
