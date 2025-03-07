@@ -399,4 +399,295 @@ class MyParetoFrontTest {
         assertEquals(expected, collected, "Après addAll, la frontière doit contenir tous les tuples non dominés, dans l'ordre correct");
     }
 
+    // --------------------------------------------------- TESTS SUPPL ------------------------------
+    private ParetoFront.Builder createBuilderWithData() {
+        ParetoFront.Builder builder = new ParetoFront.Builder();
+        // We choose departure minutes so that they are sensible:
+        // • Tuple 1: arrival=480, changes=2, payload=111, departure=400.
+        // • Tuple 2: arrival=480, changes=3, payload=222, departure=410.
+        // • Tuple 3: arrival=481, changes=1, payload=333, departure=395.
+        builder.add(PackedCriteria.withDepMins(PackedCriteria.pack(480, 2, 111), 400))
+                .add(PackedCriteria.withDepMins(PackedCriteria.pack(480, 3, 222), 410))
+                .add(PackedCriteria.withDepMins(PackedCriteria.pack(481, 1, 333), 395));
+        return builder;
+    }
+
+
+    @Test
+    void testEmptyConstant() {
+        ParetoFront empty = ParetoFront.EMPTY;
+        assertEquals(0, empty.size(), "EMPTY should have size 0");
+        assertThrows(NoSuchElementException.class,
+                () -> empty.get(480, 2),
+                "Getting anything from EMPTY must throw NoSuchElementException");
+    }
+
+    @Test
+    void testParetoFrontSizeAndGet() {
+        ParetoFront.Builder builderWithData = createBuilderWithData();
+        ParetoFront pf = builderWithData.build();
+        // According to our dominance rule (later departure is better),
+        // so the frontier should contain (480,3) and (481,1).
+        long found1 = pf.get(480, 3);
+        assertEquals(480, PackedCriteria.arrMins(found1));
+        assertEquals(3,   PackedCriteria.changes(found1));
+        assertEquals(222, PackedCriteria.payload(found1));
+
+        long found2 = pf.get(481, 1);
+        assertEquals(481, PackedCriteria.arrMins(found2));
+        assertEquals(1,   PackedCriteria.changes(found2));
+        assertEquals(333, PackedCriteria.payload(found2));
+
+        // A non-existent tuple should throw.
+        assertThrows(NoSuchElementException.class,
+                () -> pf.get(999, 9));
+    }
+
+
+    @Test
+    void testBuilderDefaultIsEmpty() {
+        ParetoFront.Builder emptyBuilder = new ParetoFront.Builder();
+        assertTrue(emptyBuilder.isEmpty());
+        assertEquals(0, emptyBuilder.build().size());
+    }
+
+    @Test
+    void testBuilderCopyConstructor() {
+        ParetoFront.Builder builderWithData = createBuilderWithData();
+        ParetoFront.Builder copy = new ParetoFront.Builder(builderWithData);
+        int originalSize = builderWithData.build().size();
+
+        // Add a new tuple that should definitely be added.
+        // New tuple: arrival=482, changes=2, payload=555, departure=420.
+        // This tuple is non-dominated with respect to the current frontier.
+        builderWithData.add(PackedCriteria.withDepMins(PackedCriteria.pack(482, 2, 555), 420));
+
+        int newSize = builderWithData.build().size();
+        assertEquals(originalSize + 1, newSize,
+                "The frontier should increase by one after adding a non-dominated tuple");
+
+        // The copy should remain unchanged.
+        assertEquals(originalSize, copy.build().size(),
+                "Copy must remain unchanged when the original is modified");
+    }
+
+    @Test
+    void testBuilderClear() {
+        ParetoFront.Builder builderWithData = createBuilderWithData();
+        assertFalse(builderWithData.isEmpty());
+        builderWithData.clear();
+        assertTrue(builderWithData.isEmpty());
+        assertEquals(0, builderWithData.build().size(), "After clear, build() must produce an empty ParetoFront");
+    }
+
+    @Test
+    void testBuilderAddDominatedTuple() {
+        ParetoFront.Builder builderWithData = createBuilderWithData();
+        // Add a tuple (482,5,777) with departure 410, which should be dominated.
+        long dominated = PackedCriteria.withDepMins(PackedCriteria.pack(482, 5, 777), 410);
+        builderWithData.add(dominated);
+        ParetoFront pf = builderWithData.build();
+        // The frontier size should remain unchanged.
+        int sizeBefore = pf.size();
+        assertEquals(sizeBefore, builderWithData.build().size(),
+                "Adding a dominated tuple should not increase the frontier size");
+        assertThrows(NoSuchElementException.class,
+                () -> pf.get(480, 5),
+                "Dominated tuple must not be retrievable from the frontier");
+    }
+
+    @Test
+    void testBuilderAddNonDominatedTuple() {
+        ParetoFront.Builder builderWithData = createBuilderWithData();
+        // Add a strictly better tuple (479,1,666) with departure 390.
+        long bestSoFar = PackedCriteria.withDepMins(PackedCriteria.pack(479, 1, 666), 390);
+        builderWithData.add(bestSoFar);
+        ParetoFront pf = builderWithData.build();
+        assertDoesNotThrow(() -> pf.get(479, 1), "The newly added better tuple must be found in the frontier");
+    }
+
+    @Test
+    void testBuilderAddAtFrontierBoundary() {
+        ParetoFront.Builder builderWithData = createBuilderWithData();
+        // Add a tuple that is equal to an existing tuple (480,2,111) with departure 400.
+        long equalToExisting = PackedCriteria.withDepMins(PackedCriteria.pack(480, 2, 999), 400);
+        builderWithData.add(equalToExisting);
+        ParetoFront pf = builderWithData.build();
+        // The frontier size should not increase.
+        int sizeBefore = pf.size();
+        assertEquals(sizeBefore, builderWithData.build().size(),
+                "Adding an equal tuple does not increase size");
+    }
+
+    @Test
+    void testBuilderAddAll() {
+        ParetoFront.Builder builderWithData = createBuilderWithData();
+        ParetoFront.Builder other = new ParetoFront.Builder();
+        other.add(PackedCriteria.withDepMins(PackedCriteria.pack(480, 2, 111), 400))  // identical to one in builderWithData.
+                .add(PackedCriteria.withDepMins(PackedCriteria.pack(1000, 10, 999), 410)); // within bounds; likely dominated.
+        int oldSize = builderWithData.build().size();
+        builderWithData.addAll(other);
+        ParetoFront pf = builderWithData.build();
+        // The final frontier should be at least as large as before.
+        assertTrue(pf.size() >= oldSize, "Final frontier size must be at least the old size");
+    }
+
+    @Test
+    void testFullyDominatesMethod() {
+        ParetoFront.Builder builderWithData = createBuilderWithData();
+        ParetoFront.Builder second = new ParetoFront.Builder();
+        second.add(PackedCriteria.withDepMins(PackedCriteria.pack(500, 10, 999), 490))
+                .add(PackedCriteria.withDepMins(PackedCriteria.pack(501, 9, 888), 480));
+        // Test fullyDominates with departure=480.
+        boolean doesDominate = builderWithData.fullyDominates(second, 480);
+        assertFalse(doesDominate, "Expected builderWithData not to fully dominate the second frontier for depMins=480");
+    }
+    // 480, 2, 400              500, 10, 480
+    // 480, 3, 410         vs
+    // 481, 1, 395              501, 9, 480
+
+    @Test
+    void testBuilderBuildImmutability() {
+        ParetoFront.Builder builderWithData = createBuilderWithData();
+        ParetoFront built = builderWithData.build();
+        int oldSize = built.size();
+        builderWithData.add(PackedCriteria.withDepMins(PackedCriteria.pack(1000, 1, 7777), 480));
+        // The previously built ParetoFront should remain unchanged.
+        assertEquals(oldSize, built.size(), "Previously built ParetoFront must remain unchanged after modifying the builder");
+    }
+
+    @Test
+    void testGetThrowsForNonExisting() {
+        ParetoFront.Builder builderWithData = createBuilderWithData();
+        ParetoFront pf = builderWithData.build();
+        assertThrows(NoSuchElementException.class,
+                () -> pf.get(9999, 99));
+    }
+
+    @Test
+    void testExtremeValuesInEmptyBuilder() {
+        // Create a fresh, empty builder.
+        ParetoFront.Builder builder = new ParetoFront.Builder();
+
+        // Extreme value A: maximum arrival (2879) and maximum changes (127).
+        // Use departure = 480.
+        long extremeHigh = PackedCriteria.withDepMins(PackedCriteria.pack(2879, 127, 123456), 480);
+
+        // Extreme value B: minimum arrival (-240) and 0 changes.
+        // Use the same departure so that neither dominates the other.
+        long extremeLow = PackedCriteria.withDepMins(PackedCriteria.pack(-240, 0, 654321), -240);
+
+        // Add both extreme values.
+        builder.add(extremeHigh);
+        builder.add(extremeLow);
+        // Build the ParetoFront.
+        ParetoFront pf = builder.build();
+
+        // Now, verify that both extremes are present.
+        // If the packing works correctly, pf.get(2879,127) should return extremeHigh,
+        // and pf.get(-240,0) should return extremeLow.
+//        System.out.println(PackedCriteria.arrMins(extremeHigh) + " " + PackedCriteria.changes(extremeHigh) + " " +PackedCriteria.depMins(extremeHigh));
+//        System.out.println(PackedCriteria.arrMins(extremeLow) + " " + PackedCriteria.changes(extremeLow) + " " + PackedCriteria.depMins(extremeLow));
+//        System.out.println(builder);
+
+
+        long retHigh = pf.get(2879, 127);
+        System.out.println(builder);
+        long retLow = pf.get(-240, 0);
+
+        assertEquals(2879, PackedCriteria.arrMins(retHigh), "Extreme high should have arrival 2879");
+        assertEquals(127, PackedCriteria.changes(retHigh), "Extreme high should have 127 changes");
+        assertEquals(654321, PackedCriteria.payload(retLow), "Extreme low should have payload 654321");
+        assertEquals(-240, PackedCriteria.arrMins(retLow), "Extreme low should have arrival -240");
+        assertEquals(0, PackedCriteria.changes(retLow), "Extreme low should have 0 changes");
+    }
+
+    @Test
+    void testAddFunction_AddInMiddleOneRemoval(){
+        ParetoFront.Builder builder = new ParetoFront.Builder();
+
+        builder.add(PackedCriteria.withDepMins(PackedCriteria.pack(500, 10, 0), 490));
+        builder.add(PackedCriteria.withDepMins(PackedCriteria.pack(501, 9, 0), 490));
+        builder.add(PackedCriteria.withDepMins(PackedCriteria.pack(502, 9, 0), 490));
+
+        ParetoFront paretoFront = builder.build();
+
+        assertEquals(2, paretoFront.size());
+
+    }
+
+    @Test
+    void testAddFunction_AddInMiddleAndRemovetwoDominated(){
+        ParetoFront.Builder builder = new ParetoFront.Builder();
+
+        builder.add(PackedCriteria.withDepMins(PackedCriteria.pack(700, 10, 0), 690));
+        builder.add(PackedCriteria.withDepMins(PackedCriteria.pack(710, 9, 0), 700));
+        builder.add(PackedCriteria.withDepMins(PackedCriteria.pack(720, 8, 0), 710)); // dominated
+        builder.add(PackedCriteria.withDepMins(PackedCriteria.pack(730, 7, 0), 710)); // dominated
+
+        // dominates 3 and 4
+        builder.add(PackedCriteria.withDepMins(PackedCriteria.pack(720, 6, 0), 710));
+
+        ParetoFront paretoFront = builder.build();
+
+        assertThrows(NoSuchElementException.class, () -> paretoFront.get(720, 8)); // Has been deleted
+        assertThrows(NoSuchElementException.class, () -> paretoFront.get(730, 7)); // Same
+    }
+
+
+    @Test
+    void testAddFunction_AddDominatedTuple(){
+        ParetoFront.Builder builder = new ParetoFront.Builder();
+
+        builder.add(PackedCriteria.withDepMins(PackedCriteria.pack(800, 5, 0), 790));
+        builder.add(PackedCriteria.withDepMins(PackedCriteria.pack(810, 4, 0), 800));
+        builder.add(PackedCriteria.withDepMins(PackedCriteria.pack(820, 3, 0), 810));
+
+        // dominated tupple, not adding to list
+        builder.add(PackedCriteria.withDepMins(PackedCriteria.pack(815, 6, 0), 800));
+
+        ParetoFront paretoFront = builder.build();
+
+        assertThrows(NoSuchElementException.class, () -> paretoFront.get(815, 6)); // Vérifie que 815,6 n'est pas présent
+    }
+
+    @Test
+    void testAddFunction_AddDominatingEverythingTuple(){
+        ParetoFront.Builder builder = new ParetoFront.Builder();
+
+        builder.add(PackedCriteria.withDepMins(PackedCriteria.pack(805, 5, 0), 800));
+        builder.add(PackedCriteria.withDepMins(PackedCriteria.pack(810, 4, 0), 800));
+
+        // dominated tupple, not adding to list
+        builder.add(PackedCriteria.withDepMins(PackedCriteria.pack(804, 4, 0), 800));
+
+        ParetoFront paretoFront = builder.build();
+
+        assertThrows(NoSuchElementException.class, () -> paretoFront.get(805, 5));
+        assertThrows(NoSuchElementException.class, () -> paretoFront.get(810, 4));
+        assertEquals(1, paretoFront.size()); // why :((((((((((((
+    }
+
+    @Test
+    void TestAddFromCourseExample(){
+
+        long p1 = PackedCriteria.pack(8 * 60,3,1);
+        long p2 = PackedCriteria.pack(8 * 60,4,1);
+        long p3 = PackedCriteria.pack(8 * 60 + 1,2,1);
+        long p4 = PackedCriteria.pack(8 * 60 + 2,1,1);
+        long p5 = PackedCriteria.pack(8 * 60 + 3,0,1);
+        long p6 = PackedCriteria.pack(8 * 60 + 4,1,1);
+
+        ParetoFront.Builder front = new ParetoFront.Builder();
+
+        front.add(p1);
+        front.add(p2);
+        front.add(p6);
+        front.add(p3);
+        front.add(p4);
+        front.add(p5);
+        assertEquals("480|3  481|2  482|1  483|0  ", front.toString());
+
+    }
+
 }
