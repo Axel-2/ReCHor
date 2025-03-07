@@ -62,7 +62,7 @@ public class StructuredBuffer {
         // TODO preconditions
 
 
-        int offset = Structure.offset(fieldIndex, elementIndex);
+        int offset = structure.offset(fieldIndex, elementIndex);
 
         // la méthode get de buffer nous donne le byte
         // à l'index donné
