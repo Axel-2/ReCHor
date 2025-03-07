@@ -81,7 +81,7 @@ public class StructuredBuffer {
      *
      * @param fieldIndex champ d'index voulu
      * @param elementIndex élément d'index du tableau
-     * @return entier u8 correspondant aux paramètres voulus
+     * @return entier u16 correspondant aux paramètres voulus
      */
     public int getU16(int fieldIndex, int elementIndex) {
 
@@ -100,7 +100,7 @@ public class StructuredBuffer {
      *
      * @param fieldIndex champ d'index voulu
      * @param elementIndex élément d'index du tableau
-     * @return entier u8 correspondant aux paramètres voulus
+     * @return entier u32 correspondant aux paramètres voulus
      */
     public int getS32(int fieldIndex, int elementIndex) {
 

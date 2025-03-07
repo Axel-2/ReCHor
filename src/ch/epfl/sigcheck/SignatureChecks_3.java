@@ -88,12 +88,12 @@ final class SignatureChecks_3 {
         v20 = new ch.epfl.rechor.journey.ParetoFront.Builder(v20);
         v20 = new ch.epfl.rechor.journey.ParetoFront.Builder();
         v20 = v20.add(v19);
-        //v20 = v20.add(v03, v03, v03);
-        //v20 = v20.addAll(v20);
+        v20 = v20.add(v03, v03, v03);
+        v20 = v20.addAll(v20);
         v17 = v20.build();
         v20 = v20.clear();
         v20.forEach(v18);
-        //v14 = v20.fullyDominates(v20, v03);
+        v14 = v20.fullyDominates(v20, v03);
         v14 = v20.isEmpty();
         v06 = v20.toString();
     }
