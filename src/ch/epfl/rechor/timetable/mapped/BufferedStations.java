@@ -6,6 +6,9 @@ import ch.epfl.rechor.timetable.Stations;
 import java.nio.ByteBuffer;
 import java.util.List;
 
+import static ch.epfl.rechor.timetable.mapped.Structure.FieldType.*;
+import static ch.epfl.rechor.timetable.mapped.Structure.field;
+
 
 /**
  * Classe qui implémente l'interface Stations et permet d'accéder
@@ -26,11 +29,16 @@ public final class BufferedStations implements Stations {
     );
 
 
+    // TODO IMMUTABILITé ?
 
+    private List<String> stringTable;
+    private ByteBuffer buffer;
 
     // unique constructeur publlique
     public BufferedStations(List<String> stringTable, ByteBuffer buffer) {
 
+        this.stringTable = stringTable;
+        this.buffer = buffer;
 
     }
 

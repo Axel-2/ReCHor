@@ -98,7 +98,7 @@ public class Structure {
      * @param elementIndex index de l'élément
      * @return index correspondant aux paramètres
      */
-    public int offset(int fieldIndex, int elementIndex) {
+    public static int offset(int fieldIndex, int elementIndex) {
         // Vérifie que l'index du champ est valide
         Preconditions.checkArgument(fieldIndex >= 0 && fieldIndex < firstBytePositions.length);
 
