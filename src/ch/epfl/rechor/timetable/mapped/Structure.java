@@ -100,7 +100,9 @@ public class Structure {
      */
     public int offset(int fieldIndex, int elementIndex) {
         // Vérifie que l'index du champ est valide
-        Preconditions.checkArgument(fieldIndex >= 0 && fieldIndex < firstBytePositions.length);
+        if (fieldIndex < 0 || fieldIndex >= firstBytePositions.length) {
+            throw new IndexOutOfBoundsException();
+        }
 
         // Retourne l'index correspondant dans le tableau de donnée aplati.
         return firstBytePositions[fieldIndex] + (elementIndex * totalSize);
