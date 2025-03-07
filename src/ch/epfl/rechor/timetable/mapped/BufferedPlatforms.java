@@ -6,14 +6,30 @@ import ch.epfl.rechor.timetable.Platforms;
 import java.nio.ByteBuffer;
 import java.util.List;
 
+/**
+ * Classe qui implémente l'interface Platforms et permet d'accéder
+ * à une table de gares représentée de manière aplatie
+ * @author Yoann Salamin (390522)
+ * @author Axel Verga (398787)
+ */
 public final class BufferedPlatforms implements Platforms {
+
+    // Attributs
     private final static int NAME_ID = 0;
     private final static int STATION_ID = 1;
 
+    // Tables des noms
     private List<String> stringTable;
+
+    // Tableau structuré
     private StructuredBuffer structuredBuffer;
 
 
+    /**
+     * Constructeur public
+     * @param stringTable table de string
+     * @param buffer buffer utile à la création du structuredBuffer
+     */
     public BufferedPlatforms(List<String> stringTable, ByteBuffer buffer) {
 
         this.stringTable = stringTable;
