@@ -24,7 +24,6 @@ public final class ParetoFront {
 
         // il ne faut pas copier les critères
         this.packed_criterias = packed_criterias;
-        // TODO La méthode build du builder  doit garantir l'immuabilité...
     }
 
     /**
@@ -121,7 +120,6 @@ public final class ParetoFront {
         // capacité initiale du tableau de pareto
         private final int INITIAL_CAPACITY = 2;
 
-        // TODO voir si cette variable peut rester local
         private int capacity;
 
         /**
@@ -292,7 +290,6 @@ public final class ParetoFront {
          */
         public Builder addAll(Builder that) {
 
-            // TODO essaie de ne pas build si on arrive à résoudre le problème de forEach
             // il faut d'abord build avant d'appliquer le forEach sinon
             // on va itérer sur des valeurs nulles du tableau qu'on ne veut pas
             that.forEach(value -> this.add(value));
@@ -307,7 +304,7 @@ public final class ParetoFront {
          * @param depMins minutes de départ à partir desquelles on va se caler pour comparer la dominance
          * @return (booléen) indiquant des deux
          */
-        boolean fullyDominates(Builder that, int depMins){
+        public boolean fullyDominates(Builder that, int depMins){
 
             // Pour chacun des tuples de that
             for (long thatValue : that.arrayInConstruction) {
