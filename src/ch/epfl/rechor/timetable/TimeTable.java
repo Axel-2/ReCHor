@@ -61,8 +61,9 @@ public interface TimeTable {
      * est un index de gare (et pas un index de voie ou de quai)
      */
     default boolean isStationId(int stopId) {
-        // TODO
-        return false;
+
+        // Si l'index est inférieur au nombre de gares, c'est une gare.
+        return stopId < stations().size();
     }
 
     /**
@@ -73,8 +74,8 @@ public interface TimeTable {
      * est un index de voie ou de quai (et pas un index de gare)
      */
     default boolean isPlatformId(int stopId) {
-        // TODO
-        return false;
+        // Sinon, c'est une voie ou un quai.
+        return stopId >= stations().size();
     }
 
     /**
@@ -85,8 +86,12 @@ public interface TimeTable {
      * (qui peut être identique si l'arrêt en question est une gare)
      */
     default int stationId(int stopId) {
-        // TODO
-        return 1;
+        if (isStationId(stopId)) {
+            return stopId;
+        } else {
+            // Pour une plateforme, déduire l'index dans platforms et retourner l'index de la gare associée.
+            return platforms().stationId(stopId - stations().size());
+        }
     }
 
     /**
@@ -95,8 +100,13 @@ public interface TimeTable {
      * @return le nom de voie ou de quai de l'arrêt d'index donné, ou null si cet arrêt est une gare.
      */
     default String platformName(int stopId) {
-        // TODO
-        return "a";
+        if (isPlatformId(stopId)) {
+            // Pour une plateforme, obtenir son nom (voies/quais).
+            return platforms().name(stopId - stations().size());
+        } else {
+            // Pour une gare, il n'y a pas de nom de voie/quai.
+            return null;
+        }
     }
 
 }
