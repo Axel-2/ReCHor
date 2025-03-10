@@ -7,7 +7,7 @@ import java.time.LocalDate;
  * @author Yoann Salamin (390522)
  * @author Axel Verga (398787)
  */
-public interface gTimeTable {
+public interface TimeTable {
 
     /**
      * Fonction qui retourne les gares indexées de l'horaire
