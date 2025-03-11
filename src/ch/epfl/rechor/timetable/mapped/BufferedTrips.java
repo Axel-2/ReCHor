@@ -31,12 +31,12 @@ public final class BufferedTrips implements Trips {
     public BufferedTrips(List<String> stringTable, ByteBuffer buffer) {
         this.stringTable = stringTable;
 
-        // Structure d'une plateforme
-        Structure platformStructure = new Structure(
+        // Structure d'une course
+        Structure tripStructure = new Structure(
                 Structure.field(ROUTE_ID, Structure.FieldType.U16),
                 Structure.field(DESTINATION_ID, Structure.FieldType.U16));
 
-        this.structuredBuffer = new StructuredBuffer(platformStructure, buffer);
+        this.structuredBuffer = new StructuredBuffer(tripStructure, buffer);
     }
 
     /**

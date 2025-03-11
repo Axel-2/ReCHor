@@ -34,12 +34,12 @@ public final class BufferedRoutes implements Routes {
 
         this.stringTable = stringTable;
 
-        // Structure d'une plateforme
-        Structure platformStructure = new Structure(
+        // Structure d'une route
+        Structure routeStructure = new Structure(
                 Structure.field(NAME_ID, Structure.FieldType.U16),
                 Structure.field(KIND, Structure.FieldType.U8));
 
-        this.structuredBuffer = new StructuredBuffer(platformStructure, buffer);
+        this.structuredBuffer = new StructuredBuffer(routeStructure, buffer);
     }
 
     /**

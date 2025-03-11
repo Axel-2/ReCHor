@@ -3,6 +3,8 @@ package ch.epfl.rechor.timetable.mapped;
 import ch.epfl.rechor.timetable.Connections;
 
 import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
+import java.util.List;
 
 /**
  * Classe qui permet d'accéder à une table de liaison représentée de manière aplatie
@@ -11,8 +13,31 @@ import java.nio.ByteBuffer;
  */
 public final class BufferedConnections implements Connections {
 
+    // Champs du connectionsBuffer
+    private final static int DEP_STOP_ID  = 0;
+    private final static int DEP_MINUTES  = 1;
+    private final static int ARR_STOP_ID  = 2;
+    private final static int ARR_MINUTES  = 3;
+    private final static int TRIP_POS_ID  = 4;
+
+    // Buffers
+    private final StructuredBuffer connectionsBuffer;
+    private final IntBuffer nextBuffer;
+
     public BufferedConnections(ByteBuffer buffer, ByteBuffer succBuffer) {
 
+        // Structure d'une liaison
+        Structure connectionStructure = new Structure(
+                Structure.field(DEP_STOP_ID, Structure.FieldType.U16),
+                Structure.field(DEP_MINUTES, Structure.FieldType.U16),
+                Structure.field(ARR_STOP_ID, Structure.FieldType.U16),
+                Structure.field(ARR_MINUTES, Structure.FieldType.U16),
+                Structure.field(TRIP_POS_ID, Structure.FieldType.S32));
+
+
+        // Créations des structured buffers
+        this.connectionsBuffer = new StructuredBuffer(connectionStructure, buffer);
+        this.nextBuffer = succBuffer.asIntBuffer();
     }
     /**
      * Fonction qui retourne l'index de l'arrêt de départ de la liaison d'index donné,
@@ -23,7 +48,7 @@ public final class BufferedConnections implements Connections {
      */
     @Override
     public int depStopId(int id) {
-        return 0;
+        return connectionsBuffer.getU16(DEP_STOP_ID, id);
     }
 
     /**
@@ -35,19 +60,18 @@ public final class BufferedConnections implements Connections {
      */
     @Override
     public int depMins(int id) {
-        return 0;
+        return connectionsBuffer.getU16(DEP_MINUTES, id);
     }
 
     /**
      * Fonction qui retourne l'index de l'arrêt d'arrivée de la liaison d'index donné
-     *
      * @param id index d'une liaison
      * @return l'index de l'arrêt d'arrivée de la liaison d'index donné
      * @throws IndexOutOfBoundsException Erreur si l'index est invalide
      */
     @Override
     public int arrStopId(int id) {
-        return 0;
+        return connectionsBuffer.getU16(ARR_STOP_ID, id);
     }
 
     /**
@@ -59,7 +83,7 @@ public final class BufferedConnections implements Connections {
      */
     @Override
     public int arrMins(int id) {
-        return 0;
+        return connectionsBuffer.getU16(ARR_MINUTES, id);
     }
 
     /**
@@ -71,7 +95,8 @@ public final class BufferedConnections implements Connections {
      */
     @Override
     public int tripId(int id) {
-        return 0;
+        // Shift pour récupérer les 24 bits de poids forts correspondant à l'id
+       return connectionsBuffer.getS32(TRIP_POS_ID, id) >>> 8;
     }
 
     /**
@@ -85,7 +110,8 @@ public final class BufferedConnections implements Connections {
      */
     @Override
     public int tripPos(int id) {
-        return 0;
+        // Masque pour récupérer seulement les 8 bits de poids faible (où se trouve la pos)
+        return connectionsBuffer.getS32(TRIP_POS_ID, id) & 0xFF;
     }
 
     /**
@@ -100,7 +126,7 @@ public final class BufferedConnections implements Connections {
      */
     @Override
     public int nextConnectionId(int id) {
-        return 0;
+        return nextBuffer.get(id);
     }
 
     /**
@@ -111,6 +137,6 @@ public final class BufferedConnections implements Connections {
      */
     @Override
     public int size() {
-        return 0;
+        return connectionsBuffer.size();
     }
 }

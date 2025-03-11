@@ -9,7 +9,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class BufferedRoutesTest {
+class MyBufferedRoutesTest {
 
     // Création d'un buffer factice contenant des données aplaties
     private static ByteBuffer createTestBuffer() {
