@@ -12,8 +12,31 @@ import java.util.List;
  */
 public final class BufferedTrips implements Trips {
 
-    public BufferedTrips(List<String> stringTable, ByteBuffer buffer) {
+    // Attributs
+    private final static int ROUTE_ID  = 0;
+    private final static int DESTINATION_ID = 1;
 
+    // Tables des noms
+    private final List<String> stringTable;
+
+    // Tableau structuré
+    private final StructuredBuffer structuredBuffer;
+
+
+    /**
+     * Constructeur public
+     * @param stringTable table de string
+     * @param buffer buffer utile à la création du structuredBuffer
+     */
+    public BufferedTrips(List<String> stringTable, ByteBuffer buffer) {
+        this.stringTable = stringTable;
+
+        // Structure d'une plateforme
+        Structure platformStructure = new Structure(
+                Structure.field(ROUTE_ID, Structure.FieldType.U16),
+                Structure.field(DESTINATION_ID, Structure.FieldType.U16));
+
+        this.structuredBuffer = new StructuredBuffer(platformStructure, buffer);
     }
 
     /**
@@ -25,7 +48,7 @@ public final class BufferedTrips implements Trips {
      */
     @Override
     public int routeId(int id) {
-        return 0;
+        return structuredBuffer.getU16(ROUTE_ID, id);
     }
 
     /**
@@ -37,17 +60,18 @@ public final class BufferedTrips implements Trips {
      */
     @Override
     public String destination(int id) {
-        return "";
+        int destinationIndex = structuredBuffer.getU16(DESTINATION_ID, id);
+        return stringTable.get(destinationIndex);
     }
 
     /**
-     * Fonction qu retourne le nombre d'éléments des données
+     * Fonction qui retourne le nombre d'éléments des données
      *
      * @return un int qui représente le nombre d'éléments
      * des données
      */
     @Override
     public int size() {
-        return 0;
+        return structuredBuffer.size();
     }
 }

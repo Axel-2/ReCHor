@@ -14,8 +14,32 @@ import java.util.List;
  */
 public final class BufferedRoutes implements Routes {
 
+    // Attributs
+    private final static int NAME_ID = 0;
+    private final static int KIND = 1;
+
+    // Tables des noms
+    private final List<String> stringTable;
+
+    // Tableau structuré
+    private final StructuredBuffer structuredBuffer;
+
+
+    /**
+     * Constructeur public
+     * @param stringTable table de string
+     * @param buffer buffer utile à la création du structuredBuffer
+     */
     public BufferedRoutes(List<String> stringTable, ByteBuffer buffer) {
-        // TODO A FAIRE
+
+        this.stringTable = stringTable;
+
+        // Structure d'une plateforme
+        Structure platformStructure = new Structure(
+                Structure.field(NAME_ID, Structure.FieldType.U16),
+                Structure.field(KIND, Structure.FieldType.U8));
+
+        this.structuredBuffer = new StructuredBuffer(platformStructure, buffer);
     }
 
     /**
@@ -27,7 +51,8 @@ public final class BufferedRoutes implements Routes {
      */
     @Override
     public Vehicle vehicle(int id) {
-        return null;
+        int vehicleCode = structuredBuffer.getU8(KIND, id);
+        return Vehicle.ALL.get(vehicleCode);
     }
 
     /**
@@ -39,7 +64,11 @@ public final class BufferedRoutes implements Routes {
      */
     @Override
     public String name(int id) {
-        return "";
+        // On récupère l'index du nom dans la chaîne de caractère, en cherchant l'info dans notre tableau (buffer)
+        int nameIndex = structuredBuffer.getU16(NAME_ID, id);
+
+        // on retourne le nom correspondant
+        return stringTable.get(nameIndex);
     }
 
     /**
@@ -50,6 +79,6 @@ public final class BufferedRoutes implements Routes {
      */
     @Override
     public int size() {
-        return 0;
+        return structuredBuffer.size();
     }
 }

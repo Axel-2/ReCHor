@@ -19,10 +19,10 @@ public final class BufferedPlatforms implements Platforms {
     private final static int STATION_ID = 1;
 
     // Tables des noms
-    private List<String> stringTable;
+    private final List<String> stringTable;
 
     // Tableau structuré
-    private StructuredBuffer structuredBuffer;
+    private final StructuredBuffer structuredBuffer;
 
 
     /**
