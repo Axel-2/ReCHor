@@ -11,7 +11,7 @@ import java.nio.ByteBuffer;
  * @author Yoann Salamin (390522)
  * @author Axel Verga (398787)
  */
-public class StructuredBuffer {
+public final class StructuredBuffer {
 
     private final Structure structure;
     private final ByteBuffer buffer;
