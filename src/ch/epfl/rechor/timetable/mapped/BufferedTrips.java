@@ -29,13 +29,17 @@ public final class BufferedTrips implements Trips {
      * @param buffer buffer utile à la création du structuredBuffer
      */
     public BufferedTrips(List<String> stringTable, ByteBuffer buffer) {
+
         this.stringTable = stringTable;
 
         // Structure d'une course
         Structure tripStructure = new Structure(
+                // Index de la ligne de la course
                 Structure.field(ROUTE_ID, Structure.FieldType.U16),
+                // Index de chaîne de la destination finale
                 Structure.field(DESTINATION_ID, Structure.FieldType.U16));
 
+        // création du tableau structuré
         this.structuredBuffer = new StructuredBuffer(tripStructure, buffer);
     }
 
@@ -48,6 +52,9 @@ public final class BufferedTrips implements Trips {
      */
     @Override
     public int routeId(int id) {
+
+        // on récupère simplement l'id dans
+        // le tableau structuré
         return structuredBuffer.getU16(ROUTE_ID, id);
     }
 
@@ -60,7 +67,12 @@ public final class BufferedTrips implements Trips {
      */
     @Override
     public String destination(int id) {
+
+        // on récupère l'index
         int destinationIndex = structuredBuffer.getU16(DESTINATION_ID, id);
+
+        // on retourne la chaine correspondante à
+        // l'aide de la table
         return stringTable.get(destinationIndex);
     }
 

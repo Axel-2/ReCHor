@@ -11,7 +11,37 @@ import java.nio.ByteBuffer;
  */
 public final class BufferedTransfers implements Transfers {
 
+    // Attributs
+    private final int DEP_STATION_ID = 0;
+    private final int ARR_STATION_ID = 1;
+    private final int TRANSFER_MINUTES = 2;
+
+    // Attributs du buffer
+    private final StructuredBuffer tranferStructuredBuffer;
+
+    /**
+     * Constructeur qui construit une instance donnant accès
+     * aux données aplaties disponibles dans le tableau buffer.
+     * @param buffer un tableau d'octet qui contient des données aplaties
+     */
     public BufferedTransfers(ByteBuffer buffer) {
+
+        // Structure d'un transfert
+        Structure transferStructure = new Structure(
+
+                // Index de la gare de départ
+                Structure.field(DEP_STATION_ID, Structure.FieldType.U16),
+                // Index de la gare d'arrivée
+                Structure.field(ARR_STATION_ID, Structure.FieldType.U16),
+                // Durée du changement, en minutes
+                Structure.field(TRANSFER_MINUTES, Structure.FieldType.U8)
+
+        );
+
+        // à l'aide de la structure et du buffer donné en paramètre, on peut maintenant
+        // créer le tableau structuré
+        this.tranferStructuredBuffer = new StructuredBuffer(transferStructure, buffer);
+
 
     }
 
@@ -25,7 +55,11 @@ public final class BufferedTransfers implements Transfers {
      */
     @Override
     public int depStationId(int id) {
-        return 0;
+
+        // TODO tests et throws
+
+        int depStationId = tranferStructuredBuffer.getU16(DEP_STATION_ID, id);
+        return depStationId;
     }
 
     /**
@@ -37,7 +71,12 @@ public final class BufferedTransfers implements Transfers {
      */
     @Override
     public int minutes(int id) {
-        return 0;
+
+        // TODO tests et throws ?
+
+        int minutes = tranferStructuredBuffer.getU8(TRANSFER_MINUTES, id);
+
+        return minutes;
     }
 
     /**
@@ -50,7 +89,7 @@ public final class BufferedTransfers implements Transfers {
      */
     @Override
     public int arrivingAt(int stationId) {
-        return 0;
+        return tranferStructuredBuffer.;
     }
 
     /**

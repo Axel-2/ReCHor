@@ -24,7 +24,6 @@ public final class BufferedRoutes implements Routes {
     // Tableau structuré
     private final StructuredBuffer structuredBuffer;
 
-
     /**
      * Constructeur public
      * @param stringTable table de string
@@ -36,9 +35,15 @@ public final class BufferedRoutes implements Routes {
 
         // Structure d'une route
         Structure routeStructure = new Structure(
+                // Index de chaîne du nom de la ligne
                 Structure.field(NAME_ID, Structure.FieldType.U16),
+                // Type de véhicule desservant la ligne
+                // TODO vérifier plus tard la condition:
+                // entier entre 0 et 6
                 Structure.field(KIND, Structure.FieldType.U8));
 
+        // ensuite on crée le tableau structuré à l'aide de notre
+        // structure
         this.structuredBuffer = new StructuredBuffer(routeStructure, buffer);
     }
 
@@ -51,7 +56,11 @@ public final class BufferedRoutes implements Routes {
      */
     @Override
     public Vehicle vehicle(int id) {
+
+        // on récupère l'id dans le tableau structuré
         int vehicleCode = structuredBuffer.getU8(KIND, id);
+
+        // on retourne le véhicule avec l'id correspondant
         return Vehicle.ALL.get(vehicleCode);
     }
 
@@ -64,10 +73,13 @@ public final class BufferedRoutes implements Routes {
      */
     @Override
     public String name(int id) {
-        // On récupère l'index du nom dans la chaîne de caractère, en cherchant l'info dans notre tableau (buffer)
+
+        // On récupère l'index du nom dans la chaîne de caractère,
+        // en cherchant l'info dans notre tableau structuré
         int nameIndex = structuredBuffer.getU16(NAME_ID, id);
 
-        // on retourne le nom correspondant
+        // on retourne le nom correspondant grace
+        // à notre table
         return stringTable.get(nameIndex);
     }
 
@@ -79,6 +91,9 @@ public final class BufferedRoutes implements Routes {
      */
     @Override
     public int size() {
+
+        // on retourne simplement la taille de
+        // notre tableau structuré
         return structuredBuffer.size();
     }
 }
