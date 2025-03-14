@@ -177,9 +177,6 @@ public final class BufferedTransfers implements Transfers {
         // On récupère l'intervalle empaqueté des changements arrivant à la gare d'arrivée
         int packedInterval = arrivingAt(arrStationId);
 
-        // TODO gèrer le cas où y'en a aucun,  == -1 ??
-
-
         int start = PackedRange.startInclusive(packedInterval);
         int end = PackedRange.endExclusive(packedInterval);
 
