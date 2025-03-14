@@ -109,7 +109,6 @@ public final class BufferedTransfers implements Transfers {
 
     /**
      * Fonction qu retourne le nombre d'éléments des données
-     *
      * @return un int qui représente le nombre d'éléments
      * des données
      */
