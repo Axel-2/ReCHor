@@ -17,18 +17,15 @@ import java.util.List;
  */
 public final class BufferedStationAliases implements StationAliases {
 
+    // constantes pour la structure
     private final int ALIAS_ID = 0;
     private final int STATION_NAME_ID = 1;
 
-    private List<String> stringTable;
-    private StructuredBuffer stationAliasesStructuredBuffer;
+    // table de conversion pour les chaines
+    private final List<String> stringTable;
 
-    private Structure stationAliasesStructure = new Structure(
-            field(ALIAS_ID, U16),
-            field(STATION_NAME_ID, U16)
-    );
-
-    // unique constructeur publique
+    // variable pour stocker l'instance de notre tableau structuré
+    private final StructuredBuffer stationAliasesStructuredBuffer;
 
     /**
      * Constructeur de BufferedStationAliases
@@ -37,7 +34,18 @@ public final class BufferedStationAliases implements StationAliases {
      */
     public BufferedStationAliases(List<String> stringTable, ByteBuffer buffer) {
 
+        // on enregistre la table de conversion
         this.stringTable = stringTable;
+
+        // création de la structure
+        Structure stationAliasesStructure = new Structure(
+                // Index de chaîne du nom alternatif
+                field(ALIAS_ID, U16),
+                //Index de chaîne du nom de la gare
+                field(STATION_NAME_ID, U16)
+        );
+
+        // création du tableau structuré
         this.stationAliasesStructuredBuffer = new StructuredBuffer(stationAliasesStructure, buffer);
 
     }
@@ -57,10 +65,8 @@ public final class BufferedStationAliases implements StationAliases {
         // on récupère en premier l'id de l'alias dans la table
         int aliasID =  stationAliasesStructuredBuffer.getU16(ALIAS_ID, id);
 
-        // ensuite on récupère la string dans la table
-        String aliasName = stringTable.get(aliasID);
-
-        return aliasName;
+        // ensuite, on récupère la chaine dans la table
+        return stringTable.get(aliasID);
     }
 
     /**
@@ -75,14 +81,13 @@ public final class BufferedStationAliases implements StationAliases {
 
         // on récupère en premier l'id du nom de la table
         int nameId = stationAliasesStructuredBuffer.getU16(STATION_NAME_ID, id);
-        // ensuite on récupère la string dans la table
-        String stationNameId = stringTable.get(nameId);
 
-        return stationNameId;
+        // ensuite, on récupère la chaine dans la table
+        return stringTable.get(nameId);
     }
 
     /**
-     * Fonction qu retourne le nombre d'éléments des données
+     * Fonction qui retourne le nombre d'éléments des données
      *
      * @return un int qui représente le nombre d'éléments
      * des données

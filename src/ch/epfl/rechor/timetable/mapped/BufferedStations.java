@@ -18,6 +18,7 @@ import static ch.epfl.rechor.timetable.mapped.Structure.field;
  */
 public final class BufferedStations implements Stations {
 
+    // Constante pour la structure
     private final static int NAME_ID = 0;
     private final static int LON = 1;
     private final static int LAT = 2;
@@ -26,16 +27,12 @@ public final class BufferedStations implements Stations {
     // pour longitude et latitude
     private final double CONVERSION_CONST = Math.scalb(360, -32);
 
-    private Structure stationStructure = new Structure(
-            field(NAME_ID, U16),
-            field(LON, S32),
-            field(LAT, S32)
-    );
+    // Variable pour stocker le tableau structuré
+    private final StructuredBuffer structuredBuffer;
 
-    private StructuredBuffer structuredBuffer;
-
-    private List<String> stringTable;
-    private ByteBuffer buffer;
+    // table de conversion qui contient les
+    // chaines de charactère
+    private final List<String> stringTable;
 
     /**
      * Constructeur de BufferedStations
@@ -44,8 +41,20 @@ public final class BufferedStations implements Stations {
      */
     public BufferedStations(List<String> stringTable, ByteBuffer buffer) {
 
+        // on stock notre table de conversion
         this.stringTable = stringTable;
 
+        // on crée notre structure
+        Structure stationStructure = new Structure(
+                // Index de chaîne du nom de la gare
+                field(NAME_ID, U16),
+                // Longitude de la gare
+                field(LON, S32),
+                // Latitude de la gare
+                field(LAT, S32)
+        );
+
+        // création du buffer structuré
         this.structuredBuffer = new StructuredBuffer(stationStructure, buffer);
 
     }
@@ -60,10 +69,10 @@ public final class BufferedStations implements Stations {
     @Override
     public String name(int id) {
 
-        // On récupère l'id du nom dans la table
+        // On récupère l'id du nom dans la table structurée
         int nameId = structuredBuffer.getU16(NAME_ID, id);
 
-        // on récupère ensuite la string dans la table à l'aide de l'id
+        // on récupère ensuite la chaine dans la table à l'aide de l'id
         String name = stringTable.get(nameId);
 
         return name;
@@ -80,11 +89,11 @@ public final class BufferedStations implements Stations {
     @Override
     public double longitude(int id) {
 
-        // on récupère la longitude qui est encodé avec une unité spéciale
+        // on récupère la longitude qui est encodée avec une unité spéciale
         // la longitude est encodée sur 4 octets
         int longitudeCustomUnit = structuredBuffer.getS32(LON, id);
 
-        // on reconverti en degré avec la constante
+        // on remet en degré avec la constante
         double longInDegree = CONVERSION_CONST * longitudeCustomUnit;
 
         return longInDegree;
@@ -100,18 +109,18 @@ public final class BufferedStations implements Stations {
     @Override
     public double latitude(int id) {
 
-        // on récupère la laltiude qui est encodé avec une unité spéciale
+        // on récupère la latitude qui est encodée avec une unité spéciale
         // la latitude est encodée sur 4 octets
         int latitudeCustomUnit = structuredBuffer.getS32(LAT, id);
 
-        // on reconverti en degré avec la constante
+        // on remet en degré avec la constante
         double latInDegree = CONVERSION_CONST * latitudeCustomUnit;
 
         return latInDegree;
     }
 
     /**
-     * Fonction qu retourne le nombre d'éléments des données
+     * Fonction qui retourne le nombre d'éléments des données
      *
      * @return un int qui représente le nombre d'éléments
      * des données
@@ -120,7 +129,7 @@ public final class BufferedStations implements Stations {
     public int size() {
 
         // on peut utiliser la méthode structuredBuffer
-        // qui fait exacement ce qu'on veut
+        // qui fait exactement ce qu'on veut
         return structuredBuffer.size();
     }
 }

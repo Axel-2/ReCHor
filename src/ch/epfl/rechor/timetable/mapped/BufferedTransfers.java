@@ -29,7 +29,6 @@ public final class BufferedTransfers implements Transfers {
     // et qui est indexé par les gares d'arrivées
     private final int[] stationIdTransferInterval;
 
-
     private int maxStationId;
 
     /**
@@ -42,14 +41,12 @@ public final class BufferedTransfers implements Transfers {
         // Structure des données aplaties d'un transfert
 
         Structure transferStructure = new Structure(
-
                 // Index de la gare de départ
                 Structure.field(DEP_STATION_ID, Structure.FieldType.U16),
                 // Index de la gare d'arrivée
                 Structure.field(ARR_STATION_ID, Structure.FieldType.U16),
                 // Durée du changement, en minutes
                 Structure.field(TRANSFER_MINUTES, Structure.FieldType.U8)
-
         );
 
         // à l'aide de la structure et du buffer donné en paramètre, on peut maintenant
