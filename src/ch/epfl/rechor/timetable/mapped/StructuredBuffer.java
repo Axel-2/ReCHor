@@ -43,6 +43,7 @@ public class StructuredBuffer {
         // ici on utilise une division entière mais ça ne doit pas poser
         // problème car on a vérifié dans le constructeur que la taille du buffer
         // est bien un multiple de la taille de la structure
+
         int nbOfElement = buffer.capacity() / structure.totalSize();
 
         return nbOfElement;
