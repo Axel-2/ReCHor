@@ -110,8 +110,6 @@ public final class ParetoFront {
      */
     public final static class Builder {
 
-        // TODO à la fin voir ce qu'on peut evtl mettre en final
-
         // Tableau de type long qui contient les tuples
         // en cours de construction
         private long[] arrayInConstruction;

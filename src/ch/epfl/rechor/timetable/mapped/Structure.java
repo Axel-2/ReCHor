@@ -70,7 +70,6 @@ public class Structure {
 
             switch (fields[i].type()) {
 
-                // TODO VARIABLES CONST
                 // ajouter la bonne taille en fonction du nombre d'octets
                 case U16 -> size += 2;
                 case U8 -> size += 1;
@@ -95,6 +94,7 @@ public class Structure {
      * du premier octet du champ d'index fieldIndex de l'élément d'index elementIndex
      * @param fieldIndex index du champ
      * @param elementIndex index de l'élément
+     * @throws IllegalArgumentException if index is not valid
      * @return index correspondant aux paramètres
      */
     public int offset(int fieldIndex, int elementIndex) {

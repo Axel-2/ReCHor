@@ -72,8 +72,7 @@ public final class BufferedPlatforms implements Platforms {
     }
 
     /**
-     * Fonction qu retourne le nombre d'éléments des données
-     *
+     * Fonction qui retourne le nombre d'éléments des données
      * @return un int qui représente le nombre d'éléments
      * des données
      */
