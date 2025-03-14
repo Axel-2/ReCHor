@@ -8,7 +8,6 @@ package ch.epfl.rechor.timetable;
  */
 public interface Stations extends Indexed {
 
-    // TODO à vérifier lors des implémentations
     // Toutes ces méthodes lèvent une IndexOutOfBoundsException si l'index qu'on leur passe (nommé id ci-dessous) est
     // invalide, c.-à-d. inférieur à 0 ou supérieur ou égal à la taille retournée par size().
 
@@ -21,7 +20,7 @@ public interface Stations extends Indexed {
     String name(int id);
 
     /**
-     * Fonctio qui retourne la longitude, en degrés, de la gare d'index donné
+     * Fonction qui retourne la longitude, en degrés, de la gare d'index donné
      * @param id index d'une gare
      * @return longitude, en degrés, de la gare d'index donné
      * @throws IndexOutOfBoundsException Erreur si l'index est invalide

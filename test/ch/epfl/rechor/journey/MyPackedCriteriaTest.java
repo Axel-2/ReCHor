@@ -237,16 +237,6 @@ public class MyPackedCriteriaTest {
     }
 
     @Test
-    void payloadWorks() {
-
-        // TODO test commencé mais pas fini
-
-        long criteria = 0b0_110100101111_001100001100_0000010_10100001_10010100_10010001_00010100L;
-
-
-
-    }
-    @Test
     public void testDominatesOrIsEqual() {
         // Create two criteria:
         // Let criteria1: arrMins = 800, departure time = 1000.

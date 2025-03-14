@@ -83,8 +83,6 @@ public final class BufferedStations implements Stations {
     @Override
     public double longitude(int id) {
 
-        // TODO tests ?
-
         // on récupère la longitude qui est encodé avec une unité spéciale
         // la longitude est encodée sur 4 octets
         int longitudeCustomUnit = structuredBuffer.getS32(LON, id);

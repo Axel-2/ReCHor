@@ -23,7 +23,6 @@ class MyParetoFrontTest {
     @Test
     void builder_clear_makesBuilderEmpty() {
         ParetoFront.Builder builder = new ParetoFront.Builder();
-        // TODO: ajouter des éléments si nécessaire avant de tester clear()
         builder.clear();
         assertTrue(builder.isEmpty());
     }

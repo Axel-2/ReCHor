@@ -12,7 +12,6 @@ public class PackedCriteria {
     // Pour rendre la classe non instantiable
     private PackedCriteria() {}
 
-    // TODO commentaires
     /**
      * Pack 3 valeurs aux endroits que l'on veut dans un long
      * @param arrMins heure d'arrivées (en minute)
@@ -36,14 +35,6 @@ public class PackedCriteria {
 
         // On translate pour garantir des valeurs positives
         arrMins += 240;
-
-        // TODO Ici changes peut être nul non ? : je cite mais tu peux supprimer après
-        // "nous reste maintenant à considérer le dernier critère d'optimisation,
-        // le nombre de changements. Il est clair que celui-ci est un entier positif ou nul,
-        // et on peut raisonnablement faire l'hypothèse qu'il est inférieur à 128. Dès lors,
-        // 7 bits suffisent à le représenter ".
-        // On test si les nombres de changements tiennent sur 7 bits
-        // 127 est le nombre max sur 7 bits
 
         Preconditions.checkArgument(changes >= 0 && changes <= 127);
 

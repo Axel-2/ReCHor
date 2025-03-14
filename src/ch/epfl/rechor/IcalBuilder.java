@@ -166,9 +166,6 @@ public final class IcalBuilder {
      */
     public IcalBuilder end() {
 
-        // TODO le requireNonNull n'est pas demandé
-        // J'ai commenté mais on demandera
-        // Objects.requireNonNull(components);
 
         // lève une IllegalArgumentException si aucun composant
         // reste dans la liste
