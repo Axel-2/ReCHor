@@ -56,8 +56,8 @@ public final class BufferedTransfers implements Transfers {
         // l'intervalle des index des changements qui y arrivent
 
         // 1. la première étape est de déterminer la taille du tableau
-        // comme le tableau a comme index toutes les gares il faut déterminer
-        // l'index maximale d'une gare
+        // comme le tableau a comme index toutes les gares, il faut déterminer
+        // l'index maximal d'une gare
         // pour se faire on va itérer sur notre buffer et trouver l'index man
 
         int maxId = 0;
@@ -126,7 +126,6 @@ public final class BufferedTransfers implements Transfers {
 
     /**
      * Fonction qui retourne la durée, en minutes, du changement d'index donné,
-     *
      * @param id index de changement
      * @return durée en minutes du changement d'index donné
      * @throws IndexOutOfBoundsException Erreur si l'index est invalide
@@ -163,13 +162,31 @@ public final class BufferedTransfers implements Transfers {
      *
      * @param depStationId id de la gare de départ
      * @param arrStationId id de la gare d'arrivée
-     * @return durée en minutes du chanegement entre les deux gares d'index donnés
+     * @return durée en minutes du changement entre les deux gares d'index donnés
      * @throws java.util.NoSuchElementException    lève NoSuchElementException si aucun changement n'est possible entre ces deux gares
      * @throws IndexOutOfBoundsException Erreur si l'index est invalide
      */
     @Override
     public int minutesBetween(int depStationId, int arrStationId) {
-        return 0;
+        // On récupère l'intervalle empaqueté des changements arrivant à la gare d'arrivée
+        int packedInterval = arrivingAt(arrStationId);
+
+        // TODO gèrer le cas où y'en a aucun,  == -1 ??
+
+
+        int start = PackedRange.startInclusive(packedInterval);
+        int end = PackedRange.endExclusive(packedInterval);
+
+        for (int i = start; i < end; i++) {
+            if (depStationId == tranferStructuredBuffer.getU16(DEP_STATION_ID, i)){
+                // Si on a trouvé le changement correspondant, on return sa durée
+                return tranferStructuredBuffer.getU8(TRANSFER_MINUTES, i);
+            }
+        }
+
+        // Si on arrive jusqu'à là, c'est que aucun changement ne correspond, on retourne une exception
+        throw new NoSuchElementException("Pas de changements entre " + depStationId + " et " + arrStationId);
+
     }
 
     /**
@@ -179,6 +196,6 @@ public final class BufferedTransfers implements Transfers {
      */
     @Override
     public int size() {
-        return 0;
+        return tranferStructuredBuffer.size();
     }
 }

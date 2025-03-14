@@ -34,9 +34,6 @@ public final class BufferedStations implements Stations {
 
     private StructuredBuffer structuredBuffer;
 
-
-    // TODO IMMUTABILITé ?
-
     private List<String> stringTable;
     private ByteBuffer buffer;
 
