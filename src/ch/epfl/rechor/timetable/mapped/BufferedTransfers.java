@@ -94,6 +94,12 @@ public final class BufferedTransfers implements Transfers {
                 // on oublie pas de stocker notre intervalle dans le tableau initial
                 stationIdTransferInterval[currentStationId] = packedInterval;
 
+                // Si il y a des IDs intermédiaires qui n'apparaissent pas,
+                // on les remplit avec l'intervalle vide correspondant (point d'insertion = currentEnd).
+                for (int missingId = currentStationId + 1; missingId < currentCheckedStationId; missingId++) {
+                    stationIdTransferInterval[missingId] = PackedRange.pack(currentEnd, currentEnd);
+                }
+
                 // on peut mtn passer le currentstart au currentEnd pour le prochain check
                 currentStart = currentTransferIndex;
 
