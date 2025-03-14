@@ -181,7 +181,7 @@ public final class BufferedTransfers implements Transfers {
 
 
         // on vérifie d'abord les index
-        if (depStationId > maxStationId || arrStationId > maxStationId || depStationId < 1 || arrStationId < 1) {
+        if (depStationId > maxStationId || arrStationId > maxStationId || depStationId < 0 || arrStationId < 0) {
             throw new IndexOutOfBoundsException("Index invalide");
         }
         // On récupère l'intervalle empaqueté des changements arrivant à la gare d'arrivée
