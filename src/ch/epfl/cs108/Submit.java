@@ -33,7 +33,7 @@ public final class Submit {
     // Axel
     private static final String TOKEN_1 = "eihieZ9n";
     // Jeton du second membre (identique au premier pour les personnes travaillant seules)
-    private static final String TOKEN_2 = "Uovo6oem";
+    private static final String TOKEN_2 = "ohMeing1";
     // Yoann
     // Noms des éventuels fichiers Java additionnels à inclure (p.ex. "MyClass.java")
     private static final List<String> ADDITIONAL_FILES =
