@@ -38,7 +38,6 @@ public final class BufferedRoutes implements Routes {
                 // Index de chaîne du nom de la ligne
                 Structure.field(NAME_ID, Structure.FieldType.U16),
                 // Type de véhicule desservant la ligne
-                // TODO vérifier plus tard la condition:
                 // entier entre 0 et 6
                 Structure.field(KIND, Structure.FieldType.U8));
 

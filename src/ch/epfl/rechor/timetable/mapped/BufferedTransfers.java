@@ -3,6 +3,7 @@ package ch.epfl.rechor.timetable.mapped;
 import ch.epfl.rechor.timetable.Transfers;
 
 import java.nio.ByteBuffer;
+import java.util.NoSuchElementException;
 
 /**
  * Classe qui permet d'accéder à une table de changements représentée de manière aplatie
@@ -56,8 +57,6 @@ public final class BufferedTransfers implements Transfers {
     @Override
     public int depStationId(int id) {
 
-        // TODO tests et throws
-
         int depStationId = tranferStructuredBuffer.getU16(DEP_STATION_ID, id);
         return depStationId;
     }
@@ -72,7 +71,6 @@ public final class BufferedTransfers implements Transfers {
     @Override
     public int minutes(int id) {
 
-        // TODO tests et throws ?
 
         int minutes = tranferStructuredBuffer.getU8(TRANSFER_MINUTES, id);
 
