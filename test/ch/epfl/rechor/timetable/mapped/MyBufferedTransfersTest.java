@@ -108,13 +108,6 @@ class MyBufferedTransfersTest {
         // Pour la gare 16, on attend l'intervalle [2, 3) (seul l'indice 2)
         assertEquals(2, start16, "Station 16 : début d'intervalle incorrect");
         assertEquals(3, end16, "Station 16 : fin d'intervalle incorrect");
-
-//        int interval999 = transfers.arrivingAt(999);
-//        int start999 = PackedRange.startInclusive(interval999);
-//        int end999 = PackedRange.endExclusive(interval999);
-//        // Pour la gare 999, aucun changement => intervalle vide [0,0)
-//        assertEquals(0, start999, "Station 999 : début d'intervalle incorrect");
-//        assertEquals(0, end999, "Station 999 : fin d'intervalle incorrect");
     }
 
     @Test

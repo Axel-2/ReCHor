@@ -1,6 +1,7 @@
 package ch.epfl.rechor.timetable.mapped;
 
 import ch.epfl.rechor.PackedRange;
+import ch.epfl.rechor.Preconditions;
 import ch.epfl.rechor.timetable.Transfers;
 
 import java.nio.ByteBuffer;
@@ -27,6 +28,9 @@ public final class BufferedTransfers implements Transfers {
     // Tableau contenant l'intervalle des changement
     // et qui est indexé par les gares d'arrivées
     private final int[] stationIdTransferInterval;
+
+
+    private int maxStationId;
 
     /**
      * Constructeur qui construit une instance donnant accès
@@ -60,16 +64,16 @@ public final class BufferedTransfers implements Transfers {
         // l'index maximal d'une gare
         // pour se faire on va itérer sur notre buffer et trouver l'index man
 
-        int maxId = 0;
+        maxStationId = 0;
         for (int i = 0; i < tranferStructuredBuffer.size(); ++i) {
             int currentStationId = tranferStructuredBuffer.getU16(ARR_STATION_ID, i);
 
-            if (currentStationId > maxId) {
-                maxId = currentStationId;
+            if (currentStationId > maxStationId) {
+                maxStationId = currentStationId;
             }
         }
 
-        this.stationIdTransferInterval = new int[maxId+1];
+        this.stationIdTransferInterval = new int[maxStationId +1];
 
         // 2. la deuxième étape est de déterminer le contenu de notre tableau
         int currentStart = 0;
@@ -174,14 +178,23 @@ public final class BufferedTransfers implements Transfers {
      */
     @Override
     public int minutesBetween(int depStationId, int arrStationId) {
+
+
+        // on vérifie d'abord les index
+        if (depStationId > maxStationId || arrStationId > maxStationId || depStationId < 1 || arrStationId < 1) {
+            throw new IndexOutOfBoundsException("Index invalide");
+        }
         // On récupère l'intervalle empaqueté des changements arrivant à la gare d'arrivée
         int packedInterval = arrivingAt(arrStationId);
 
-        // TODO gèrer le cas où y'en a aucun,  == -1 ??
-
-
         int start = PackedRange.startInclusive(packedInterval);
         int end = PackedRange.endExclusive(packedInterval);
+
+        if (start == end) {
+            // cela signifie que l'intervalle est vide
+            // il n y a donc aucun changement possible entre ces deux gares
+            throw new NoSuchElementException("aucun changement possible entre ces deux gares");
+        }
 
         for (int i = start; i < end; i++) {
             if (depStationId == tranferStructuredBuffer.getU16(DEP_STATION_ID, i)){

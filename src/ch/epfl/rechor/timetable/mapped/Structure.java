@@ -9,7 +9,7 @@ import java.util.Objects;
  * @author Yoann Salamin (390522)
  * @author Axel Verga (398787)
  */
-public class Structure {
+public final class Structure {
 
     private final short[] firstBytePositions;
     private final int totalSize;
