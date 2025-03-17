@@ -14,16 +14,15 @@ import java.util.List;
  */
 public final class BufferedPlatforms implements Platforms {
 
-    // Attributs
+    // Constantes pour la structure
     private final static int NAME_ID = 0;
     private final static int STATION_ID = 1;
 
-    // Tables des noms
+    // Tables des noms pour la conversion
     private final List<String> stringTable;
 
     // Tableau structuré
     private final StructuredBuffer structuredBuffer;
-
 
     /**
      * Constructeur public
@@ -36,9 +35,12 @@ public final class BufferedPlatforms implements Platforms {
 
         // Structure d'une plateforme
         Structure platformStructure = new Structure(
+                // Index de chaîne du nom de la voie ou du quai
                 Structure.field(NAME_ID, Structure.FieldType.U16),
+                // Index de la gare parente
                 Structure.field(STATION_ID, Structure.FieldType.U16));
 
+        // création du tableau structuré
         this.structuredBuffer = new StructuredBuffer(platformStructure, buffer);
     }
 
@@ -68,6 +70,9 @@ public final class BufferedPlatforms implements Platforms {
      */
     @Override
     public int stationId(int id) {
+
+        // on peut directement retourner
+        // l'entier donné par getU16
         return structuredBuffer.getU16(STATION_ID, id);
     }
 

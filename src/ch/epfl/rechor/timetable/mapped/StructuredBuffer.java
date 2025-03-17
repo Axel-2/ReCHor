@@ -16,14 +16,12 @@ public final class StructuredBuffer {
     private final Structure structure;
     private final ByteBuffer buffer;
 
-    // unique constructeur publique
+    // unique constructeur public
     public StructuredBuffer(Structure structure, ByteBuffer buffer) {
-
 
         // lève une IllegalArgumentException si le nombre d'octets de
         // ce tableau n'est pas un multiple de la taille totale de la structure.
         int nbOfByteInBuffer = buffer.capacity();
-
         Preconditions.checkArgument(nbOfByteInBuffer % structure.totalSize() == 0);
 
         // on stock les variables dans notre instance
@@ -43,10 +41,7 @@ public final class StructuredBuffer {
         // ici on utilise une division entière mais ça ne doit pas poser
         // problème car on a vérifié dans le constructeur que la taille du buffer
         // est bien un multiple de la taille de la structure
-
-        int nbOfElement = buffer.capacity() / structure.totalSize();
-
-        return nbOfElement;
+        return buffer.capacity() / structure.totalSize();
     }
 
 
@@ -58,6 +53,7 @@ public final class StructuredBuffer {
      * @param fieldIndex champ d'index voulu
      * @param elementIndex élément d'index du tableau
      * @return entier u8 correspondant aux paramètres voulus
+     * @throws IndexOutOfBoundsException si l'un des deux index est invalide
      */
     public int getU8(int fieldIndex, int elementIndex) {
 
@@ -80,14 +76,18 @@ public final class StructuredBuffer {
      * @param fieldIndex champ d'index voulu
      * @param elementIndex élément d'index du tableau
      * @return entier u16 correspondant aux paramètres voulus
+     * @throws IndexOutOfBoundsException si l'un des deux index est invalide
      */
     public int getU16(int fieldIndex, int elementIndex) {
 
         int offset = structure.offset(fieldIndex, elementIndex);
 
         // on fait la même chose mais cette fois avec un u16
+        // on utilise donc la méthode getShort()
         short u16 = buffer.getShort(offset);
 
+        // on retourne une valeur positive donc
+        // non signée
         int unsignedU16 = Short.toUnsignedInt(u16);
 
         return unsignedU16;
@@ -99,12 +99,13 @@ public final class StructuredBuffer {
      * @param fieldIndex champ d'index voulu
      * @param elementIndex élément d'index du tableau
      * @return entier u32 correspondant aux paramètres voulus
+     * @throws IndexOutOfBoundsException si l'un des deux index est invalide
      */
     public int getS32(int fieldIndex, int elementIndex) {
 
         int offset = structure.offset(fieldIndex, elementIndex);
 
-        // on récupère un int
+        // on récupère un int avec getInt
         int i32 = buffer.getInt(offset);
 
         return i32;

@@ -1,18 +1,20 @@
 package ch.epfl.rechor.timetable.mapped;
 
-import ch.epfl.rechor.Preconditions;
-
 import java.util.Objects;
 
 /**
- * Structure d'une donnée aplatie
+ * Classe qui a pour but de faciliter la description de la structure des données aplaties
  * @author Yoann Salamin (390522)
  * @author Axel Verga (398787)
  */
 public final class Structure {
 
+    // Tableau contenant la position, en octets, du premier
+    // octet de chacun des champs dans la structure
     private final short[] firstBytePositions;
-    private final int totalSize;
+
+    // taille totale de la structure, en octets.
+    private final int totalStructureSize;
 
     /**
      * Type énuméré des différentes tailles d'octet
@@ -20,11 +22,11 @@ public final class Structure {
     public enum FieldType {
         U8,
         U16,
-        S32;
+        S32
     }
 
     /**
-     * Représente un champ
+     * Enregistrement qui représente un champ
      * @param index index du champ dans la structure
      * @param type type du champ
      */
@@ -41,20 +43,24 @@ public final class Structure {
      * @return une instance
      */
     public static Field field(int index, FieldType type) {
+        // Retourne une instance de Field avec les attributs donnés
         return new Field(index, type);
     }
 
     /**
      * Constructeur
      * @param fields champs de taille arbitraire, devant être donnés dans l'ordre
+     * @throws IllegalArgumentException si l'index du champ est invalide
      */
-    public Structure(Field... fields) {;
+    public Structure(Field... fields) {
 
-        // Création du tableau, qui a une taille égale au nombre de champs
+        // Création du tableau contenant la position, en octets, du premier
+        // octet de chacun des champs dans la structure,
+        // Ce tableau a une taille égale au nombre de champs dans la structure
         this.firstBytePositions = new short[fields.length];
 
         // Initialisation de la taille, qui va être incrémentée, mais qui commence à 0.
-        int size = 0;
+        int currentByteIndex = 0;
 
         for (int i = 0; i < fields.length; i++) {
 
@@ -63,22 +69,26 @@ public final class Structure {
                 throw new IllegalArgumentException("l'index des champs ne correspond pas à leur position");
             }
 
-            // 2) Stock le premier octet de chacun des champs dans la structure
-            firstBytePositions[i] = (short) size;
+            // 2) Stock l'index du premier octet de chacun des champs dans la structure
+            firstBytePositions[i] = (short) currentByteIndex;
 
-            // 3) Ajoute à la taille actuelle (mesurée en nombre d'octet), la taille du champ d'index i
-
+            // 3) Ajoute à la taille actuelle (mesurée en nombre d'octets), la taille du champ d'index i
             switch (fields[i].type()) {
 
                 // ajouter la bonne taille en fonction du nombre d'octets
-                case U16 -> size += 2;
-                case U8 -> size += 1;
-                case S32 -> size += 4;
+
+                // U16 -> on a 2 octets
+                case U16 -> currentByteIndex += 2;
+                // U8 → un byte donc un octet
+                case U8 -> currentByteIndex += 1;
+                // et 4 octets pour S32
+                case S32 -> currentByteIndex += 4;
 
             }
         }
+
         // Nous avons notre taille finale, l'incrémentation est finie. On l'injecte dans l'attribut
-        this.totalSize = size;
+        this.totalStructureSize = currentByteIndex;
     }
 
     /**
@@ -86,7 +96,7 @@ public final class Structure {
      * @return la taille
      */
     public int totalSize() {
-        return totalSize;
+        return totalStructureSize;
     }
 
     /**
@@ -94,17 +104,18 @@ public final class Structure {
      * du premier octet du champ d'index fieldIndex de l'élément d'index elementIndex
      * @param fieldIndex index du champ
      * @param elementIndex index de l'élément
-     * @throws IllegalArgumentException if index is not valid
+     * @throws IndexOutOfBoundsException si l'index du champ est invalide
      * @return index correspondant aux paramètres
      */
     public int offset(int fieldIndex, int elementIndex) {
+
         // Vérifie que l'index du champ est valide
         if (fieldIndex < 0 || fieldIndex >= firstBytePositions.length) {
             throw new IndexOutOfBoundsException();
         }
 
         // Retourne l'index correspondant dans le tableau de donnée aplati.
-        return firstBytePositions[fieldIndex] + (elementIndex * totalSize);
+        return firstBytePositions[fieldIndex] + (elementIndex * totalStructureSize);
     }
 
 }
