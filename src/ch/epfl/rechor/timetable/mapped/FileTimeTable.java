@@ -4,6 +4,8 @@ package ch.epfl.rechor.timetable.mapped;
 import ch.epfl.rechor.timetable.*;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.List;
@@ -22,8 +24,18 @@ public record FileTimeTable(Path directory,
                             Transfers transfers)
         implements TimeTable {
 
+    /**
+     * Méthode qui retourne une nouvelle instance de FileTimeTable dont les données aplaties
+     * ont été obtenues à partir des fichiers se trouvant dans le dossier dont le chemin d'accès est donné
+     * @param directory chemin d'accès
+     * @return
+     * @throws IOException
+     */
     public TimeTable in(Path directory) throws IOException {
         //TODO
+        Path strings = directory.resolve("strings.txt");
+        List<String> txt = Files.readAllLines(directory, StandardCharsets.ISO_8859_1);
+        List<String> immutableTxt = List.copyOf(txt);
         return null;
     }
 
