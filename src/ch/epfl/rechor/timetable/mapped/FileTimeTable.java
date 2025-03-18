@@ -14,8 +14,8 @@ import java.util.List;
 
 /**
  * Représente un horaire de transport public dont les données (aplaties) sont stockées dans des fichiers
- *  * @author Yoann Salamin (390522)
- *  * @author Axel Verga (398787)
+ *  @author Yoann Salamin (390522)
+ *  @author Axel Verga (398787)
  */
 public record FileTimeTable(Path directory,
                             List<String> stringTable,
@@ -34,6 +34,7 @@ public record FileTimeTable(Path directory,
      * @throws IOException si le chemin d'accès est invalide
      */
     public TimeTable in(Path directory) throws IOException {
+
         // Update le path complet, en y associant le fichier en plus du dossier directory
         Path strings = directory.resolve("strings.txt");
 

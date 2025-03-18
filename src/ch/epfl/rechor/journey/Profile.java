@@ -6,7 +6,6 @@ import ch.epfl.rechor.timetable.Trips;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -33,8 +32,9 @@ public record Profile(TimeTable timeTable, LocalDate date, int arrStationId, Lis
      * @return les liaisons (ou connections).
      */
     public Connections connections() {
-        // TODO
-        return null;
+
+        // les liaisons sont simplement celles de l'horaire, à la date à laquelle correspond le profil
+        return timeTable.connectionsFor(date);
     }
 
     /**
@@ -43,8 +43,10 @@ public record Profile(TimeTable timeTable, LocalDate date, int arrStationId, Lis
      * @return les courses / "trips" correspondantes.
      */
     public Trips trips() {
-        // TODO
-        return null;
+
+        // Les courses sont simplement celles de l'horaire,
+        // à la date à laquelle correspond le profil,
+        return timeTable.tripsFor(date);
     }
 
     /**
@@ -54,10 +56,13 @@ public record Profile(TimeTable timeTable, LocalDate date, int arrStationId, Lis
      * @return la frontière de pareto pour la gare d'index donné
      */
     public ParetoFront forStation(int stationId) {
-        // TODO
-        return null;
 
-    // TODO : Builder imbriqué
+        // On utilise simplement la fonction get de notre liste
+        // pour avoir la bonne frontière d'index donné
+        // TODO à vérifier:
+        // get lance une erreur si l'index est invalide
+        return stationFront.get(stationId);
+
     }
 
     /**
@@ -65,9 +70,7 @@ public record Profile(TimeTable timeTable, LocalDate date, int arrStationId, Lis
      *  @author Yoann Salamin (390522)
      *  @author Axel Verga (398787)
      */
-    public static final class  Builder {
-
-
+    public static final class Builder {
 
         // on stocke les attributs en cours de constructions pour pouvoir les passer
         // au constructeur de Profile
@@ -77,7 +80,7 @@ public record Profile(TimeTable timeTable, LocalDate date, int arrStationId, Lis
 
         // TODO comprendre concretement comment faire ces tableaux et remplir la taille
         // tableau qui contient les bâtisseurs des frontières de Pareto des gares
-        private ParetoFront.Builder[] paretoFrontCurrentList;
+        private ParetoFront.Builder[] paretoFrontStationList;
 
         // tableau qui contient les bâtisseurs des frontières de Pareto des courses
         private ParetoFront.Builder[]  paretoFrontTripsList;
@@ -85,12 +88,27 @@ public record Profile(TimeTable timeTable, LocalDate date, int arrStationId, Lis
 
         /**
          * Constructeur qui construit un bâtisseur de profil pour l'horaire, la date et la gare de destination donnés.
-         * @param timeTable
-         * @param date
-         * @param arrStationId
+         * @param timeTable horaire donné
+         * @param date date donnée
+         * @param arrStationId gare de destination donnée
          */
         public Builder(TimeTable timeTable, LocalDate date, int arrStationId) {
-            // TODO
+
+            // TODO vérifier si c'est la bonne façon de faire
+
+            // On stocke les valeurs données dans nos attributs d'instance
+            this.currentTimetable = timeTable;
+            this.currentLocalDate = date;
+            this.currentArrStationId = arrStationId;
+
+
+            // On initialise les deux tableaux primitifs qui stockent les frontières de Pareto
+            // on doit d'abord récupérer la taille des tableaux à l'aide de l'instance de
+            // timetable
+            int numberOfStations = timeTable.stations().size();
+            int numberOfTripsCurrentDay = timeTable.tripsFor(date).size();
+            paretoFrontStationList = new ParetoFront.Builder[numberOfStations];
+            paretoFrontTripsList = new ParetoFront.Builder[numberOfTripsCurrentDay];
 
         }
 
@@ -102,8 +120,12 @@ public record Profile(TimeTable timeTable, LocalDate date, int arrStationId, Lis
          * @throws IndexOutOfBoundsException si l'index est invalide
          */
         public ParetoFront.Builder forStation(int stationId) {
-            // TODO
-            return null;
+            // TODO à vérifier
+
+            // on retourne simplement le bon élément dans le tableau
+            // la valeur est bien null si aucun appel à setForstation n'a
+            // été fait car le tabelau est initialisé avec de null;
+            return paretoFrontStationList[stationId];
         }
 
         /**
@@ -113,8 +135,10 @@ public record Profile(TimeTable timeTable, LocalDate date, int arrStationId, Lis
          * @throws IndexOutOfBoundsException si l'index est invalide
          */
         public void setForStation(int stationId, ParetoFront.Builder builder) {
+            // TODO à vérifier
 
-            // TODO
+            // On met simplement le builder au bon endroit dans la liste
+            paretoFrontStationList[stationId] = builder;
         }
 
         /**
@@ -124,9 +148,12 @@ public record Profile(TimeTable timeTable, LocalDate date, int arrStationId, Lis
          * @throws IndexOutOfBoundsException si l'index est invalide
          */
         public ParetoFront.Builder forTrip(int tripId) {
+            // TODO à vérifier
 
-            // TODO
-            return null;
+            // on retourne simplement le bon élément dans le tableau
+            // la valeur est bien null si aucun appel à setForstation n'a
+            // été fait car le tabelau est initialisé avec de null;
+            return paretoFrontTripsList[tripId];
         }
 
         /**
@@ -136,9 +163,10 @@ public record Profile(TimeTable timeTable, LocalDate date, int arrStationId, Lis
          * @throws IndexOutOfBoundsException si l'index est invalide
          */
         public void setForTrip(int tripId, ParetoFront.Builder builder) {
+            // TODO à vérifier
 
-            // TODO
-
+            // On met simplement le builder au bon endroit dans la liste
+            paretoFrontTripsList[tripId] = builder;
         }
 
         /**
@@ -146,10 +174,19 @@ public record Profile(TimeTable timeTable, LocalDate date, int arrStationId, Lis
          * en cours de construction.
          * @return Une instance de Profile
          */
-        Profile build() {
+        public Profile build() {
 
-            // TODO
-            return null;
+
+            // Construction de la liste contenant les frontières de Pareto
+            List<ParetoFront> paretoFrontList = new ArrayList<>();
+            for (ParetoFront.Builder bld : paretoFrontStationList) {
+                if (bld.equals(null)) {
+                
+                }
+            }
+
+            // TODO enlever le null
+            return new Profile(currentTimetable, currentLocalDate, currentArrStationId, paretoFrontList);
         }
 
 
