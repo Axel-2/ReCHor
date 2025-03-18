@@ -34,24 +34,52 @@ public record FileTimeTable(Path directory,
      * @throws IOException si le chemin d'accès est invalide
      */
     public TimeTable in(Path directory) throws IOException {
-        // Update le path complet, en y associant le fichier en plus du dossier directory
+
+        // STRINGS : 1) Path / 2) Lecture / 3) Immuabilité
         Path strings = directory.resolve("strings.txt");
-
-        // Lis le contenu, en prenant garde d'être dans le bon Charsets
         List<String> txt = Files.readAllLines(strings, StandardCharsets.ISO_8859_1);
+        List<String> stringTable = List.copyOf(txt);
 
-        // Rend immuable
-        List<String> immutableTxt = List.copyOf(txt);
+        // Création des autres variables à retourner
+        Stations stations;
+        StationAliases stationAliases;
+        Platforms platforms;
+        Routes routes;
+        Transfers transfers;
 
-        // Obtention d'un canal. FileChannel est une classe abstraite alors on ne peut pas utiliser le new
-        try(FileChannel canal = FileChannel.open(strings)) {
-
-            // Buffer contenant les données.
-            MappedByteBuffer mbb = canal.map(FileChannel.MapMode.READ_ONLY, 0, canal.size());
-            
-
-            return new FileTimeTable(immutableTxt, );
+        // STATIONS
+        try(FileChannel channel = FileChannel.open(directory.resolve("stations.bin"))) {
+            MappedByteBuffer stationsBuffer = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
+            stations = new BufferedStations(stringTable, stationsBuffer);
         }
+
+        // STATIONS_ALIASES
+        try(FileChannel channel = FileChannel.open(directory.resolve("stations-aliases.bin"))) {
+            MappedByteBuffer stationsAliasesBuffer = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
+            stationAliases = new BufferedStationAliases(stringTable, stationsAliasesBuffer);
+        }
+
+        // PLATFORMS
+        try(FileChannel channel = FileChannel.open(directory.resolve("platforms.bin"))) {
+            MappedByteBuffer platformsBuffer = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
+            platforms = new BufferedPlatforms(stringTable, platformsBuffer);
+        }
+
+        // ROUTES
+        try(FileChannel channel = FileChannel.open(directory.resolve("routes.bin"))) {
+            MappedByteBuffer routesBuffer = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
+            routes = new BufferedRoutes(stringTable, routesBuffer);
+        }
+
+        // TRANSFERS
+        try(FileChannel channel = FileChannel.open(directory.resolve("transfers.bin"))) {
+            MappedByteBuffer transfersBuffers = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
+            transfers = new BufferedTransfers(transfersBuffers);
+        }
+
+
+        return new FileTimeTable(directory, stringTable, stations, stationAliases, platforms, routes, transfers);
+
     }
 
     /**
