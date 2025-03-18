@@ -14,8 +14,8 @@ import java.util.List;
 
 /**
  * Représente un horaire de transport public dont les données (aplaties) sont stockées dans des fichiers
- *  * @author Yoann Salamin (390522)
- *  * @author Axel Verga (398787)
+ *  @author Yoann Salamin (390522)
+ *  @author Axel Verga (398787)
  */
 public record FileTimeTable(Path directory,
                             List<String> stringTable,
