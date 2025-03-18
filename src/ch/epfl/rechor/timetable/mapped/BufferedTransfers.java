@@ -76,7 +76,7 @@ public final class BufferedTransfers implements Transfers {
         int currentStart = 0;
         int currentEnd = 0;
 
-        // on initialise la variable  avec le premier id de gare qu'on trouve dans le buffer
+        // on initialise la variable avec le premier id de gare qu'on trouve dans le buffer
         int currentStationId = tranferStructuredBuffer.getU16(ARR_STATION_ID, 0);
 
         // on commence la boucle direct à 1 car on a déjà l'élément 0 dans currentStation
