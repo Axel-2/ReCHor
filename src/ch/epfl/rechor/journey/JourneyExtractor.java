@@ -1,5 +1,7 @@
 package ch.epfl.rechor.journey;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -22,6 +24,22 @@ public class JourneyExtractor {
      */
     public static List<Journey> journeys(Profile profile, int depStationId) {
         // TODO
-        return null;
+        // Initialisation de la liste des voyages qu'on va retourner
+        List<Journey> journeys = new ArrayList<>();
+
+        // On récupère le batisseur de la frontière de pareto de la gare d'index depStationId
+        ParetoFront pf = profile.forStation(depStationId);
+
+        // Pour chacun de ces critères (triplets), ...
+        pf.forEach((long criteria) -> {
+            // Ici faut faire un truc
+        });
+
+        // Tri de journey, par le code donné dans l'énoncé
+        journeys.sort(Comparator
+                .comparing(Journey::depTime)
+                .thenComparing(Journey::arrTime));
+
+        return journeys;
     }
 }
