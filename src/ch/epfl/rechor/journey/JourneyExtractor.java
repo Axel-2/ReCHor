@@ -27,12 +27,23 @@ public class JourneyExtractor {
         // Initialisation de la liste des voyages qu'on va retourner
         List<Journey> journeys = new ArrayList<>();
 
-        // On récupère le batisseur de la frontière de pareto de la gare d'index depStationId
+        // On récupère le bâtisseur de la frontière de pareto de la gare d'index depStationId
         ParetoFront pf = profile.forStation(depStationId);
 
         // Pour chacun de ces critères (triplets), ...
         pf.forEach((long criteria) -> {
-            // Ici faut faire un truc
+
+            // Création du journey qu'on va ajouter à la liste plus tard, 1 par critères
+            List<Journey.Leg> legs = new ArrayList<Journey.Leg>();
+
+            // Changements restants avant la fin de l'étude de ce critère
+            int remainingChanges = PackedCriteria.changes(criteria);
+
+            // Boucle qui va se répéter pour créer les legs une par unes
+            while (remainingChanges > 0){
+
+            }
+
         });
 
         // Tri de journey, par le code donné dans l'énoncé
