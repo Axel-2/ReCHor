@@ -3,6 +3,7 @@ package ch.epfl.rechor.journey;
 import ch.epfl.rechor.Bits32_24_8;
 import ch.epfl.rechor.timetable.TimeTable;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -60,22 +61,8 @@ public class JourneyExtractor {
                 // id de la gare de départ
                 int depStopId = profile.connections().depStopId(currentConnectionId);
 
-                // récupération des attributs nécessaires pour instancier
-                // l'arrêt de départ
-                String depStationName = profile.timeTable().stations().name(depStopId);
-                double depLongitude = profile.timeTable().stations().longitude(depStopId);
-                double depLatitude = profile.timeTable().stations().latitude(depStopId);
-                String deplPlatformName = profile.timeTable().platformName(depStopId);
-
-
                 // création de l'instance de l'arrêt de départ
-                Stop depStop = new Stop(
-                        depStationName,
-                        deplPlatformName,
-                        depLongitude,
-                        depLatitude
-                );
-
+                Stop depStop = getStopInstance(profile, depStopId);
                 // Création de l'arrêt d'arrivée
 
                 // la première étape est de déteminer l'id de l'arret d'arrivé
@@ -98,36 +85,13 @@ public class JourneyExtractor {
                 // on récupère l'id de la gare d'arrivée
                 int arrStationId = profile.connections().depStopId(finalLegConnectionId);
 
-                // récupération des attributs nécessaires pour instancier
-                // l'arrêt de départ
-                String arrStationName = profile.timeTable().stations().name(arrStationId);
-                double arrLongitude = profile.timeTable().stations().longitude(arrStationId);
-                double arrLatitude = profile.timeTable().stations().latitude(arrStationId);
-                String arrPlatformName = profile.timeTable().platformName(arrStationId);
-
-
-                Stop arrStop = new Stop(
-                        arrStationName,
-                        arrPlatformName,
-                        arrLongitude,
-                        arrLatitude
-                );
+                // on crée notre instance de Stop
+                Stop arrStop = getStopInstance(profile, arrStationId);
 
                 // ------ Récupération des heures de départ et arrivée
 
-                // L'heure de départ du leg est l'heure de départ de la première connection
-                int depLegTime = profile.connections().depMins(currentConnectionId);
-                // L'heure d'arrivée du leg est l'heure d'arrivée de la dernière connection
-                int arrLegTime = profile.connections().arrMins(finalLegConnectionId);
-
-                int depLegHours = depLegTime / 60;
-                int depLegMinutes = depLegTime % 60;
-                LocalDateTime departureDate = profile.date().atTime(depLegHours, depLegMinutes);
-
-                int arrLegHours = arrLegTime / 60;
-                int arrLegMinutes = arrLegTime % 60;
-                LocalDateTime arrivalDate = profile.date().atTime(arrLegHours, arrLegMinutes);
-
+                LocalDateTime departureDate = getLocalDateTime(profile, currentConnectionId);
+                LocalDateTime arrivalDate = getLocalDateTime(profile, finalLegConnectionId)
 
                 Journey.Leg currentLeg;
 
@@ -182,5 +146,35 @@ public class JourneyExtractor {
         return journeys;
     }
 
-    private Stop getStop(depStopId)
+    // Fonction qui crée une instance de Stop à partir de l'id de l'arret
+    private static Stop getStopInstance(Profile profile, int stopId) {
+
+        // récupération des attributs nécessaires pour instancier
+        // l'arrêt de départ
+        String depStationName = profile.timeTable().stations().name(stopId);
+        double depLongitude = profile.timeTable().stations().longitude(stopId);
+        double depLatitude = profile.timeTable().stations().latitude(stopId);
+        String deplPlatformName = profile.timeTable().platformName(stopId);
+
+        // création de l'instance de l'arrêt de départ
+
+        return new Stop(
+                depStationName,
+                deplPlatformName,
+                depLongitude,
+                depLatitude
+        );
+    }
+
+
+    private static LocalDateTime getLocalDateTime(Profile profile, int currentConnectionId) {
+
+        // minutes depuis miniuit
+        int minutesTimes = profile.connections().depMins(currentConnectionId);
+
+        int hours = minutesTimes / 60;
+        int minutes = minutesTimes % 60;
+
+        return profile.date().atTime(hours, minutes);
+    }
 }
