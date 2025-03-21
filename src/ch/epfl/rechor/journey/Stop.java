@@ -6,7 +6,7 @@ import java.util.Objects;
 /**
  * Arrêt
  * @param name (Nom de l'arrêt, ne doit pas être nul)
- * @param platformName (nom u quai / voie, si il y en a)
+ * @param platformName (nom du quai / voie, si il y en a)
  * @param longitude (longitude)
  * @param latitude  (latitude)
  * @author Yoann Salamin (390522)
