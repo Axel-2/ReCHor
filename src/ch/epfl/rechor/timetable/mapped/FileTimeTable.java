@@ -11,6 +11,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -37,11 +38,13 @@ public record FileTimeTable(Path directory,
     public static TimeTable in(Path directory) throws IOException {
 
         // STRINGS : 1) Path / 2) Lecture / 3) Immuabilité
-        Path strings = directory.resolve("strings.txt");
-        List<String> txt = Files.readAllLines(strings, StandardCharsets.ISO_8859_1);
-        List<String> stringTable = List.copyOf(txt);
+        Path stringsFilePath = directory.resolve("strings.txt");
+        List<String> txtFileContent = Files.readAllLines(stringsFilePath, StandardCharsets.ISO_8859_1);
+        List<String> stringTable = List.copyOf(txtFileContent);
+
 
         // Création des autres variables à retourner
+        // qui sont toutes nulles pour l'instant
         Stations stations;
         StationAliases stationAliases;
         Platforms platforms;
@@ -49,31 +52,31 @@ public record FileTimeTable(Path directory,
         Transfers transfers;
 
         // STATIONS
-        try(FileChannel channel = FileChannel.open(directory.resolve("stations.bin"))) {
+        try (FileChannel channel = FileChannel.open(directory.resolve("stations.bin"))) {
             MappedByteBuffer stationsBuffer = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
             stations = new BufferedStations(stringTable, stationsBuffer);
         }
 
         // STATIONS_ALIASES
-        try(FileChannel channel = FileChannel.open(directory.resolve("station-aliases.bin"))) {
+        try (FileChannel channel = FileChannel.open(directory.resolve("station-aliases.bin"))) {
             MappedByteBuffer stationsAliasesBuffer = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
             stationAliases = new BufferedStationAliases(stringTable, stationsAliasesBuffer);
         }
 
         // PLATFORMS
-        try(FileChannel channel = FileChannel.open(directory.resolve("platforms.bin"))) {
+        try (FileChannel channel = FileChannel.open(directory.resolve("platforms.bin"))) {
             MappedByteBuffer platformsBuffer = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
             platforms = new BufferedPlatforms(stringTable, platformsBuffer);
         }
 
         // ROUTES
-        try(FileChannel channel = FileChannel.open(directory.resolve("routes.bin"))) {
+        try (FileChannel channel = FileChannel.open(directory.resolve("routes.bin"))) {
             MappedByteBuffer routesBuffer = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
             routes = new BufferedRoutes(stringTable, routesBuffer);
         }
 
         // TRANSFERS
-        try(FileChannel channel = FileChannel.open(directory.resolve("transfers.bin"))) {
+        try (FileChannel channel = FileChannel.open(directory.resolve("transfers.bin"))) {
             MappedByteBuffer transfersBuffers = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
             transfers = new BufferedTransfers(transfersBuffers);
         }
