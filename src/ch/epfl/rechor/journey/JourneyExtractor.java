@@ -172,16 +172,22 @@ public class JourneyExtractor {
 
         // récupération des attributs nécessaires pour instancier
         // l'arrêt de départ
-        String depStationName = profile.timeTable().stations().name(stopId);
-        double depLongitude = profile.timeTable().stations().longitude(stopId);
-        double depLatitude = profile.timeTable().stations().latitude(stopId);
-        String deplPlatformName = profile.timeTable().platformName(stopId);
+        // Todo erreur en bas, j'ai essayé de mettre la ligne commentée avec station id. c'est lié à
+        // la remarque du prof dans la partie 3), il dit qu'il faut utiliser cette méthode, mais où
+
+        // Convertir les quais en stations si nécessaire
+        int stationId = profile.timeTable().stationId(stopId);
+
+        String depStationName = profile.timeTable().stations().name(stationId);
+        double depLongitude = profile.timeTable().stations().longitude(stationId);
+        double depLatitude = profile.timeTable().stations().latitude(stationId);
+        String depPlatformName = profile.timeTable().platformName(stationId);
 
         // création de l'instance de l'arrêt de départ
 
         return new Stop(
                 depStationName,
-                deplPlatformName,
+                depPlatformName,
                 depLongitude,
                 depLatitude
         );
