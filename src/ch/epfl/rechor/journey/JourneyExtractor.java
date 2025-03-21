@@ -90,7 +90,7 @@ public class JourneyExtractor {
 
                     finalLegConnectionId = profile.connections().nextConnectionId(currentConnectionId);
 
-                    new Journey.Leg.IntermediateStop()
+                    new Journey.Leg.IntermediateStop();
                     numberOfStopsBeforeChange--;
                 }
 
