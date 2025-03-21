@@ -196,4 +196,6 @@ public class MyProfileTest {
         System.out.println("Première liaison : depStop " + depStopId + " à " + depMinutes +
                 " min, arrStop " + arrStopId + " à " + arrMinutes + " min");
     }
+
+
 }
