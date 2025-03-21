@@ -1,6 +1,5 @@
 package ch.epfl.rechor.journey;
 
-import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.function.LongConsumer;
 
@@ -12,7 +11,7 @@ import java.util.function.LongConsumer;
 public final class ParetoFront {
 
     // tuples de la frontière stockée sous forme empaquetée
-    private final long[] packed_criterias;
+    private final long[] packedCriterias;
 
     /**
      * Attribut qui contient une frontière de pareto vide
@@ -23,7 +22,7 @@ public final class ParetoFront {
     private ParetoFront(long[] packed_criterias){
 
         // il ne faut pas copier les critères
-        this.packed_criterias = packed_criterias;
+        this.packedCriterias = packed_criterias;
     }
 
     /**
@@ -32,7 +31,7 @@ public final class ParetoFront {
      */
     public int size() {
 
-        return packed_criterias.length;
+        return packedCriterias.length;
     }
 
     /**
@@ -45,7 +44,7 @@ public final class ParetoFront {
     public long get(int arrMins, int changes){
 
         // On itère sur tous les critères de notre liste
-        for (long pc : packed_criterias){
+        for (long pc : packedCriterias){
             // si l'un est identique aux params, on le retourne
             if (PackedCriteria.arrMins(pc) == arrMins && PackedCriteria.changes(pc) == changes) {
                 return pc;
@@ -63,7 +62,7 @@ public final class ParetoFront {
     public void forEach(LongConsumer action){
 
         // on itère sur tous les critères de notre liste
-        for (long packed_criteria : packed_criterias) {
+        for (long packed_criteria : packedCriterias) {
 
             // on appelle la méthode accept de LongConsumer
             action.accept(packed_criteria);
@@ -82,7 +81,7 @@ public final class ParetoFront {
 
         StringBuilder s = new StringBuilder();
 
-        for (long pc : packed_criterias){
+        for (long pc : packedCriterias){
 
             // Montrer l'heure de départ si elle est présente
             if (PackedCriteria.hasDepMins(pc)) {
