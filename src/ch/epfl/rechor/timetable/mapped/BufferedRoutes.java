@@ -15,7 +15,9 @@ import java.util.List;
 public final class BufferedRoutes implements Routes {
 
     // Attributs
+    // Index de chaîne du nom de la ligne
     private final static int NAME_ID = 0;
+    // Type de véhicule desservant la ligne
     private final static int KIND = 1;
 
     // Tables des noms
@@ -31,6 +33,7 @@ public final class BufferedRoutes implements Routes {
      */
     public BufferedRoutes(List<String> stringTable, ByteBuffer buffer) {
 
+        // stockage de la table de chaine de charactères
         this.stringTable = stringTable;
 
         // Structure d'une route
@@ -38,7 +41,7 @@ public final class BufferedRoutes implements Routes {
                 // Index de chaîne du nom de la ligne
                 Structure.field(NAME_ID, Structure.FieldType.U16),
                 // Type de véhicule desservant la ligne
-                // entier entre 0 et 6
+                // qui est un entier entre 0 et 6
                 Structure.field(KIND, Structure.FieldType.U8));
 
         // ensuite on crée le tableau structuré à l'aide de notre
@@ -77,7 +80,7 @@ public final class BufferedRoutes implements Routes {
         // en cherchant l'info dans notre tableau structuré
         int nameIndex = structuredBuffer.getU16(NAME_ID, id);
 
-        // on retourne le nom correspondant grace
+        // on retourne le nom correspondant grâce
         // à notre table
         return stringTable.get(nameIndex);
     }

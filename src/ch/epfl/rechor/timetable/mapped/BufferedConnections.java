@@ -1,5 +1,6 @@
 package ch.epfl.rechor.timetable.mapped;
 
+import ch.epfl.rechor.Bits32_24_8;
 import ch.epfl.rechor.timetable.Connections;
 
 import java.nio.ByteBuffer;
@@ -13,15 +14,20 @@ import java.nio.IntBuffer;
 public final class BufferedConnections implements Connections {
 
     // Champs du connectionsBuffer
+    // Index de l'arrêt de départ
     private final static int DEP_STOP_ID  = 0;
+    // Heure de départ, en minutes après minuit
     private final static int DEP_MINUTES  = 1;
+    // Index de l'arrêt d'arrivée
     private final static int ARR_STOP_ID  = 2;
+    // Heure d'arrivée, en minutes après minuit
     private final static int ARR_MINUTES  = 3;
+    // Index de la course et position en son sein
     private final static int TRIP_POS_ID  = 4;
 
     // Buffers
     private final StructuredBuffer connectionsStructuredBuffer;
-    private final IntBuffer succStructuredBuffer;
+    private final IntBuffer successiveConnectionStructuredBuffer;
 
     /**
      * Constructeur public qui construit une instance donnant accès aux données aplaties réparties entre le
@@ -49,10 +55,11 @@ public final class BufferedConnections implements Connections {
         // Créations des structured buffers
         this.connectionsStructuredBuffer = new StructuredBuffer(connectionStructure, buffer);
 
-        // ici on construit le tableau structuré plus simplement
-        // on transforme un ByteBuffer en IntBuffer
+        // Ici, on construit un autre tableau structuré pour
+        // stocker les connections successives
+        // On utilise simplement un IntBuffer à partir du ByteBuffer
         // voir conseil de prog 3.3.1
-        this.succStructuredBuffer = succBuffer.asIntBuffer();
+        this.successiveConnectionStructuredBuffer = succBuffer.asIntBuffer();
     }
 
     /**
@@ -116,10 +123,11 @@ public final class BufferedConnections implements Connections {
     @Override
     public int tripId(int id) {
 
-        // on récupère la valeur de TRIP_POS_ID puis on shift pour
-        // ne que récupérer les 24 bits de poids forts correspondant à l'id
-        // et enlever les 8 bits de poids faible
-       return connectionsStructuredBuffer.getS32(TRIP_POS_ID, id) >>> 8;
+        // on récupère la valeur de TRIP_POS_ID
+        int tripPosId = connectionsStructuredBuffer.getS32(TRIP_POS_ID, id);
+
+        // il ne faut retourner que les 24 bits de poids fort
+        return Bits32_24_8.unpack24(tripPosId);
     }
 
     /**
@@ -134,9 +142,10 @@ public final class BufferedConnections implements Connections {
     @Override
     public int tripPos(int id) {
 
-        // Masque pour récupérer seulement les 8 bits de poids faible (où se trouve la pos)
-        // 0xFF n'a que des 1 sur les premiers 8 bits ensuite que des 0.
-        return connectionsStructuredBuffer.getS32(TRIP_POS_ID, id) & 0xFF;
+        // on récupère la valeur de TRIP_POS_ID
+        int tripPosId = connectionsStructuredBuffer.getS32(TRIP_POS_ID, id);
+        // il ne faut retourner que les 8 bits de poids faible
+        return Bits32_24_8.unpack8(tripPosId);
     }
 
     /**
@@ -153,11 +162,11 @@ public final class BufferedConnections implements Connections {
     public int nextConnectionId(int id) {
 
         // on utilise simplement le get de IntBuffer
-        return succStructuredBuffer.get(id);
+        return successiveConnectionStructuredBuffer.get(id);
     }
 
     /**
-     * Fonction qu retourne le nombre d'éléments des données
+     * Fonction qui retourne le nombre d'éléments des données
      *
      * @return un int qui représente le nombre d'éléments
      * des données
@@ -165,7 +174,7 @@ public final class BufferedConnections implements Connections {
     @Override
     public int size() {
 
-        // ici on peut utiliser la méthode size de structuredBuffer
+        // ici, on peut utiliser la méthode size de structuredBuffer
         return connectionsStructuredBuffer.size();
     }
 }

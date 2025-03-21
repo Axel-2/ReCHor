@@ -49,7 +49,7 @@ public record FileTimeTable(Path directory,
 
             // Buffer contenant les données.
             MappedByteBuffer mbb = canal.map(FileChannel.MapMode.READ_ONLY, 0, canal.size());
-            
+
 
             return new FileTimeTable(immutableTxt, );
         }
