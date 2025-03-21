@@ -130,7 +130,6 @@ public record Profile(TimeTable timeTable, LocalDate date, int arrStationId, Lis
          * @throws IndexOutOfBoundsException si l'index est invalide
          */
         public void setForStation(int stationId, ParetoFront.Builder builder) {
-            // TODO à vérifier
 
             // On met simplement le builder au bon endroit dans la liste
             paretoFrontStationList[stationId] = builder;
@@ -143,7 +142,6 @@ public record Profile(TimeTable timeTable, LocalDate date, int arrStationId, Lis
          * @throws IndexOutOfBoundsException si l'index est invalide
          */
         public ParetoFront.Builder forTrip(int tripId) {
-            // TODO à vérifier
 
             // on retourne simplement le bon élément dans le tableau
             // la valeur est bien null si aucun appel à setForstation n'a
@@ -158,7 +156,6 @@ public record Profile(TimeTable timeTable, LocalDate date, int arrStationId, Lis
          * @throws IndexOutOfBoundsException si l'index est invalide
          */
         public void setForTrip(int tripId, ParetoFront.Builder builder) {
-            // TODO à vérifier
 
             // On met simplement le builder au bon endroit dans la liste
             paretoFrontTripsList[tripId] = builder;
@@ -178,7 +175,9 @@ public record Profile(TimeTable timeTable, LocalDate date, int arrStationId, Lis
             for (ParetoFront.Builder bld : paretoFrontStationList) {
                 // on ne peut appeler que les builders qui ne sont
                 // pas nuls
-                if (bld != null) {
+                if (bld == null) {
+                    paretoFrontList.add(ParetoFront.EMPTY);
+                } else {
                     // en ajoute le Profile dans notre liste
                     // en appelant le builder
                     paretoFrontList.add(bld.build());
