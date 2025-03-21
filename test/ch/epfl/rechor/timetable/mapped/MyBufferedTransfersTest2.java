@@ -3,7 +3,6 @@ package ch.epfl.rechor.timetable.mapped;
 import ch.epfl.rechor.PackedRange;
 import ch.epfl.rechor.timetable.Transfers;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Assertions;
 
 import java.nio.ByteBuffer;
 import java.util.NoSuchElementException;

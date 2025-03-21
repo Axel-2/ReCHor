@@ -33,7 +33,7 @@ public record FileTimeTable(Path directory,
      * @return une instance de FileTimeTable
      * @throws IOException si le chemin d'accès est invalide
      */
-    public TimeTable in(Path directory) throws IOException {
+    public static TimeTable in(Path directory) throws IOException {
 
         // STRINGS : 1) Path / 2) Lecture / 3) Immuabilité
         Path strings = directory.resolve("strings.txt");
