@@ -4,6 +4,7 @@ package ch.epfl.rechor.timetable.mapped;
 import ch.epfl.rechor.timetable.*;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
@@ -54,7 +55,7 @@ public record FileTimeTable(Path directory,
         }
 
         // STATIONS_ALIASES
-        try(FileChannel channel = FileChannel.open(directory.resolve("stations-aliases.bin"))) {
+        try(FileChannel channel = FileChannel.open(directory.resolve("station-aliases.bin"))) {
             MappedByteBuffer stationsAliasesBuffer = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
             stationAliases = new BufferedStationAliases(stringTable, stationsAliasesBuffer);
         }
@@ -88,7 +89,7 @@ public record FileTimeTable(Path directory,
      */
     @Override
     public Stations stations() {
-        return null;
+        return stations;
     }
 
     /**
@@ -97,7 +98,7 @@ public record FileTimeTable(Path directory,
      */
     @Override
     public StationAliases stationAliases() {
-        return null;
+        return stationAliases;
     }
 
     /**
@@ -107,7 +108,7 @@ public record FileTimeTable(Path directory,
      */
     @Override
     public Platforms platforms() {
-        return null;
+        return platforms;
     }
 
     /**
@@ -117,7 +118,7 @@ public record FileTimeTable(Path directory,
      */
     @Override
     public Routes routes() {
-        return null;
+        return routes;
     }
 
     /**
@@ -127,7 +128,7 @@ public record FileTimeTable(Path directory,
      */
     @Override
     public Transfers transfers() {
-        return null;
+        return transfers;
     }
 
     /**
@@ -138,7 +139,20 @@ public record FileTimeTable(Path directory,
      */
     @Override
     public Trips tripsFor(LocalDate date) {
-        return null;
+
+        // Path du dossier contenant le "trips.bin" du jour actuel
+        Path tripsFilePath = directory.resolve(date.toString()).resolve("trips.bin");
+
+        // Même procédé que pour tous, avec le path ajusté
+        try(FileChannel channel = FileChannel.open(tripsFilePath)) {
+            MappedByteBuffer tripsBuffers = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
+            Trips trips = new BufferedTrips(stringTable, tripsBuffers);
+            return trips;
+
+        // Dans l'énoncé on nous demande de gérer les exceptions comme ça
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
     /**
@@ -149,6 +163,28 @@ public record FileTimeTable(Path directory,
      */
     @Override
     public Connections connectionsFor(LocalDate date) {
-        return null;
+
+        // Path du dossier contenant le "trips.bin" du jour actuel
+        Path connectionsFilePath = directory.resolve(date.toString()).resolve("connections.bin");
+        Path connectionsSuccFilePath = directory.resolve(date.toString()).resolve("connections-succ.bin");
+
+        // Même procédé que pour tous, avec le path ajusté
+        try(FileChannel connectionChannel = FileChannel.open(connectionsFilePath);
+            FileChannel connectionSuccChannel = FileChannel.open(connectionsSuccFilePath)
+        ) {
+
+            MappedByteBuffer connectionsBuffers = connectionChannel.map(FileChannel.MapMode.READ_ONLY,
+                    0, connectionChannel.size());
+            MappedByteBuffer connectionsSuccBuffers = connectionSuccChannel.map(FileChannel.MapMode.READ_ONLY,
+                    0, connectionSuccChannel.size());
+
+            Connections connections = new BufferedConnections(connectionsBuffers, connectionsSuccBuffers);
+            return connections;
+        }
+
+        // Dans l'énoncé on nous demande de gérer les exceptions comme ça
+        catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 }
