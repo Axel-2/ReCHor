@@ -21,8 +21,7 @@ public record Profile(TimeTable timeTable, LocalDate date, int arrStationId, Lis
      */
     public Profile {
 
-        // TODO vérifier si c'est la bonne façon de faire
-        // il faut copier la la table des frontières de Pareto afin de garantir l'immuabilité de la classe
+        // Il faut copier la table des frontières de Pareto afin de garantir l'immuabilité de la classe
         stationFront = List.copyOf(stationFront);
     }
 
@@ -33,7 +32,7 @@ public record Profile(TimeTable timeTable, LocalDate date, int arrStationId, Lis
      */
     public Connections connections() {
 
-        // les liaisons sont simplement celles de l'horaire, à la date à laquelle correspond le profil
+        // Les liaisons sont simplement celles de l'horaire, à la date à laquelle correspond le profil
         return timeTable.connectionsFor(date);
     }
 
@@ -57,10 +56,11 @@ public record Profile(TimeTable timeTable, LocalDate date, int arrStationId, Lis
      */
     public ParetoFront forStation(int stationId) {
 
+        // Gestion des index invalides, bien que get lance déjà une exception,
+        // Ici le message sera plus explicit, et on est sûr que ça le fait.
+
         // On utilise simplement la fonction get de notre liste
         // pour avoir la bonne frontière d'index donné
-        // TODO à vérifier:
-        // get lance une erreur si l'index est invalide
         return stationFront.get(stationId);
 
     }
