@@ -20,7 +20,7 @@ public class JourneyExtractor {
      * @param depStationId id de la station de départ
      * @return la totalité des voyages optimaux correspondants aux paramètres
      */
-    public List<Journey> journeys(Profile profile, int depStationId) {
+    public static List<Journey> journeys(Profile profile, int depStationId) {
         // TODO
         return null;
     }
