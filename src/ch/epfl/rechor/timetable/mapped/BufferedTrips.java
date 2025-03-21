@@ -13,7 +13,9 @@ import java.util.List;
 public final class BufferedTrips implements Trips {
 
     // Attributs
+    // Index de la ligne de la course
     private final static int ROUTE_ID  = 0;
+    // Index de chaîne de la destination finale
     private final static int DESTINATION_ID = 1;
 
     // Tables des noms
@@ -22,7 +24,6 @@ public final class BufferedTrips implements Trips {
     // Tableau structuré
     private final StructuredBuffer structuredBuffer;
 
-
     /**
      * Constructeur public
      * @param stringTable table de string
@@ -30,6 +31,7 @@ public final class BufferedTrips implements Trips {
      */
     public BufferedTrips(List<String> stringTable, ByteBuffer buffer) {
 
+        // On stocke la table des noms
         this.stringTable = stringTable;
 
         // Structure d'une course
@@ -84,6 +86,7 @@ public final class BufferedTrips implements Trips {
      */
     @Override
     public int size() {
+        // il suffit de retourner la taille du buffer
         return structuredBuffer.size();
     }
 }

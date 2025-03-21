@@ -1,7 +1,6 @@
 package ch.epfl.rechor.timetable.mapped;
 
 import ch.epfl.rechor.PackedRange;
-import ch.epfl.rechor.Preconditions;
 import ch.epfl.rechor.timetable.Transfers;
 
 import java.nio.ByteBuffer;
@@ -18,17 +17,21 @@ public final class BufferedTransfers implements Transfers {
     // soit entre deux gares voisines, soit au sein d'une même gare
 
     // Attributs
+    // Index de la gare de départ
     private final int DEP_STATION_ID = 0;
+    // 	Index de la gare d'arrivée
     private final int ARR_STATION_ID = 1;
+    // Durée du changement, en minutes
     private final int TRANSFER_MINUTES = 2;
 
-    // Attributs du buffer
+    // Attributs du tableau structuré
     private final StructuredBuffer tranferStructuredBuffer;
 
     // Tableau contenant l'intervalle des changement
     // et qui est indexé par les gares d'arrivées
     private final int[] stationIdTransferInterval;
 
+    // Id max de la gare donné dans le buffer
     private int maxStationId;
 
     /**
@@ -39,7 +42,6 @@ public final class BufferedTransfers implements Transfers {
     public BufferedTransfers(ByteBuffer buffer) {
 
         // Structure des données aplaties d'un transfert
-
         Structure transferStructure = new Structure(
                 // Index de la gare de départ
                 Structure.field(DEP_STATION_ID, Structure.FieldType.U16),
@@ -57,10 +59,13 @@ public final class BufferedTransfers implements Transfers {
         // l'intervalle des index des changements qui y arrivent
 
         // 1. la première étape est de déterminer la taille du tableau
-        // comme le tableau a comme index toutes les gares, il faut déterminer
-        // l'index maximal d'une gare
-        // pour se faire on va itérer sur notre buffer et trouver l'index man
-
+        // parce que le tableau final a comme index toutes les gares, mais
+        // le buffer donné ne contient pas forcément toutes les gares
+        // (il peut y avoir des trous, par exemple passer de la gare 5 à la 8 donc on ne peut
+        // pas simplement utiliser buffer.size() pour avoir le nombre de gares)
+        // il faut donc déterminer l'index maximal de la gare se trouvant dans
+        // le buffer donné pour ce faire, on va itérer sur notre
+        // buffer et trouver l'index max
         maxStationId = 0;
         for (int i = 0; i < tranferStructuredBuffer.size(); ++i) {
             int currentStationId = tranferStructuredBuffer.getU16(ARR_STATION_ID, i);
@@ -70,49 +75,66 @@ public final class BufferedTransfers implements Transfers {
             }
         }
 
+        // maintenant qu'on la l'id max on peut créer un tableau qui contiendra
+        // une entrée pour chaquune des gares (ce sera des intervalles empaquetés)
         this.stationIdTransferInterval = new int[maxStationId +1];
 
         // 2. la deuxième étape est de déterminer le contenu de notre tableau
-        int currentStart = 0;
-        int currentEnd = 0;
 
-        // on initialise la variable avec le premier id de gare qu'on trouve dans le buffer
+        // pour chaque gare on doit stocker l'intervalle des index des changements
+        // on a donc besoin de deux variables pour stocker le début et la fin de
+        // l'intervalle correspondant à la gare actuelle
+        int currentStartIndexToPack = 0;
+        int currentEndIndexToPack = 0;
+
+        // on va maintenant itérer sur notre buffer et compter le nombre d'occurrences de chaque
+        // gare d'arrivées pour pouvoir construire notre intervalle
+
+        // on initialise une variable avec le premier id de gare qu'on trouve dans le buffer
         int currentStationId = tranferStructuredBuffer.getU16(ARR_STATION_ID, 0);
 
-        // on commence la boucle direct à 1 car on a déjà l'élément 0 dans currentStation
-        for (int currentTransferIndex = 1; currentTransferIndex < tranferStructuredBuffer.size(); ++currentTransferIndex) {
+        // on itère donc sur touts les changements de notre buffer
+        // on commence la boucle directement à 1 car on a déjà l'élément 0 dans currentStation
+        for (int nextTransferIndex = 1; nextTransferIndex < tranferStructuredBuffer.size(); ++nextTransferIndex) {
 
-            int currentCheckedStationId = tranferStructuredBuffer.getU16(ARR_STATION_ID, currentTransferIndex);
+            // on récupère l'id de la prochaine station dans notre buffer
+            int nextStationId = tranferStructuredBuffer.getU16(ARR_STATION_ID, nextTransferIndex);
 
             // si les ids sont égaux, c'est que l'intervalle n'est pas encore fini
-            // sinon l'intervalle est fini et on peut le pack
-            if (currentStationId != currentCheckedStationId) {
+            // sinon l'intervalle est fini et on peut le pack et le mettre dans
+            // notre tableau
+            if (currentStationId != nextStationId) {
 
-                currentEnd = currentTransferIndex;
+                // on assigne l'index de la prochaine gare (qui est différente)
+                // à la variable qui contient la fin de l'intervalle, car
+                // l'intervalle est exclusif pour la fin
+                currentEndIndexToPack = nextTransferIndex;
 
-                int packedInterval = PackedRange.pack(currentStart, currentEnd);
+                // on peut maintenant créer l'intervalle empaqueté
+                int packedInterval = PackedRange.pack(currentStartIndexToPack, currentEndIndexToPack);
 
-                // on oublie pas de stocker notre intervalle dans le tableau initial
+                // on n'oublie pas de stocker notre intervalle dans le tableau initial
                 stationIdTransferInterval[currentStationId] = packedInterval;
 
-                // Si il y a des IDs intermédiaires qui n'apparaissent pas,
-                // on les remplit avec l'intervalle vide correspondant (point d'insertion = currentEnd).
-                for (int missingId = currentStationId + 1; missingId < currentCheckedStationId; missingId++) {
-                    stationIdTransferInterval[missingId] = PackedRange.pack(currentEnd, currentEnd);
+                // S'il y a des IDs intermédiaires qui n'apparaissent pas,
+                // on les remplit avec l'intervalle vide correspondant (point d'insertion = currentEndIndexToPack).
+                for (int missingId = currentStationId + 1; missingId < nextStationId; missingId++) {
+                    stationIdTransferInterval[missingId] = PackedRange.pack(currentEndIndexToPack, currentEndIndexToPack);
                 }
 
-                // on peut mtn passer le currentstart au currentEnd pour le prochain check
-                currentStart = currentTransferIndex;
+                // Il faut maintenant assigner le currentEnd au currentStart pour le prochain
+                // tour de boucle (car l'intervalle est inclusif pour le début)
+                currentStartIndexToPack = nextTransferIndex;
 
-                // on updat aussi currentStationId
-                currentStationId = currentCheckedStationId;
+                // on met à jour aussi currentStationId
+                currentStationId = nextStationId;
 
             }
         }
 
         // pour le dernier intervalle, on est sorti de la boucle
         // on prend juste la fin du dernier intervalle et la taille du buffer
-        stationIdTransferInterval[currentStationId] = PackedRange.pack(currentStart, tranferStructuredBuffer.size());
+        stationIdTransferInterval[currentStationId] = PackedRange.pack(currentStartIndexToPack, tranferStructuredBuffer.size());
 
     }
 
@@ -127,8 +149,8 @@ public final class BufferedTransfers implements Transfers {
     @Override
     public int depStationId(int id) {
 
-        int depStationId = tranferStructuredBuffer.getU16(DEP_STATION_ID, id);
-        return depStationId;
+        // on récupère l'index de la gare avec le buffer
+        return tranferStructuredBuffer.getU16(DEP_STATION_ID, id);
     }
 
     /**
@@ -140,10 +162,8 @@ public final class BufferedTransfers implements Transfers {
     @Override
     public int minutes(int id) {
 
-
-        int minutes = tranferStructuredBuffer.getU8(TRANSFER_MINUTES, id);
-
-        return minutes;
+        // on récupère les minutes avec le buffer
+        return tranferStructuredBuffer.getU8(TRANSFER_MINUTES, id);
     }
 
     /**
@@ -157,9 +177,8 @@ public final class BufferedTransfers implements Transfers {
     @Override
     public int arrivingAt(int stationId) {
 
-        // comme on a calculé le tableau correspondant dans le constructeur
-        // on peut juste l'utiliser avec l'index donné
-
+        // comme on a calculé le tableau correspondant dans le constructeur,
+        // on peut maintenant simplement l'utiliser avec l'index donné
         return this.stationIdTransferInterval[stationId];
     }
 
@@ -170,17 +189,18 @@ public final class BufferedTransfers implements Transfers {
      * @param depStationId id de la gare de départ
      * @param arrStationId id de la gare d'arrivée
      * @return durée en minutes du changement entre les deux gares d'index donnés
-     * @throws java.util.NoSuchElementException    lève NoSuchElementException si aucun changement n'est possible entre ces deux gares
+     * @throws java.util.NoSuchElementException lève NoSuchElementException si aucun changement n'est possible entre ces deux gares
      * @throws IndexOutOfBoundsException Erreur si l'index est invalide
      */
     @Override
     public int minutesBetween(int depStationId, int arrStationId) {
 
-
-        // on vérifie d'abord les index
+        // on vérifie d'abord les index grâce à la variable calculée dans
+        // le constructeur
         if (depStationId > maxStationId || arrStationId > maxStationId || depStationId < 0 || arrStationId < 0) {
             throw new IndexOutOfBoundsException("Index invalide");
         }
+
         // On récupère l'intervalle empaqueté des changements arrivant à la gare d'arrivée
         int packedInterval = arrivingAt(arrStationId);
 
@@ -188,14 +208,15 @@ public final class BufferedTransfers implements Transfers {
         int end = PackedRange.endExclusive(packedInterval);
 
         if (start == end) {
-            // cela signifie que l'intervalle est vide
-            // il n y a donc aucun changement possible entre ces deux gares
+            // cela signifie que l'intervalle est vide,
+            // il n'y a donc aucun changement possible entre ces deux gares
             throw new NoSuchElementException("aucun changement possible entre ces deux gares");
         }
 
+        // on itère sur l'intervalle pour trouver le changement correspondant
         for (int i = start; i < end; i++) {
             if (depStationId == tranferStructuredBuffer.getU16(DEP_STATION_ID, i)){
-                // Si on a trouvé le changement correspondant, on return sa durée
+                // Si on a trouvé le changement correspondant, on retourne sa durée
                 return tranferStructuredBuffer.getU8(TRANSFER_MINUTES, i);
             }
         }
@@ -212,6 +233,7 @@ public final class BufferedTransfers implements Transfers {
      */
     @Override
     public int size() {
+        // on retourne simplement la taille du buffer
         return tranferStructuredBuffer.size();
     }
 }
