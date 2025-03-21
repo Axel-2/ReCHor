@@ -1,7 +1,9 @@
 package ch.epfl.rechor.journey;
 
 import ch.epfl.rechor.Bits32_24_8;
+import ch.epfl.rechor.timetable.TimeTable;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -51,7 +53,7 @@ public class JourneyExtractor {
                 int numberOfStopsBeforeChange = Bits32_24_8.unpack8(criterialPayload);
 
                 // par défaut la prochaine connection est égale à la première
-                int nextConnectionId = currentConnectionId;
+                int finalLegConnectionId = currentConnectionId;
 
                 // -------- Création de l'arrêt de départ -------------------
 
@@ -65,8 +67,6 @@ public class JourneyExtractor {
                 double depLatitude = profile.timeTable().stations().latitude(depStopId);
                 String deplPlatformName = profile.timeTable().platformName(depStopId);
 
-                int depTime = profile.connections().depMins(currentConnectionId);
-                int arrTime = profile.connections().depStopId(nextConnectionId);
 
                 // création de l'instance de l'arrêt de départ
                 Stop depStop = new Stop(
@@ -80,23 +80,30 @@ public class JourneyExtractor {
 
                 // la première étape est de déteminer l'id de l'arret d'arrivé
 
+
+                List<Journey.Leg.IntermediateStop> intermediateStopList= new ArrayList<>();
+
                 // on s'arrête lorsque qu'on a parcouru le bon nombre de connections
                 // la dernière connection est donc la connection finale avant l'arrêt
                 // intermediaire
                 while (numberOfStopsBeforeChange > 0) {
-                    nextConnectionId = profile.connections().nextConnectionId(currentConnectionId);
+
+                    finalLegConnectionId = profile.connections().nextConnectionId(currentConnectionId);
+
+                    new Journey.Leg.IntermediateStop()
                     numberOfStopsBeforeChange--;
                 }
 
+
                 // on récupère l'id de la gare d'arrivée
-                int arrStationId = profile.connections().depStopId(nextConnectionId);
+                int arrStationId = profile.connections().depStopId(finalLegConnectionId);
 
                 // récupération des attributs nécessaires pour instancier
                 // l'arrêt de départ
-                String arrStationName = profile.timeTable().stations().name(depStopId);
-                double arrLongitude = profile.timeTable().stations().longitude(depStopId);
-                double arrLatitude = profile.timeTable().stations().latitude(depStopId);
-                String arrPlatformName = profile.timeTable().platformName(depStopId);
+                String arrStationName = profile.timeTable().stations().name(arrStationId);
+                double arrLongitude = profile.timeTable().stations().longitude(arrStationId);
+                double arrLatitude = profile.timeTable().stations().latitude(arrStationId);
+                String arrPlatformName = profile.timeTable().platformName(arrStationId);
 
 
                 Stop arrStop = new Stop(
@@ -106,28 +113,52 @@ public class JourneyExtractor {
                         arrLatitude
                 );
 
+                // ------ Récupération des heures de départ et arrivée
+
+                // L'heure de départ du leg est l'heure de départ de la première connection
+                int depLegTime = profile.connections().depMins(currentConnectionId);
+                // L'heure d'arrivée du leg est l'heure d'arrivée de la dernière connection
+                int arrLegTime = profile.connections().arrMins(finalLegConnectionId);
+
+                int depLegHours = depLegTime / 60;
+                int depLegMinutes = depLegTime % 60;
+                LocalDateTime departureDate = profile.date().atTime(depLegHours, depLegMinutes);
+
+                int arrLegHours = arrLegTime / 60;
+                int arrLegMinutes = arrLegTime % 60;
+                LocalDateTime arrivalDate = profile.date().atTime(arrLegHours, arrLegMinutes);
+
+
                 Journey.Leg currentLeg;
 
                 // CAS FOOT
                 if (arrStationId == depStopId) {
                     currentLeg = new Journey.Leg.Foot(
                             depStop,
-                            depTime,
+                            departureDate,
                             arrStop,
-                            arrTime
+                            arrivalDate
                     );
 
 
 
                 } else {
                     // Cas transport leg
+
+                    currentLeg = new Journey.Leg.Transport(
+                            depStop,
+                            departureDate,
+                            arrStop,
+                            arrivalDate,
+
+                    )
                 }
 
                 // On finit par ajouter le leg à la liste initiale
                 currentLegsList.add(currentLeg);
 
 
-                // ---- Update du criteria pour le prochain leg ------
+                // ------- Update du criteria pour le prochain leg ------
 
                 // On update la variable puisqu'on sait que
                 // un changement a été effectué dans la boucle
@@ -150,4 +181,6 @@ public class JourneyExtractor {
 
         return journeys;
     }
+
+    private Stop getStop(depStopId)
 }
