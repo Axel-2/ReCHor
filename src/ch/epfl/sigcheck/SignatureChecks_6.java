@@ -57,7 +57,7 @@ final class SignatureChecks_6 {
         v22 = ch.epfl.rechor.journey.JourneyExtractor.journeys(v17, v14);
     }
 
-    //ch.epfl.rechor.timetable.mapped.FileTimeTable v01;
+    ch.epfl.rechor.timetable.mapped.FileTimeTable v01;
     java.lang.Object v02;
     java.nio.file.Path v03;
     java.util.List<java.lang.String> v04;
