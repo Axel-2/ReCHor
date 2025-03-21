@@ -1,5 +1,7 @@
 package ch.epfl.rechor.journey;
 
+import ch.epfl.rechor.Bits32_24_8;
+
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -30,9 +32,46 @@ public class JourneyExtractor {
         // On récupère le batisseur de la frontière de pareto de la gare d'index depStationId
         ParetoFront pf = profile.forStation(depStationId);
 
-        // Pour chacun de ces critères (triplets), ...
+        // On itère sur tous les critères
+        // de la frontière
         pf.forEach((long criteria) -> {
+
+            int numberOfChanges = PackedCriteria.changes(criteria);
+            List<Journey.Leg> currentLegsList = new ArrayList<>();
+
+            // on boucle tant qu'il reste des changements
+            while (numberOfChanges > 0) {
+
+                int currentPayload = PackedCriteria.payload(criteria);
+
+                int currentConnectionId = Bits32_24_8.unpack24(currentPayload);
+                int numberOfStopsBeforeChange = Bits32_24_8.unpack8(currentPayload);
+
+                int currentStationId = profile.connections().depStopId(currentConnectionId);
+
+                int nextConnectionId = currentConnectionId;
+
+                while (numberOfStopsBeforeChange > 0) {
+                    nextConnectionId = profile.connections().nextConnectionId(currentConnectionId);
+                }
+
+                int nextStationId = profile.connections().depStopId(nextConnectionId);
+
+                // CAS FOOT
+                if (nextStationId == currentStationId) {
+
+                } else {
+                    // Cas transport leg
+                }
+
+
+            }
+
+
             // Ici faut faire un truc
+
+
+            journeys.get(0).
         });
 
         // Tri de journey, par le code donné dans l'énoncé
