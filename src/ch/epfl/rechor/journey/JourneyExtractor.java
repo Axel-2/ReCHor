@@ -3,6 +3,7 @@ package ch.epfl.rechor.journey;
 import ch.epfl.rechor.Bits32_24_8;
 import ch.epfl.rechor.timetable.TimeTable;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -89,19 +90,8 @@ public class JourneyExtractor {
 
                 // ------ Récupération des heures de départ et arrivée
 
-                // L'heure de départ du leg est l'heure de départ de la première connection
-                int depLegTime = profile.connections().depMins(currentConnectionId);
-                // L'heure d'arrivée du leg est l'heure d'arrivée de la dernière connection
-                int arrLegTime = profile.connections().arrMins(finalLegConnectionId);
-
-                int depLegHours = depLegTime / 60;
-                int depLegMinutes = depLegTime % 60;
-                LocalDateTime departureDate = profile.date().atTime(depLegHours, depLegMinutes);
-
-                int arrLegHours = arrLegTime / 60;
-                int arrLegMinutes = arrLegTime % 60;
-                LocalDateTime arrivalDate = profile.date().atTime(arrLegHours, arrLegMinutes);
-
+                LocalDateTime departureDate = getLocalDateTime(profile, currentConnectionId);
+                LocalDateTime arrivalDate = getLocalDateTime(profile, finalLegConnectionId)
 
                 Journey.Leg currentLeg;
 
@@ -167,13 +157,24 @@ public class JourneyExtractor {
         String deplPlatformName = profile.timeTable().platformName(stopId);
 
         // création de l'instance de l'arrêt de départ
-        Stop stop = new Stop(
+
+        return new Stop(
                 depStationName,
                 deplPlatformName,
                 depLongitude,
                 depLatitude
         );
+    }
 
-        return stop;
+
+    private static LocalDateTime getLocalDateTime(Profile profile, int currentConnectionId) {
+
+        // minutes depuis miniuit
+        int minutesTimes = profile.connections().depMins(currentConnectionId);
+
+        int hours = minutesTimes / 60;
+        int minutes = minutesTimes % 60;
+
+        return profile.date().atTime(hours, minutes);
     }
 }
