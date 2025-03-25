@@ -111,13 +111,12 @@ public class JourneyExtractor {
 
             // ---------- 4) Création de l'arrêt d'arrivée -----------------
             //ID du stop d'arrivée qui est celui de notre dernière connexion
-            int arrStationId = profile.connections().depStopId(nextConnexionId);
-            Stop arrStop = getStopInstance(profile, arrStationId);
+            int arrStopId = profile.connections().depStopId(nextConnexionId);
+            int arrStationId = profile.connections().arrStopId(arrStopId);
+            Stop arrStop = getStopInstance(profile, arrStopId);
 
             // ---------- 5) Création de l'heure d'arrivée ------------------
             LocalDateTime arrivalDate = getLocalDateTime(profile, nextConnexionId);
-
-
 
 
             // ---------- ON A DE QUOI INSTANCIER UNE LEG, MAIS QUEL TYPE DE LEG ???? ------------
@@ -154,13 +153,13 @@ public class JourneyExtractor {
 
             // --------- FIN DE BOUCLE ---------
 
-            // On décrémente le nombre de changement (ou le nombre de legs restants à étudier)
-            --numberOfChanges;
-
             // On prépare les données pour la prochaine leg, en choppant le critère et son payload
             ParetoFront nextFront = profile.forStation(arrStationId);
-            long futureCriteria = nextFront.get(finalArrMins, numberOfChanges);
+            long futureCriteria = nextFront.get(finalArrMins, numberOfChangesRemaining);
             criteriaPayload = PackedCriteria.payload(futureCriteria);
+
+            // On décrémente le nombre de changement (ou le nombre de legs restants à étudier)
+            --numberOfChangesRemaining;
 
         }
 
