@@ -27,7 +27,7 @@ public final class BufferedTransfers implements Transfers {
     // Attributs du tableau structuré
     private final StructuredBuffer tranferStructuredBuffer;
 
-    // Tableau contenant l'intervalle des changement
+    // Tableau contenant l'intervalle des changements
     // et qui est indexé par les gares d'arrivées
     private final int[] stationIdTransferInterval;
 
@@ -75,66 +75,44 @@ public final class BufferedTransfers implements Transfers {
             }
         }
 
-        // maintenant qu'on la l'id max on peut créer un tableau qui contiendra
+        // maintenant qu'on l'id maximal, on peut créer un tableau qui contiendra
         // une entrée pour chaquune des gares (ce sera des intervalles empaquetés)
         this.stationIdTransferInterval = new int[maxStationId +1];
 
         // 2. la deuxième étape est de déterminer le contenu de notre tableau
 
-        // pour chaque gare on doit stocker l'intervalle des index des changements
-        // on a donc besoin de deux variables pour stocker le début et la fin de
-        // l'intervalle correspondant à la gare actuelle
-        int currentStartIndexToPack = 0;
-        int currentEndIndexToPack = 0;
+        int currentStartBufferIndex = 0;
 
-        // on va maintenant itérer sur notre buffer et compter le nombre d'occurrences de chaque
-        // gare d'arrivées pour pouvoir construire notre intervalle
+        // on boucle sur tous les changements
+        while (currentStartBufferIndex < tranferStructuredBuffer.size()) {
 
-        // on initialise une variable avec le premier id de gare qu'on trouve dans le buffer
-        int currentStationId = tranferStructuredBuffer.getU16(ARR_STATION_ID, 0);
+            int currentEndBufferIndex = currentStartBufferIndex;
 
-        // on itère donc sur touts les changements de notre buffer
-        // on commence la boucle directement à 1 car on a déjà l'élément 0 dans currentStation
-        for (int nextTransferIndex = 1; nextTransferIndex < tranferStructuredBuffer.size(); ++nextTransferIndex) {
+            int currentStationId = tranferStructuredBuffer.getU16(ARR_STATION_ID, currentStartBufferIndex);
 
-            // on récupère l'id de la prochaine station dans notre buffer
-            int nextStationId = tranferStructuredBuffer.getU16(ARR_STATION_ID, nextTransferIndex);
+            int currentNextStationID = tranferStructuredBuffer.getU16(ARR_STATION_ID, currentEndBufferIndex);
 
-            // si les ids sont égaux, c'est que l'intervalle n'est pas encore fini
-            // sinon l'intervalle est fini et on peut le pack et le mettre dans
-            // notre tableau
-            if (currentStationId != nextStationId) {
+            while (currentNextStationID == currentStationId) {
 
-                // on assigne l'index de la prochaine gare (qui est différente)
-                // à la variable qui contient la fin de l'intervalle, car
-                // l'intervalle est exclusif pour la fin
-                currentEndIndexToPack = nextTransferIndex;
+                // si c'est identique, on passe à l'index suivant
+                currentEndBufferIndex++;
 
-                // on peut maintenant créer l'intervalle empaqueté
-                int packedInterval = PackedRange.pack(currentStartIndexToPack, currentEndIndexToPack);
 
-                // on n'oublie pas de stocker notre intervalle dans le tableau initial
-                stationIdTransferInterval[currentStationId] = packedInterval;
-
-                // S'il y a des IDs intermédiaires qui n'apparaissent pas,
-                // on les remplit avec l'intervalle vide correspondant (point d'insertion = currentEndIndexToPack).
-                for (int missingId = currentStationId + 1; missingId < nextStationId; missingId++) {
-                    stationIdTransferInterval[missingId] = PackedRange.pack(currentEndIndexToPack, currentEndIndexToPack);
+                if  (currentEndBufferIndex < tranferStructuredBuffer.size()) {
+                    currentNextStationID = tranferStructuredBuffer.getU16(ARR_STATION_ID, currentEndBufferIndex);
+                } else {
+                    break;
                 }
-
-                // Il faut maintenant assigner le currentEnd au currentStart pour le prochain
-                // tour de boucle (car l'intervalle est inclusif pour le début)
-                currentStartIndexToPack = nextTransferIndex;
-
-                // on met à jour aussi currentStationId
-                currentStationId = nextStationId;
-
             }
-        }
 
-        // pour le dernier intervalle, on est sorti de la boucle
-        // on prend juste la fin du dernier intervalle et la taille du buffer
-        stationIdTransferInterval[currentStationId] = PackedRange.pack(currentStartIndexToPack, tranferStructuredBuffer.size());
+            // on crée l'intervalle et on le met dans le tableau
+            int packedInterval = PackedRange.pack(currentStartBufferIndex, currentEndBufferIndex);
+            stationIdTransferInterval[currentStationId] = packedInterval;
+
+            // on met à jour les index pour le prochain tour de boucle
+            currentStartBufferIndex = currentEndBufferIndex;
+
+        }
 
     }
 
