@@ -96,6 +96,7 @@ public class JourneyExtractor {
                 // On continue de regarder la connexion d'après
                 nextConnexionId = profile.connections().nextConnectionId(currentConnectionId);
 
+                // Todo probablement un truc de faux ici, faut utiliser minBetween pour deptime je crois selon le prof
                 // On en profite pour créer les arrêts intermédiaires
                 int stopId = profile.connections().depStopId(nextConnexionId);
                 Stop intermediateStop = getStopInstance(profile, stopId);
