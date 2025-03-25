@@ -40,7 +40,6 @@ public class JourneyExtractor {
         // Pour chaque critères
         pf.forEach((long criteria) -> {
 
-<<<<<<< HEAD
             int numberOfChanges = PackedCriteria.changes(criteria);
             int finalArrMins = PackedCriteria.arrMins(criteria);
 
@@ -94,7 +93,7 @@ public class JourneyExtractor {
                 // ------ Récupération des heures de départ et arrivée
 
                 LocalDateTime departureDate = getLocalDateTime(profile, currentConnectionId);
-                LocalDateTime arrivalDate = getLocalDateTime(profile, finalLegConnectionId)
+                LocalDateTime arrivalDate = getLocalDateTime(profile, finalLegConnectionId);
 
                 Journey.Leg currentLeg;
 
@@ -139,11 +138,9 @@ public class JourneyExtractor {
                 criteria = nextFront.get(finalArrMins, numberOfChanges);
             }
 
-=======
             // Création du voyage lié au critère
             Journey j = makeJourney(profile, criteria, depStationId);
             journeys.add(j);
->>>>>>> 04b5cc4e16fa5f832405c8605295231be3ad6f48
         });
 
         // Tri de journey, par le code donné dans l'énoncé
