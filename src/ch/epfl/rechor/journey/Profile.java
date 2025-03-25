@@ -59,6 +59,7 @@ public record Profile(TimeTable timeTable, LocalDate date, int arrStationId, Lis
         // On utilise simplement la fonction get de notre liste
         // pour avoir la bonne frontière d'index donné
         // get lance une erreur si l'index est invalide
+        // Todo le bug vient d'ici, mais pourtant si on mets un breakpoint les nombres sont fines ??
         return stationFront.get(stationId);
 
     }
