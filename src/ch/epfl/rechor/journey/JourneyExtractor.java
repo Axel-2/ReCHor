@@ -154,13 +154,14 @@ public class JourneyExtractor {
 
             // --------- FIN DE BOUCLE ---------
 
+            // On décrémente le nombre de changement (ou le nombre de legs restants à étudier)
+            numberOfChangesRemaining--;
+
             // On prépare les données pour la prochaine leg, en choppant le critère et son payload
             ParetoFront nextFront = profile.forStation(arrStationId);
             long futureCriteria = nextFront.get(finalArrMins, numberOfChangesRemaining);
             criteriaPayload = PackedCriteria.payload(futureCriteria);
 
-            // On décrémente le nombre de changement (ou le nombre de legs restants à étudier)
-            --numberOfChangesRemaining;
 
         }
 
