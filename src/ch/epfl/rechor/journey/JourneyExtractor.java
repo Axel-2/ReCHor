@@ -3,7 +3,6 @@ package ch.epfl.rechor.journey;
 import ch.epfl.rechor.Bits32_24_8;
 import ch.epfl.rechor.timetable.TimeTable;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -15,7 +14,7 @@ import java.util.List;
  */
 public final class JourneyExtractor {
 
-    // Rendre la classe non instanciable
+    // Rendre la classe non instantiable
     private JourneyExtractor() {}
 
     /**
@@ -28,14 +27,16 @@ public final class JourneyExtractor {
      */
     public static List<Journey> journeys(Profile profile, int depStationId) {
 
+        // La liste des journey que l'on va retourner à la fin
         List<Journey> journeys = new ArrayList<>();
+
+        // Frontière de Pareto de la station de départ
         ParetoFront pf = profile.forStation(depStationId);
 
-        // on itère sur tous les critères du profile de la gare donné et pour chaque critère
-        // on génère le voyage correspondant qu'on ajoute dans la liste
-        pf.forEach(criteria -> journeys.add(buildJourney(profile, criteria, depStationId)));
+        // Pour chacun des critères de la frontière, on crée un voyage qu'on ajoute dans la liste
+        pf.forEach(criteria -> journeys.add(makeJourney(profile, criteria, depStationId)));
 
-        // tri donné sur le site
+        // On trie nos voyages
         journeys.sort(Comparator.comparing(Journey::depTime).thenComparing(Journey::arrTime));
 
         return journeys;
@@ -45,135 +46,224 @@ public final class JourneyExtractor {
      * Construit un voyage à partir du premier critère et enchaîne les legs (transport et pied)
      * en traitant séparément le premier leg puis les changements restants.
      */
-    private static Journey buildJourney(Profile profile, long firstCriteria, int depStationId) {
+    private static Journey makeJourney(Profile profile, long firstCriteria, int depStationId) {
 
+        // Liste des étapes qui vont permettre de créer un voyage
         List<Journey.Leg> legs = new ArrayList<>();
 
-        // données du critère
-        int changes = PackedCriteria.changes(firstCriteria);
-        int finalArrMins = PackedCriteria.arrMins(firstCriteria);
-        int payload = PackedCriteria.payload(firstCriteria);
-        int initialDepTime = PackedCriteria.depMins(firstCriteria);
-        int firstConnId = Bits32_24_8.unpack24(payload);
+        // Table des horaires
+        TimeTable timeTable = profile.timeTable();
 
-        // --- Traitement du premier leg ---
+        // On extrait les données du critère et de son payload
+        int changesOfFirstCriteria = PackedCriteria.changes(firstCriteria);
+        int finalArrMinsOfFirstCriteria = PackedCriteria.arrMins(firstCriteria);
+        int depMinsOfFirstCriteria = PackedCriteria.depMins(firstCriteria);
+        int payloadOfFirstCriteria = PackedCriteria.payload(firstCriteria);
+        int firstConnectionIdOfThisJourney = Bits32_24_8.unpack24(payloadOfFirstCriteria);
 
-        // Ajout éventuel d’un leg à pied si le départ choisi diffère du départ effectif
+        // ------------------ PARTIE 1) AJOUT ÉVENTUEL D'UNE PREMIERE ÉTAPE A PIED ---------------------------
 
-        // gare initiale choisie par l'utilisateur
-        Stop chosenStop = getStopInstance(profile, depStationId);
-        int firstDepStopId = profile.connections().depStopId(firstConnId);
+        // Récupération de l'ID du stop de départ la première connection (EPFL par exemple)
+        int firstStopUsedId = profile.connections().depStopId(firstConnectionIdOfThisJourney);
 
-        // ----- Ajout du foot leg si besoin
+        // On compare le premier stop fourni avec le stop de la première connection, donc le premier stop réellement
+        // utilisé, et s'ils ne sont pas les mêmes, c'est qu'il y a un trajet à pied à faire, comme première étape
+        Stop firstStopProvided = getStopInstance(profile, depStationId);
+        Stop firstStopUsed = getStopInstance(profile, firstStopUsedId);
+        if (!firstStopProvided.name().equals(firstStopUsed.name())) {
 
-        // vraie gare de départ (plus précise)
-        Stop actualStop = getStopInstance(profile, firstDepStopId);
-        if (!chosenStop.name().equals(actualStop.name())) {
-            int walkMins = profile.timeTable().transfers()
-                    .minutesBetween(depStationId, profile.timeTable().stationId(firstDepStopId));
 
-            LocalDateTime footDepTime = profile.date().atStartOfDay().plusMinutes(initialDepTime);
+            int transferDuration = profile.timeTable().transfers().minutesBetween(depStationId,
+                    profile.timeTable().stationId(firstStopUsedId));
 
-            // On considère que l’heure d’arrivée du leg à pied est égale à l’heure de départ du transport
-            LocalDateTime footArrTime = footDepTime.plusMinutes(walkMins);
-            legs.add(new Journey.Leg.Foot(chosenStop, footDepTime, actualStop, footArrTime));
+            // PREMIER LEG = FOOTLEG
+            LocalDateTime firstFootLegDepTime = profile.date().atStartOfDay().plusMinutes(depMinsOfFirstCriteria);
+            LocalDateTime firstFootLegArrTime = firstFootLegDepTime.plusMinutes(transferDuration);
+
+            legs.add(new Journey.Leg.Foot(firstStopProvided, firstFootLegDepTime, firstStopUsed, firstFootLegArrTime));
+        }
+        // ------------------ FIN PARTIE 1 ----------------------------------
+
+        // ------------------ PARTIE 2) PREMIERE ÉTAPE EN TRANSPORT ---------------------------
+
+        // Nombre d'arrêts intermédiaires à laisser passer avant de descendre du véhicule.
+        int nbOfIntermediateStopsOfFirstTransportLeg = Bits32_24_8.unpack8(payloadOfFirstCriteria);
+
+        // Liste des arrêts intermédiaires de cette première étape en transport
+        List<Journey.Leg.IntermediateStop> intermediateStops = new ArrayList<>();
+
+        // Variable qui compte le nombre d'arrêts qu'il reste à ajouter
+        int intermediateStopsRemaining = nbOfIntermediateStopsOfFirstTransportLeg;
+
+        // Variable qui va incrémenter jusqu'à qu'on ait tous nos intermediates stops
+        int currentConnectionId = firstConnectionIdOfThisJourney;
+
+
+        // Boucle qui crée les arrêts intermédiaires
+        while (intermediateStopsRemaining > 0) {
+            // On prend le prochain stop
+            int nextConnectionId = profile.connections().nextConnectionId(currentConnectionId);
+            int stopId = profile.connections().depStopId(nextConnectionId);
+            Stop intermediateStop = getStopInstance(profile, stopId);
+
+            // Ainsi que la date de départ et d'arrivée à celui-ci
+            LocalDateTime arrTime = profile.date().atStartOfDay().plusMinutes(profile.connections().arrMins(currentConnectionId));
+            LocalDateTime depTime = getLocalDateTime(profile, nextConnectionId);
+
+            // Et on l'ajoute à la liste
+            intermediateStops.add(new Journey.Leg.IntermediateStop(intermediateStop, arrTime, depTime));
+
+            // Actualisation de la connexion qu'on étudie
+            currentConnectionId = nextConnectionId;
+
+            // On décrémente pour la prochaine boucle
+            intermediateStopsRemaining--;
         }
 
-        // ----- Ajout du premier segment en transport
+        // On en a fini avec les arrêts intermédiaires, il faut maintenant créer tout ce dont on a besoin
+        // pour finaliser notre première étape de transport.
 
-        // nombre d'arrêts intermédiaires à laisser passer avant de descendre du véhicule.
-        int nbOfIntermediateStopsOfCurrentLeg = Bits32_24_8.unpack8(payload);
-        TransportLegResult firstLegResult = createTransportLeg(profile, firstConnId, nbOfIntermediateStopsOfCurrentLeg);
-        Journey.Leg.Transport firstTransportLeg = firstLegResult.leg();
+        // On a déjà : IntermediateStops et Arrêt de départ.
+        // Il nous manque : Date de départ, Date d'arrivée, Arrêt final, Véhicule, Route, Trip
+
+        // Date de départ
+        LocalDateTime firstDepartureTime = getLocalDateTime(profile, firstConnectionIdOfThisJourney);
+
+        // Arrêt final et date d'arrivée
+        int firstTransportLegArrStopId = profile.connections().arrStopId(currentConnectionId);
+        Stop firstTransportLegArrStop = getStopInstance(profile, firstTransportLegArrStopId);
+
+        // Date d'arrivée
+        LocalDateTime firstArrivalTime = profile.date().atStartOfDay().plusMinutes(profile.connections().arrMins(currentConnectionId));
+
+        // Trip et route ID, Pour avoir le trip la route et le véhicle
+        int firstTripId = profile.connections().tripId(firstConnectionIdOfThisJourney);
+        int firstRouteId = profile.trips().routeId(firstTripId);
+
+        // Création
+        Journey.Leg.Transport firstTransportLeg = new Journey.Leg.Transport(
+                firstStopUsed,
+                firstDepartureTime,
+                firstTransportLegArrStop,
+                firstArrivalTime,
+                intermediateStops,
+                timeTable.routes().vehicle(firstRouteId),
+                timeTable.routes().name(firstRouteId),
+                profile.trips().destination(firstTripId)
+        );
+
+
         legs.add(firstTransportLeg);
+        int remainingChangesOfJourney = changesOfFirstCriteria - 1;
 
-        // Préparation pour le traitement des legs supplémentaires
-        int remainingChanges = changes - 1;
-        int currentArrStopId = firstLegResult.endStopId();
-        LocalDateTime currentArrivalTime = firstTransportLeg.arrTime();
+        // ------------- FIN DE LA PARTIE 2) ---------------------
 
-        // --- Traitement des changements restants ---
-        while (remainingChanges >= 0) {
+        // ------------- PARTIE 3) BOUCLE POUR FAIRE TOUS LES AUTRES LEGS --------------
 
-            // Récupérer le critère suivant pour le nombre de changements restant
-            ParetoFront nextFront = profile.forStation(profile.timeTable().stationId(currentArrStopId));
-            long nextCriteria = nextFront.get(finalArrMins, remainingChanges);
-            int nextPayload = PackedCriteria.payload(nextCriteria);
-            int nextConnId = Bits32_24_8.unpack24(nextPayload);
-            int nextNbOfIntermediateStopsOfCurrentLeg = Bits32_24_8.unpack8(nextPayload);
+        // Mise à jour des variables pour bien commencer la boucle
+        int currentStopId = firstTransportLegArrStopId;
+        LocalDateTime startingTimeOfCurrentLeg = firstTransportLeg.arrTime();
 
-            // Ajout d'un leg à pied entre l'arrivée du leg précédent et le départ du suivant
-            int nextDepStopId = profile.connections().depStopId(nextConnId);
-            Stop currentStop = getStopInstance(profile, currentArrStopId);
+        // Tant qu'il reste des changements dans le voyage
+        while (remainingChangesOfJourney >= 0) {
+
+            // On choppe le critère de là où on en est
+            ParetoFront currentParetoFront = profile.forStation(profile.timeTable().stationId(currentStopId));
+
+            // Extraction des données
+            long currentCriteria = currentParetoFront.get(finalArrMinsOfFirstCriteria, remainingChangesOfJourney);
+            int currentPayload = PackedCriteria.payload(currentCriteria);
+            int firstConnectionOfCurrentLeg = Bits32_24_8.unpack24(currentPayload);
+            int nbOfIntermediateStopsOfCurrentLeg = Bits32_24_8.unpack8(currentPayload);
+
+            // Connection suivante
+            int nextDepStopId = profile.connections().depStopId(firstConnectionOfCurrentLeg);
+
+            // L'étape d'avant était en transport, on doit donc maintenant en créer une à pied
+
+            // Stops
+            Stop currentStop = getStopInstance(profile, currentStopId);
             Stop nextDepStop = getStopInstance(profile, nextDepStopId);
-            int walkMins = profile.timeTable().transfers()
-                    .minutesBetween(profile.timeTable().stationId(currentArrStopId),
-                            profile.timeTable().stationId(nextDepStopId));
-            LocalDateTime footArrTime = currentArrivalTime.plusMinutes(walkMins);
-            legs.add(new Journey.Leg.Foot(currentStop, currentArrivalTime, nextDepStop, footArrTime));
 
-            // Création du leg de transport suivant
-            TransportLegResult nextLegResult = createTransportLeg(profile, nextConnId, nextNbOfIntermediateStopsOfCurrentLeg);
-            legs.add(nextLegResult.leg());
+            // Durée du changement
+            int transferDuration = profile.timeTable().transfers()
+                    .minutesBetween(profile.timeTable().stationId(currentStopId),
+                            profile.timeTable().stationId(nextDepStopId));
+
+            // Heures
+            LocalDateTime footDepTime = startingTimeOfCurrentLeg;
+            LocalDateTime footArrTime = startingTimeOfCurrentLeg.plusMinutes(transferDuration);
+
+            legs.add(new Journey.Leg.Foot(currentStop, footDepTime, nextDepStop, footArrTime));
+            // -------------- Fin de l'étape à Pied ---------------//
+
+            // ------------- Début de l'étape en transport ------- //
+
+            currentConnectionId = firstConnectionOfCurrentLeg;
+
+            // Gestion des arrêts intermédiaires
+            intermediateStopsRemaining = nbOfIntermediateStopsOfCurrentLeg;
+            List<Journey.Leg.IntermediateStop> nextIntermediateStops = new ArrayList<>(nbOfIntermediateStopsOfCurrentLeg);
+
+            while (intermediateStopsRemaining > 0) {
+                // On prend le prochain stop
+                int nextConnectionId = profile.connections().nextConnectionId(currentConnectionId);
+                int stopId = profile.connections().depStopId(nextConnectionId);
+                Stop intermediateStop = getStopInstance(profile, stopId);
+
+                // Ainsi que la date de départ et d'arrivée à celui-ci
+                LocalDateTime arrTime = profile.date().atStartOfDay().plusMinutes(profile.connections().arrMins(currentConnectionId));
+                LocalDateTime depTime = getLocalDateTime(profile, nextConnectionId);
+
+                // Et on l'ajoute à la liste
+                intermediateStops.add(new Journey.Leg.IntermediateStop(intermediateStop, arrTime, depTime));
+
+                // Actualisation de la connexion qu'on étudie
+                currentConnectionId = nextConnectionId;
+
+                // On décrémente pour la prochaine boucle
+                intermediateStopsRemaining--;
+            }
+
+            // Arrêts intermédiaires finis, on s'occupe des autres paramètres pour créer la leg
+            // current connection a été incrémenté
+
+            // Création de l'arrêt de départ et de l'heure de départ initiale
+            int depStopIdOfCurrentLeg = profile.connections().depStopId(firstConnectionOfCurrentLeg);
+            Stop depStopOfCurrentLeg = getStopInstance(profile, depStopIdOfCurrentLeg);
+            LocalDateTime depTimeOfCurrentLeg = getLocalDateTime(profile, firstConnectionOfCurrentLeg);
+
+            // Création de l'arrêt d'arrivée et de l'heure d'arrivée finale
+            int endStopIdOfCurrentLeg = profile.connections().arrStopId(currentConnectionId);
+            Stop endStopOfCurrentLeg = getStopInstance(profile, endStopIdOfCurrentLeg);
+            LocalDateTime endTimeOfCurrentLeg = profile.date().atStartOfDay().plusMinutes(profile.connections().arrMins(currentConnectionId));
+
+            // Obtention des trip et route id pour connaître le véhicule, le trip et la route
+            int tripId = profile.connections().tripId(firstConnectionOfCurrentLeg);
+            int routeId = profile.trips().routeId(tripId);
+
+            // Création de la leg
+            Journey.Leg.Transport transportLeg = new Journey.Leg.Transport(
+                    depStopOfCurrentLeg,
+                    depTimeOfCurrentLeg,
+                    endStopOfCurrentLeg,
+                    endTimeOfCurrentLeg,
+                    nextIntermediateStops,
+                    timeTable.routes().vehicle(routeId),
+                    timeTable.routes().name(routeId),
+                    profile.trips().destination(tripId)
+            );
+
+
+            legs.add(transportLeg);
 
             // Mise à jour pour la prochaine itération
-            currentArrStopId = nextLegResult.endStopId();
-            currentArrivalTime = nextLegResult.leg().arrTime();
-            remainingChanges--;
+            currentStopId = endStopIdOfCurrentLeg;
+            startingTimeOfCurrentLeg = transportLeg.arrTime();
+            remainingChangesOfJourney--;
         }
 
         return new Journey(legs);
-    }
-
-    /**
-     * Construit un leg de transport complet (incluant les arrêts intermédiaires) et renvoie
-     * le leg ainsi que l’ID du stop d’arrivée final.
-     */
-    private static TransportLegResult createTransportLeg(Profile profile, int connectionId, int stopsBeforeLastStop) {
-        int initialConnId = connectionId;
-        TimeTable timeTable = profile.timeTable();
-        LocalDate date = profile.date();
-        List<Journey.Leg.IntermediateStop> intermediateStops = new ArrayList<>();
-
-        // Construction des arrêts intermédiaires s'il y en a
-        while (stopsBeforeLastStop > 0) {
-            int nextConnId = profile.connections().nextConnectionId(connectionId);
-            int stopId = profile.connections().depStopId(nextConnId);
-            Stop intermediateStop = getStopInstance(profile, stopId);
-
-            LocalDateTime arrTime = minutesToLocalDateTime(date, profile.connections().arrMins(connectionId));
-            LocalDateTime depTime = getLocalDateTime(profile, nextConnId);
-
-            intermediateStops.add(new Journey.Leg.IntermediateStop(intermediateStop, arrTime, depTime));
-            connectionId = nextConnId;
-            stopsBeforeLastStop--;
-        }
-
-        // Création de l'arrêt d'arrivée et de l'heure d'arrivée finale
-        int arrStopId = profile.connections().arrStopId(connectionId);
-        Stop arrStop = getStopInstance(profile, arrStopId);
-        LocalDateTime arrivalTime = minutesToLocalDateTime(date, profile.connections().arrMins(connectionId));
-
-        // Création de l'arrêt de départ et de l'heure de départ initiale
-        int depStopId = profile.connections().depStopId(initialConnId);
-        Stop depStop = getStopInstance(profile, depStopId);
-        LocalDateTime departureTime = getLocalDateTime(profile, initialConnId);
-
-        int tripId = profile.connections().tripId(initialConnId);
-        int routeId = profile.trips().routeId(tripId);
-
-        Journey.Leg.Transport leg = new Journey.Leg.Transport(
-                depStop,
-                departureTime,
-                arrStop,
-                arrivalTime,
-                intermediateStops,
-                timeTable.routes().vehicle(routeId),
-                timeTable.routes().name(routeId),
-                profile.trips().destination(tripId)
-        );
-
-        return new TransportLegResult(leg, arrStopId);
     }
 
     /**
@@ -191,22 +281,10 @@ public final class JourneyExtractor {
     }
 
     /**
-     * Convertit les minutes depuis minuit en LocalDateTime.
-     */
-    private static LocalDateTime minutesToLocalDateTime(LocalDate date, int minutes) {
-        return date.atStartOfDay().plusMinutes(minutes);
-    }
-
-    /**
      * Calcule l'heure de départ d'une connexion donnée.
      */
     private static LocalDateTime getLocalDateTime(Profile profile, int connectionId) {
         int minutesSinceMidnight = profile.connections().depMins(connectionId);
         return profile.date().atStartOfDay().plusMinutes(minutesSinceMidnight);
     }
-
-    /**
-     * Container pour un leg de transport et l'ID du stop d'arrivée final.
-     */
-    private record TransportLegResult(Journey.Leg.Transport leg, int endStopId) {}
 }
