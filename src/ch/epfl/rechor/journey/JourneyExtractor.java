@@ -100,25 +100,7 @@ public final class JourneyExtractor {
 
 
         // Boucle qui crée les arrêts intermédiaires
-        while (intermediateStopsRemaining > 0) {
-            // On prend le prochain stop
-            int nextConnectionId = profile.connections().nextConnectionId(currentConnectionId);
-            int stopId = profile.connections().depStopId(nextConnectionId);
-            Stop intermediateStop = getStopInstance(profile, stopId);
-
-            // Ainsi que la date de départ et d'arrivée à celui-ci
-            LocalDateTime arrTime = profile.date().atStartOfDay().plusMinutes(profile.connections().arrMins(currentConnectionId));
-            LocalDateTime depTime = getLocalDateTime(profile, nextConnectionId);
-
-            // Et on l'ajoute à la liste
-            intermediateStops.add(new Journey.Leg.IntermediateStop(intermediateStop, arrTime, depTime));
-
-            // Actualisation de la connexion qu'on étudie
-            currentConnectionId = nextConnectionId;
-
-            // On décrémente pour la prochaine boucle
-            intermediateStopsRemaining--;
-        }
+        currentConnectionId = createIntermediateStops(profile, intermediateStops, intermediateStopsRemaining, currentConnectionId);
 
         // On en a fini avec les arrêts intermédiaires, il faut maintenant créer tout ce dont on a besoin
         // pour finaliser notre première étape de transport.
@@ -205,25 +187,7 @@ public final class JourneyExtractor {
             intermediateStopsRemaining = nbOfIntermediateStopsOfCurrentLeg;
             List<Journey.Leg.IntermediateStop> nextIntermediateStops = new ArrayList<>(nbOfIntermediateStopsOfCurrentLeg);
 
-            while (intermediateStopsRemaining > 0) {
-                // On prend le prochain stop
-                int nextConnectionId = profile.connections().nextConnectionId(currentConnectionId);
-                int stopId = profile.connections().depStopId(nextConnectionId);
-                Stop intermediateStop = getStopInstance(profile, stopId);
-
-                // Ainsi que la date de départ et d'arrivée à celui-ci
-                LocalDateTime arrTime = profile.date().atStartOfDay().plusMinutes(profile.connections().arrMins(currentConnectionId));
-                LocalDateTime depTime = getLocalDateTime(profile, nextConnectionId);
-
-                // Et on l'ajoute à la liste
-                intermediateStops.add(new Journey.Leg.IntermediateStop(intermediateStop, arrTime, depTime));
-
-                // Actualisation de la connexion qu'on étudie
-                currentConnectionId = nextConnectionId;
-
-                // On décrémente pour la prochaine boucle
-                intermediateStopsRemaining--;
-            }
+            currentConnectionId = createIntermediateStops(profile, intermediateStops, intermediateStopsRemaining, currentConnectionId);
 
             // Arrêts intermédiaires finis, on s'occupe des autres paramètres pour créer la leg
             // current connection a été incrémenté
@@ -264,6 +228,29 @@ public final class JourneyExtractor {
         }
 
         return new Journey(legs);
+    }
+
+    private static int createIntermediateStops(Profile profile, List<Journey.Leg.IntermediateStop> intermediateStops, int intermediateStopsRemaining, int currentConnectionId) {
+        while (intermediateStopsRemaining > 0) {
+            // On prend le prochain stop
+            int nextConnectionId = profile.connections().nextConnectionId(currentConnectionId);
+            int stopId = profile.connections().depStopId(nextConnectionId);
+            Stop intermediateStop = getStopInstance(profile, stopId);
+
+            // Ainsi que la date de départ et d'arrivée à celui-ci
+            LocalDateTime arrTime = profile.date().atStartOfDay().plusMinutes(profile.connections().arrMins(currentConnectionId));
+            LocalDateTime depTime = getLocalDateTime(profile, nextConnectionId);
+
+            // Et on l'ajoute à la liste
+            intermediateStops.add(new Journey.Leg.IntermediateStop(intermediateStop, arrTime, depTime));
+
+            // Actualisation de la connexion qu'on étudie
+            currentConnectionId = nextConnectionId;
+
+            // On décrémente pour la prochaine boucle
+            intermediateStopsRemaining--;
+        }
+        return currentConnectionId;
     }
 
     /**
