@@ -127,7 +127,7 @@ public final class FormatterFr {
                 .append(leg.depStop().name());
 
 
-        if (leg.depStop().platformName() != null) {
+        if (leg.depStop().platformName() != null && !leg.depStop().platformName().isEmpty()) {
             builder.append(" (voie ")
                     .append(leg.depStop().platformName())
                     .append(")");
@@ -138,7 +138,7 @@ public final class FormatterFr {
                 .append(" (arr. ")
                 .append(arrTimeString);
 
-        if (leg.arrStop().platformName() != null) {
+        if (leg.arrStop().platformName() != null && !leg.arrStop().platformName().isEmpty()) {
             builder.append(" voie ")
                     .append(leg.arrStop().platformName());
         }

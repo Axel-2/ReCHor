@@ -25,7 +25,7 @@ public class MyJourneyExtractorTest {
         Profile profile = readProfile(t, date, 11486);
 
         // Extraire les voyages depuis la gare 7872 (Ecublens VD, EPFL)
-        List<Journey> js = JourneyExtractor.journeys(profile, 11486);
+        List<Journey> js = JourneyExtractor.journeys(profile, 7872);
         String j = JourneyIcalConverter.toIcalendar(js.get(32));
 
         System.out.println(j);
