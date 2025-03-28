@@ -109,8 +109,7 @@ public final class JourneyExtractor {
             int walkMins = profile.timeTable().transfers()
                     .minutesBetween(profile.timeTable().stationId(currentArrStopId),
                             profile.timeTable().stationId(nextDepStopId));
-            LocalDateTime nextTransportDepTime = getLocalDateTime(profile, nextConnId);
-            LocalDateTime footArrTime = nextTransportDepTime;
+            LocalDateTime footArrTime = currentArrivalTime.plusMinutes(walkMins);
             legs.add(new Journey.Leg.Foot(currentStop, currentArrivalTime, nextDepStop, footArrTime));
 
             // Création du leg de transport suivant
