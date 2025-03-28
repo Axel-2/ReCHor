@@ -63,10 +63,11 @@ public class JourneyExtractor {
             int criteriaPayload = PackedCriteria.payload(initialCriteria);
 
             int firstConnId = Bits32_24_8.unpack24(criteriaPayload);
-            int firstStopsBeforeLastStop = Bits32_24_8.unpack8(criteriaPayload);
+
+            int intermediateStopsOfThisLeg = Bits32_24_8.unpack8(criteriaPayload);
 
             // Création du premier segment de transport
-            TransportLegResult firstLegResult = LegBuilder.createTransportLeg(profile, firstConnId, firstStopsBeforeLastStop);
+            TransportLegResult firstLegResult = LegBuilder.createTransportLeg(profile, firstConnId, intermediateStopsOfThisLeg);
             Journey.Leg.Transport firstLeg = firstLegResult.leg();
 
             // Ajout éventuel d'un segment de marche depuis la station choisie
