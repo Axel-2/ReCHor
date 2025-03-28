@@ -27,7 +27,7 @@ public record Journey(List<Leg> legs) {
         Preconditions.checkArgument(!legs.isEmpty());
 
         // Le reste des conditions se trouvent au sein de la boucle
-        // Pour chaque étapes consécutives :
+        // Pour chaque étape consécutives :
         for (int i = 1; i < legs.size(); i++) {
 
             // Condition 2 : Les étapes doivent s'alterner
@@ -123,7 +123,7 @@ public record Journey(List<Leg> legs) {
 
                 Objects.requireNonNull(stop, "stop is null");
 
-                // ne pas mettre l'inverse car de cette façon ça valide aussi si
+                // ne pas mettre l'inverse, car de cette façon ça valide aussi si
                 // les dates sont les mêmes
                 Preconditions.checkArgument(!depTime.isBefore(arrTime));
             }

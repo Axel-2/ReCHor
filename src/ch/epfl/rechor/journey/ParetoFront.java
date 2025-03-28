@@ -328,7 +328,7 @@ public final class ParetoFront {
 
             // Si aucun that ne s'est pas fait dominer, c'est que tous ceux
             // de that se font dominés par au moins un de true
-            // C'est donc que this domine that, et faut retourner true
+            // C'est donc que this domine that, et il faut retourner vrai
             return true;
         }
 
@@ -338,8 +338,8 @@ public final class ParetoFront {
          */
         public void forEach(LongConsumer action) {
 
-            // attention on ne doit pas parcourir tout l'array en construction
-            // car il a des 0 en trop, il faut donc s'arrêter à la taille effective
+            // attention, on ne doit pas parcourir tout le tableau en construction,
+            // car il a des 0s en trop, il faut donc s'arrêter à la taille effective
             for (int i = 0; i < this.effectiveSize; ++i) {
 
                 // et on appelle l'action sur chaque tuple
@@ -368,13 +368,11 @@ public final class ParetoFront {
             System.arraycopy(arrayInConstruction, srcPos, finalPackedCriteriaArray, desPos, effectiveSize);
 
 
-            // finalement on crée notre instance
-            ParetoFront paretoFront = new ParetoFront(
+            // finalement, on crée notre instance
+            // et on la retourne
+            return new ParetoFront(
                     finalPackedCriteriaArray
             );
-
-            // et on la retourne
-            return  paretoFront;
         }
 
         @Override

@@ -23,22 +23,20 @@ public class PackedRange {
 
         int intervalleSize = endExclusive - startInclusive;
 
-        // On vérifie que l'interval tient sur 8 bits
-        // c.-à-d. qu'il doit <= 255 donc <= 0xFF
+        // On vérifie que l'intervalle tient sur 8 bits
+        // c.-à-d. qu'il doit être <= 255 donc <= 0xFF
         Preconditions.checkArgument(intervalleSize <= 0xFF && intervalleSize >= 0);
 
-        // Ici on fait le même test mais cette fois ci avec 24 bits
+        // Ici, on fait le même test, mais cette fois-ci avec 24 bits
         // pour la borne inférieure
         Preconditions.checkArgument(startInclusive  <= 0xFFFFFF);
 
         // leur borne inférieure est toujours positive ou nulle, et plus petite que 224,
         Preconditions.checkArgument(startInclusive >= 0);
 
-        // on pack les deux variables dans le même int
+        // on met les deux variables dans le même entier
         // ce qui est notre résultat final
-        int packedInt =  Bits32_24_8.pack(startInclusive, intervalleSize);
-
-        return packedInt;
+        return Bits32_24_8.pack(startInclusive, intervalleSize);
     }
 
     public static int length(int interval) {
@@ -53,8 +51,7 @@ public class PackedRange {
      * @return la borne inférieure de l'intervalle en paramètre
      */
     public static int startInclusive(int interval) {
-
-        // On prend les 24 bits de poids fort
+        // On prend les 24 bits de poids fort pour avoir la borne inférieure
         return Bits32_24_8.unpack24(interval);
     }
 
@@ -69,9 +66,9 @@ public class PackedRange {
         int length = length(interval);
         int startInclusive = startInclusive(interval);
 
-        int endExclusif = startInclusive + length;
-
-        return endExclusif;
+        // il suffit d'additionner la borne inférieure et la longueur
+        // pour obtenir la borne supérieure
+        return startInclusive + length;
     }
 
 

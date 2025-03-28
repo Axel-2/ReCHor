@@ -24,7 +24,7 @@ public final class StructuredBuffer {
         int nbOfByteInBuffer = buffer.capacity();
         Preconditions.checkArgument(nbOfByteInBuffer % structure.totalSize() == 0);
 
-        // on stock les variables dans notre instance
+        // on stocke les variables dans notre instance
         this.structure = structure;
         this.buffer = buffer;
 
@@ -38,8 +38,8 @@ public final class StructuredBuffer {
 
         // le nombre d'éléments s'obtient en divisant la capacité totale
         // du buffer par la taille d'un seul élément
-        // ici on utilise une division entière mais ça ne doit pas poser
-        // problème car on a vérifié dans le constructeur que la taille du buffer
+        // ici, on utilise une division entière, mais ça ne doit pas poser
+        // problèmes, car on a vérifié dans le constructeur que la taille du buffer
         // est bien un multiple de la taille de la structure
         return buffer.capacity() / structure.totalSize();
     }
@@ -64,9 +64,7 @@ public final class StructuredBuffer {
         byte u8 = buffer.get(offset);
 
         // le byte doit être non signé
-        int unsignedU8 = Byte.toUnsignedInt(u8);
-
-        return unsignedU8;
+        return Byte.toUnsignedInt(u8);
 
     }
 
@@ -82,15 +80,13 @@ public final class StructuredBuffer {
 
         int offset = structure.offset(fieldIndex, elementIndex);
 
-        // on fait la même chose mais cette fois avec un u16
+        // on fait la même chose, mais cette fois avec un u16,
         // on utilise donc la méthode getShort()
         short u16 = buffer.getShort(offset);
 
         // on retourne une valeur positive donc
         // non signée
-        int unsignedU16 = Short.toUnsignedInt(u16);
-
-        return unsignedU16;
+        return Short.toUnsignedInt(u16);
     }
 
     /**
@@ -105,10 +101,8 @@ public final class StructuredBuffer {
 
         int offset = structure.offset(fieldIndex, elementIndex);
 
-        // on récupère un int avec getInt
-        int i32 = buffer.getInt(offset);
-
-        return i32;
+        // on récupère un int avec getInt et on le retourne
+        return buffer.getInt(offset);
     }
 
 }

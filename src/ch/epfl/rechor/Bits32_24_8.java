@@ -35,7 +35,7 @@ public final class Bits32_24_8 {
     public static int unpack24(int bits32) {
         // On décale les 24 bits de poids fort de 8 bits
         // vers la droite pour écraser les 8 premiers bits
-        // et n'avoir plus que 24 bits
+        // et n'avoir plus que 24 bits,
         // on utilise >>> pour ne pas préserver le signe
         return (bits32 >>> 8) & 0xFFFFFF;
     }

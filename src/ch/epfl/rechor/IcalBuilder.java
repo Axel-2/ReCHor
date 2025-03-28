@@ -14,7 +14,7 @@ import java.util.Objects;
  */
 public final class IcalBuilder {
 
-    // composants commencés, mais pas terminés
+    // liste qui contient les composants commencés, mais pas terminés
     private final ArrayList<Component> components = new ArrayList<Component>();
 
     // String en cours de construction
@@ -62,15 +62,15 @@ public final class IcalBuilder {
 
         int totalLength = stringToAdd.length();
 
-        // valeur maximal pour une ligne
+        // valeur maximale pour une ligne
         int maxStringLength = 75;
 
         // On itère en créant des lignes de taille 75
-        // tant qu'il reste des charactères dans la string initiale
+        // tant qu'il reste des characters dans la chaine initiale
         for (int currentIndex = 0; currentIndex < totalLength; currentIndex += maxStringLength) {
 
-            // après le premier tour de boucle on passe la limite de ligne à 74 char
-            // car l'espace ajouté par le pliage compte comme caractère de plus
+            // après le premier tour de boucle, on passe la limite de ligne à 74, car
+            //  l'espace ajouté par le pliage compte comme caractère de plus
             if (currentIndex > 0) {
                 maxStringLength = 74;
             }
@@ -82,7 +82,7 @@ public final class IcalBuilder {
             // On ajoute à icalString la sous-chaîne de stringToAdd comprise entre currentIndex  et currentEnd,
             icalString.append(stringToAdd, currentIndex, currentEnd);
 
-            // Au dernier tour de boucle on n'ajoute pas d'espace supplémentaire
+            // Au dernier tour de boucle, on n'ajoute pas d'espace supplémentaire
             // en début de ligne
             if (currentEnd < stringToAdd.length()) {
                 // saut de ligne avec espace en début de ligne
@@ -125,7 +125,7 @@ public final class IcalBuilder {
                 .appendValue(ChronoField.SECOND_OF_MINUTE, 2)
                 .toFormatter();
 
-        // Ici pas besoin de plier une ligne car un dateTime ne sera jamais trop long
+        // Ici pas besoin de plier une ligne, car un dateTime ne sera jamais trop long
         icalString
                 .append(name)
                 .append(':')
@@ -166,9 +166,8 @@ public final class IcalBuilder {
      */
     public IcalBuilder end() {
 
-
         // lève une IllegalArgumentException si aucun composant
-        // reste dans la liste
+        // n'est dans la liste
         Preconditions.checkArgument(!components.isEmpty());
 
         // on prend le dernier composant de la liste
@@ -191,7 +190,7 @@ public final class IcalBuilder {
      */
     public String build() {
 
-        // lève une IllegalArgumentException si un composant qui a été commencé par un appel à begin n'a, à ce stade,
+        // Lève une IllegalArgumentException si un composant qui a été commencé par un appel à begin n'a, à ce stade,
         // pas été terminé par un appel à end.
         // C'est le cas si la liste components n'est pas vide
         Preconditions.checkArgument(components.isEmpty());

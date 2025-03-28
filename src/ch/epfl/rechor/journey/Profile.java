@@ -120,7 +120,7 @@ public record Profile(TimeTable timeTable, LocalDate date, int arrStationId, Lis
 
             // on retourne simplement le bon élément dans le tableau
             // la valeur est bien null si aucun appel à setForstation n'a
-            // été fait car le tabelau est initialisé avec de null;
+            // été fait, car le tableau est initialisé avec de null;
             return paretoFrontStationList[stationId];
         }
 

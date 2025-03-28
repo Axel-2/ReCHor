@@ -9,13 +9,13 @@ import java.util.StringJoiner;
 import java.util.UUID;
 
 /**
- * Convertit un voyage en format calendrier
+ * Classe qui offre une méthode permettant de convertir un voyage en un événement
  * @author Yoann Salamin (390522)
  * @author Axel Verga (398787)
  */
 public class JourneyIcalConverter {
 
-    // Pour rendre non instantiable
+    // Pour rendre la classe non instantiable
     private JourneyIcalConverter() {}
 
     /**
@@ -65,11 +65,11 @@ public class JourneyIcalConverter {
 
         // DESCRIPTION
 
-        // Création du joiner
+        // Création du joiner,
         // il faut faire bien attention à escape le \n
         StringJoiner j = new StringJoiner("\\n");
 
-        // Formattage selon le type d'étape
+        // Formatage selon le type d'étape
         for (Journey.Leg leg : journey.legs()){
             switch (leg) {
                 case Journey.Leg.Foot f ->
