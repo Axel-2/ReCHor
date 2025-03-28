@@ -69,9 +69,6 @@ public final class JourneyExtractor {
         // vraie gare de départ (plus précise)
         Stop actualStop = getStopInstance(profile, firstDepStopId);
         if (!chosenStop.name().equals(actualStop.name())) {
-            int walkMins = profile.timeTable().transfers()
-                    .minutesBetween(depStationId, profile.timeTable().stationId(firstDepStopId));
-
             LocalDateTime footDepTime = profile.date().atStartOfDay().plusMinutes(initialDepTime);
 
             // On considère que l’heure d’arrivée du leg à pied est égale à l’heure de départ du transport
