@@ -25,27 +25,10 @@ public class MyJourneyExtractorTest {
         Profile profile = readProfile(t, date, 11486);
 
         // Extraire les voyages depuis la gare 7872 (Ecublens VD, EPFL)
-        List<Journey> js = JourneyExtractor.journeys(profile, 11486);
+        List<Journey> js = JourneyExtractor.journeys(profile, 7872);
         String j = JourneyIcalConverter.toIcalendar(js.get(32));
 
         System.out.println(j);
-        // Vérifications de base
-//        assertNotNull(voyages, "La liste des voyages ne doit pas être nulle");
-//        assertFalse(voyages.isEmpty(), "Il devrait y avoir au moins un voyage extrait");
-//        assertTrue(voyages.size() > 32, "Il devrait y avoir au moins 33 voyages extraits");
-//
-//        // Vérification du voyage à l'index 32
-//        Journey voyage32 = voyages.get(32);
-//        assertNotNull(voyage32, "Le voyage d'index 32 ne doit pas être nul");
-//
-//        // Convertir ce voyage en événement iCalendar
-//        String icalEvent = JourneyIcalConverter.toIcalendar(voyage32);
-//
-//        // Vérifications iCalendar
-//        assertTrue(icalEvent.startsWith("BEGIN:VCALENDAR"), "L'événement iCalendar doit commencer par BEGIN:VCALENDAR");
-//        assertTrue(icalEvent.contains("SUMMARY:Ecublens VD, EPFL → Gruyères"), "L'événement iCalendar doit contenir un résumé correct");
-//        assertTrue(icalEvent.contains("DTSTART:20250318T"), "L'événement iCalendar doit contenir la date correcte");
-//        assertTrue(icalEvent.endsWith("END:VCALENDAR\r\n"), "L'événement iCalendar doit bien se terminer par END:VCALENDAR");
     }
 
     private Profile readProfile(TimeTable timeTable, LocalDate date, int arrStationId) throws IOException {

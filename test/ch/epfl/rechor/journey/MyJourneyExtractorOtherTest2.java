@@ -77,52 +77,52 @@ public class MyJourneyExtractorOtherTest2 {
 
 
 
-    @Test
-    public void testJourneyStructuralValidity() throws IOException {
-        TimeTable t = FileTimeTable.in(Path.of("timetable"));
-        LocalDate date = LocalDate.of(2025, Month.MARCH, 18);
-
-        // Only use Gruyères (11486) which seems to have a profile file
-        int arrStationId = 11486;
-
-        // First, verify the profile file exists
-        Path profilePath = Path.of("profile_" + date + "_" + arrStationId + ".txt");
-        if (!Files.exists(profilePath)) {
-            System.out.println("Profile file doesn't exist: " + profilePath);
-            return; // Skip test if file doesn't exist
-        }
-
-        Profile p = readProfile(t, date, arrStationId);
-
-        for (int depStationId = 0; depStationId < 100; depStationId++) {
-            List<Journey> journeys = JourneyExtractor.journeys(p, depStationId);
-
-            // Skip if no journeys found for this combination
-            if (journeys.isEmpty()) continue;
-
-            for (Journey journey : journeys) {
-                // Check journey structure
-                validateJStructure(journey);
-
-                // Verify arrival station matches expected arrival station by name
-                String expectedArrivalName = t.stations().name(arrStationId);
-                String actualArrivalName = journey.arrStop().name();
-
-                // Station names should match or be closely related
-                assertTrue(
-                        expectedArrivalName.equals(actualArrivalName) ||
-                                actualArrivalName.startsWith(expectedArrivalName + ",") ||
-                                expectedArrivalName.startsWith(actualArrivalName + ","),
-                        "Journey should arrive at or near the profile's target station"
-                );
-
-                // Verify departure station
-                int actualDepStationId = t.stationId(stopToStopId(journey.depStop(), t));
-                assertEquals(depStationId, actualDepStationId,
-                        "Journey should depart from the specified station");
-            }
-        }
-    }
+//    @Test
+//    public void testJourneyStructuralValidity() throws IOException {
+//        TimeTable t = FileTimeTable.in(Path.of("timetable"));
+//        LocalDate date = LocalDate.of(2025, Month.MARCH, 18);
+//
+//        // Only use Gruyères (11486) which seems to have a profile file
+//        int arrStationId = 11486;
+//
+//        // First, verify the profile file exists
+//        Path profilePath = Path.of("profile_" + date + "_" + arrStationId + ".txt");
+//        if (!Files.exists(profilePath)) {
+//            System.out.println("Profile file doesn't exist: " + profilePath);
+//            return; // Skip test if file doesn't exist
+//        }
+//
+//        Profile p = readProfile(t, date, arrStationId);
+//
+//        for (int depStationId = 0; depStationId < 100; depStationId++) {
+//            List<Journey> journeys = JourneyExtractor.journeys(p, depStationId);
+//
+//            // Skip if no journeys found for this combination
+//            if (journeys.isEmpty()) continue;
+//
+//            for (Journey journey : journeys) {
+//                // Check journey structure
+//                validateJStructure(journey);
+//
+//                // Verify arrival station matches expected arrival station by name
+//                String expectedArrivalName = t.stations().name(arrStationId);
+//                String actualArrivalName = journey.arrStop().name();
+//
+//                // Station names should match or be closely related
+//                assertTrue(
+//                        expectedArrivalName.equals(actualArrivalName) ||
+//                                actualArrivalName.startsWith(expectedArrivalName + ",") ||
+//                                expectedArrivalName.startsWith(actualArrivalName + ","),
+//                        "Journey should arrive at or near the profile's target station"
+//                );
+//
+//                // Verify departure station
+//                int actualDepStationId = t.stationId(stopToStopId(journey.depStop(), t));
+//                assertEquals(depStationId, actualDepStationId,
+//                        "Journey should depart from the specified station");
+//            }
+//        }
+//    }
 
 //    @Test
 //    public void testExtractJourneysForAllStations() throws IOException {

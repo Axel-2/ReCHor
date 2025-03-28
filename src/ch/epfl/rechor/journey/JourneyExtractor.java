@@ -75,7 +75,7 @@ public final class JourneyExtractor {
             LocalDateTime footDepTime = profile.date().atTime(initialDepTime / 60, initialDepTime % 60);
 
             // On considère que l’heure d’arrivée du leg à pied est égale à l’heure de départ du transport
-            LocalDateTime footArrTime = footDepTime.plusMinutes(walkMins);
+            LocalDateTime footArrTime = getLocalDateTime(profile, firstConnId);
             legs.add(new Journey.Leg.Foot(chosenStop, footDepTime, actualStop, footArrTime));
         }
 
@@ -110,7 +110,8 @@ public final class JourneyExtractor {
             int walkMins = profile.timeTable().transfers()
                     .minutesBetween(profile.timeTable().stationId(currentArrStopId),
                             profile.timeTable().stationId(nextDepStopId));
-            LocalDateTime footArrTime = currentArrivalTime.plusMinutes(walkMins);
+            LocalDateTime nextTransportDepTime = getLocalDateTime(profile, nextConnId);
+            LocalDateTime footArrTime = nextTransportDepTime;
             legs.add(new Journey.Leg.Foot(currentStop, currentArrivalTime, nextDepStop, footArrTime));
 
             // Création du leg de transport suivant
