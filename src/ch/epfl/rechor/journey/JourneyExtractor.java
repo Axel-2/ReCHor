@@ -72,7 +72,7 @@ public final class JourneyExtractor {
             int walkMins = profile.timeTable().transfers()
                     .minutesBetween(depStationId, profile.timeTable().stationId(firstDepStopId));
 
-            LocalDateTime footDepTime = profile.date().atTime(initialDepTime / 60, initialDepTime % 60);
+            LocalDateTime footDepTime = profile.date().atStartOfDay().plusMinutes(initialDepTime);
 
             // On considère que l’heure d’arrivée du leg à pied est égale à l’heure de départ du transport
             LocalDateTime footArrTime = getLocalDateTime(profile, firstConnId);
@@ -85,7 +85,6 @@ public final class JourneyExtractor {
         int nbOfIntermediateStopsOfCurrentLeg = Bits32_24_8.unpack8(payload);
         TransportLegResult firstLegResult = createTransportLeg(profile, firstConnId, nbOfIntermediateStopsOfCurrentLeg);
         Journey.Leg.Transport firstTransportLeg = firstLegResult.leg();
-
         legs.add(firstTransportLeg);
 
         // Préparation pour le traitement des legs supplémentaires
@@ -133,7 +132,7 @@ public final class JourneyExtractor {
      */
     private static TransportLegResult createTransportLeg(Profile profile, int connectionId, int stopsBeforeLastStop) {
         int initialConnId = connectionId;
-        TimeTable tt = profile.timeTable();
+        TimeTable timeTable = profile.timeTable();
         LocalDate date = profile.date();
         List<Journey.Leg.IntermediateStop> intermediateStops = new ArrayList<>();
 
@@ -142,8 +141,10 @@ public final class JourneyExtractor {
             int nextConnId = profile.connections().nextConnectionId(connectionId);
             int stopId = profile.connections().depStopId(nextConnId);
             Stop intermediateStop = getStopInstance(profile, stopId);
+
             LocalDateTime arrTime = minutesToLocalDateTime(date, profile.connections().arrMins(connectionId));
             LocalDateTime depTime = getLocalDateTime(profile, nextConnId);
+
             intermediateStops.add(new Journey.Leg.IntermediateStop(intermediateStop, arrTime, depTime));
             connectionId = nextConnId;
             stopsBeforeLastStop--;
@@ -168,8 +169,8 @@ public final class JourneyExtractor {
                 arrStop,
                 arrivalTime,
                 intermediateStops,
-                tt.routes().vehicle(routeId),
-                tt.routes().name(routeId),
+                timeTable.routes().vehicle(routeId),
+                timeTable.routes().name(routeId),
                 profile.trips().destination(tripId)
         );
 
@@ -180,13 +181,13 @@ public final class JourneyExtractor {
      * Crée une instance de Stop en distinguant l'ID de station de celui du quai.
      */
     private static Stop getStopInstance(Profile profile, int stopId) {
-        TimeTable tt = profile.timeTable();
-        int stationId = tt.isStationId(stopId) ? stopId : tt.stationId(stopId);
-        String stopName = tt.stations().name(stationId);
-        double longitude = tt.stations().longitude(stationId);
-        double latitude = tt.stations().latitude(stationId);
+        TimeTable timeTable = profile.timeTable();
+        int stationId = timeTable.isStationId(stopId) ? stopId : timeTable.stationId(stopId);
+        String stopName = timeTable.stations().name(stationId);
+        double longitude = timeTable.stations().longitude(stationId);
+        double latitude = timeTable.stations().latitude(stationId);
         // Utiliser le stopId initial pour obtenir le nom de plateforme
-        String platformName = tt.platformName(stopId);
+        String platformName = timeTable.platformName(stopId);
         return new Stop(stopName, platformName, longitude, latitude);
     }
 
@@ -202,9 +203,7 @@ public final class JourneyExtractor {
      */
     private static LocalDateTime getLocalDateTime(Profile profile, int connectionId) {
         int minutesSinceMidnight = profile.connections().depMins(connectionId);
-        int hours = minutesSinceMidnight / 60;
-        int minutes = minutesSinceMidnight % 60;
-        return profile.date().atTime(hours, minutes);
+        return profile.date().atStartOfDay().plusMinutes(minutesSinceMidnight);
     }
 
     /**
