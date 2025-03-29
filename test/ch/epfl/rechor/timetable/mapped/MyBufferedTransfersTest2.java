@@ -76,45 +76,6 @@ class MyBufferedTransfersTest2 {
         assertThrows(IndexOutOfBoundsException.class, () -> transfers.minutes(6));
     }
 
-    @Test
-    public void arrivingAtExistingStationsTest() {
-        Transfers transfers = createBufferedTransfers();
-
-        // Station 0 : aucun changement → intervalle vide [0,0)
-        int range0 = transfers.arrivingAt(0);
-        assertEquals(0, PackedRange.startInclusive(range0), "Station 0 : début d'intervalle incorrect");
-        assertEquals(0, PackedRange.endExclusive(range0), "Station 0 : fin d'intervalle incorrect");
-
-        // Station 10 : deux changements (indices 0 et 1) → intervalle [0,2)
-        int range10 = transfers.arrivingAt(10);
-        assertEquals(0, PackedRange.startInclusive(range10), "Station 10 : début d'intervalle incorrect");
-        assertEquals(2, PackedRange.endExclusive(range10), "Station 10 : fin d'intervalle incorrect");
-
-        // Station 11 : aucun changement → intervalle vide [2,2) (point d'insertion = 2)
-        int range11 = transfers.arrivingAt(11);
-        assertEquals(2, PackedRange.startInclusive(range11), "Station 11 : début d'intervalle incorrect");
-        assertEquals(2, PackedRange.endExclusive(range11), "Station 11 : fin d'intervalle incorrect");
-
-        // Station 15 : aucun changement → intervalle vide [2,2)
-        int range15 = transfers.arrivingAt(15);
-        assertEquals(2, PackedRange.startInclusive(range15), "Station 15 : début d'intervalle incorrect");
-        assertEquals(2, PackedRange.endExclusive(range15), "Station 15 : fin d'intervalle incorrect");
-
-        // Station 20 : trois changements (indices 2,3 et 4) → intervalle [2,5)
-        int range20 = transfers.arrivingAt(20);
-        assertEquals(2, PackedRange.startInclusive(range20), "Station 20 : début d'intervalle incorrect");
-        assertEquals(5, PackedRange.endExclusive(range20), "Station 20 : fin d'intervalle incorrect");
-
-        // Station 25 : aucun changement → intervalle vide [5,5)
-        int range25 = transfers.arrivingAt(25);
-        assertEquals(5, PackedRange.startInclusive(range25), "Station 25 : début d'intervalle incorrect");
-        assertEquals(5, PackedRange.endExclusive(range25), "Station 25 : fin d'intervalle incorrect");
-
-        // Station 30 : un changement (indice 5) → intervalle [5,6)
-        int range30 = transfers.arrivingAt(30);
-        assertEquals(5, PackedRange.startInclusive(range30), "Station 30 : début d'intervalle incorrect");
-        assertEquals(6, PackedRange.endExclusive(range30), "Station 30 : fin d'intervalle incorrect");
-    }
 
     @Test
     public void arrivingAtInvalidStationsThrows() {

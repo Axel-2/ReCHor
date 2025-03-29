@@ -9,6 +9,28 @@ import ch.epfl.rechor.Preconditions;
  */
 public class PackedCriteria {
 
+    // Nombres magiques
+    private static final int MIN_CHANGES = 0;
+    private static final int MAX_CHANGES = 127;
+    private static final int MIN_ARR_MINS = -240;
+    private static final int MAX_ARR_MINS = 2880;
+    private static final int OFFSET = 240;
+
+    // Constantes pour les shifts
+    private static final int SHIFT_ARR_MINS = 39;
+    private static final int SHIFT_CHANGES = 32;
+    private static final int SHIFT_DEP_MINS = 51;
+
+    // Constantes pour les masques
+    private static final long MASK_7_BITS = 0x7F;
+    private static final long MASK_12_BITS = 0xFFFL;
+    private static final long MASK_32_BITS = 0xFFFFFFFFL;
+    private static final long MASK_UPPER_32_BITS = 0xFFFFFFFF00000000L;
+
+    // Constante de conversion pour les minutes
+    private static final int COMPLEMENT_CONSTANT = 4095;
+
+
     // Pour rendre la classe non instantiable
     private PackedCriteria() {}
 
@@ -22,31 +44,29 @@ public class PackedCriteria {
     public static long pack(int arrMins, int changes, int payload) {
 
         // changes doit être sur 7 bits
-        Preconditions.checkArgument(0 <= changes && changes <= 127);
+        Preconditions.checkArgument(MIN_CHANGES <= changes && changes <= MAX_CHANGES);
 
 
         // arrMin est exprimé en minutes écoulées depuis minuit
         // On teste si l'heure est valide
-        Preconditions.checkArgument(-240 <= arrMins && arrMins < 2880);
+        Preconditions.checkArgument(MIN_ARR_MINS <= arrMins && arrMins < MAX_ARR_MINS);
 
         // payload non signé pour éviter les erreurs
         // d'extensions de signe
         long unsignedPayload = Integer.toUnsignedLong(payload);
 
         // On translate pour garantir des valeurs positives
-        arrMins += 240;
-
-        Preconditions.checkArgument(changes >= 0 && changes <= 127);
+        arrMins += OFFSET;
 
         // Long initial
         long resultLong = 0L;
 
-        // ajout de arrMins
-        long arrMinShifted = ((long) arrMins) << 39;
+        // ajout de l'heure de départ
+        long arrMinShifted = ((long) arrMins) << SHIFT_ARR_MINS;
         resultLong = resultLong | arrMinShifted;
 
-        // Ajout du changes
-        long changesShifted = ((long) changes) << 32;
+        // Ajout des changements
+        long changesShifted = ((long) changes) << SHIFT_CHANGES;
         resultLong = changesShifted | resultLong;
 
         // On ajoute le payload non signé
@@ -63,12 +83,11 @@ public class PackedCriteria {
      */
     public static boolean hasDepMins(long criteria) {
 
-
         // On veut récupérer l'heure de départ qui est
         // dans les bits 51 à 62
         // On shift alors de 51 bits vers la droite puis
         // on masque avec 0xFFF qui représente les 12 premiers bits
-        long bits51to62 = (criteria >>> 51) & 0xFFF;
+        long bits51to62 = (criteria >>> SHIFT_DEP_MINS) & MASK_12_BITS;
 
         // retourne vrai si l'heure n'est pas nulle
         return bits51to62 != 0;
@@ -88,13 +107,13 @@ public class PackedCriteria {
 
         // Comme dans la fonction précédant, on récupère les bits
         // correspondants à l'heure de départ
-        long bits51to62 = (criteria >>> 51) & 0xFFF;
+        long bits51to62 = (criteria >>> SHIFT_DEP_MINS) & MASK_12_BITS;
 
         // On reverse le complément
-        int depMins = 4095 - (int) bits51to62 ;
+        int depMins = COMPLEMENT_CONSTANT - (int) bits51to62 ;
 
         // on enlève l'offset de 4h
-        depMins -= 240;
+        depMins -= OFFSET;
 
         return depMins;
     }
@@ -109,11 +128,11 @@ public class PackedCriteria {
 
         // Récupération des bits 39 à 50 avec shift de 39
         // puis masque des 12 premiers bits
-        long bits39to50 = (criteria >>> 39) & 0xFFFL;
+        long bits39to50 = (criteria >>> SHIFT_ARR_MINS) & MASK_12_BITS;
 
         // on convertis en int puis on enlève l'offset de 4h
         // pour avoir des minutes après minuit
-        int arrMins = (int) bits39to50 - 240;
+        int arrMins = (int) bits39to50 - OFFSET;
 
         return arrMins;
     }
@@ -127,7 +146,7 @@ public class PackedCriteria {
         // on shift de 32 bits et on prend seulement
         // les 7 bits de poids faible avec un masque
         // 0x7F correspond à 127 qui correspond à 7 bits de poids faible
-        long bits32to38 = (criteria >>> 32) & 0x7F;
+        long bits32to38 = (criteria >>> SHIFT_CHANGES) & MASK_7_BITS;
 
         // on retourne le résultat converti en int
         return (int) bits32to38;
@@ -143,7 +162,7 @@ public class PackedCriteria {
         // récupération des 32 bits de poids faible avec le masque 0xFFFFFFFFL
         // qui a 32 bits de poids faible
 
-        return (int) (criteria & 0xFFFFFFFFL);
+        return (int) (criteria & MASK_32_BITS);
     }
 
     /**
@@ -182,29 +201,29 @@ public class PackedCriteria {
      */
     public static long withoutDepMins(long criteria){
         // On masque notre long avec 1111_0000_0000_0000_1111_1111....... pour supprimer les 12 bits de l'heure de dép.
-        return criteria & ~(0xFFFL << 51);
+        return criteria & ~(MASK_12_BITS << SHIFT_DEP_MINS);
     }
 
     /**
      * Retourne des critères empaquetés identiques à ceux donnés, mais avec l'heure de départ donnée
      * @param criteria critères
-     * @param depMins1 heure de départ (son complément) donnée
+     * @param depMins heure de départ (son complément) donnée
      * @return les critères avec l'heure de départ donnée.
      */
-    public static long withDepMins(long criteria, int depMins1) {
+    public static long withDepMins(long criteria, int depMins) {
 
         // depMins1 est exprimé en minutes écoulées depuis minuit
         // On teste si l'heure est valide
-        Preconditions.checkArgument(-240 <= depMins1 && depMins1 < 2880);
+        Preconditions.checkArgument(MIN_ARR_MINS <= depMins && depMins < MAX_ARR_MINS);
 
-        depMins1 += 240;
-        depMins1 = 4095 - depMins1;
+        depMins += OFFSET;
+        depMins = COMPLEMENT_CONSTANT - depMins;
 
 
         // Création du masque pour les 12 bits réservés à l'heure de départ.
         // 0xFFF correspond à 12 bits à 1, on décale ce masque de 51 bits vers la gauche
         // pour le positionner correctement dans la structure des critères.
-        long mask = 0xFFFL << 51;
+        long mask = MASK_12_BITS << SHIFT_DEP_MINS;
 
 
         // Efface la partie des critères correspondant à l'heure de départ.
@@ -213,7 +232,7 @@ public class PackedCriteria {
 
         // Prépare la nouvelle valeur de l'heure de départ en décalant la valeur ajustée
         // de 51 bits vers la gauche pour qu'elle occupe la bonne position.
-        long newDepMins = ((long) depMins1) << 51;
+        long newDepMins = ((long) depMins) << SHIFT_DEP_MINS;
 
         // Combine les critères nettoyés avec la nouvelle valeur de l'heure de départ.
         return clearedCriteria | newDepMins;
@@ -226,10 +245,10 @@ public class PackedCriteria {
      * @return le triplet de critère avec un changement de plus
      */
     public static long withAdditionalChange(long criteria) {
-        // Incrément de 1 le changement, en additionnant 1 au bon endroit
+        // Cette fonction incrément de 1 le changement, en additionnant 1 au bon endroit
 
         // (1L << 32) place le bit 1 à la position 32.
-        long changeIncrement = 1L << 32;
+        long changeIncrement = 1L << SHIFT_CHANGES;
 
         long updatedCriteria = criteria + changeIncrement;
 
@@ -245,7 +264,7 @@ public class PackedCriteria {
     public static long withPayload(long criteria, int payload1){
         // Création du masque pour conserver uniquement les 32 bits de gauche
         // Le masque 0xFFFFFFFF00000000L a des 1 sur les bits 32 à 63 et 0 sur les bits 0 à 31.
-        long mask = 0xFFFFFFFF00000000L;
+        long mask = MASK_UPPER_32_BITS;
 
         // Efface les 32 bits de droite du critère en appliquant le masque.
         long clearedCriteria = criteria & mask;

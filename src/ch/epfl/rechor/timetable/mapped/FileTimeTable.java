@@ -11,7 +11,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -152,7 +151,7 @@ public record FileTimeTable(Path directory,
             Trips trips = new BufferedTrips(stringTable, tripsBuffers);
             return trips;
 
-        // Dans l'énoncé on nous demande de gérer les exceptions comme ça
+        // Dans l'énoncé, on nous demande de gérer les exceptions comme ça
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -185,7 +184,7 @@ public record FileTimeTable(Path directory,
             return connections;
         }
 
-        // Dans l'énoncé on nous demande de gérer les exceptions comme ça
+        // Dans l'énoncé, on nous demande de gérer les exceptions comme ça
         catch (IOException e) {
             throw new UncheckedIOException(e);
         }

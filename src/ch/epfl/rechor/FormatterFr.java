@@ -18,6 +18,7 @@ public final class FormatterFr {
 
     // Pour rendre la classe non instantiable
     private FormatterFr() {}
+
     /**
      * Formate une durée pour obtenir le format suivant : 12 min ou alors 1 h 3 min
      * @param duration (une durée)
@@ -25,21 +26,22 @@ public final class FormatterFr {
      */
     public static String formatDuration(Duration duration) {
 
+        // récupération des minutes
         int minutes = duration.toMinutesPart();
 
         // Il ne faut pas utiliser toPart car on peut
         // dépasser 24h de trajet
         long hours = duration.toHours();
 
-
         StringBuilder builder = new StringBuilder();
 
+        // S'il y a des heures, on les ajoute
         if (hours != 0) {
             builder.append(hours)
                     .append(" h ");
         }
 
-        // On met forcément les minutes
+        // On ajoute forcément les minutes
         builder.append(minutes).append(" min");
 
         return builder.toString();
@@ -51,7 +53,6 @@ public final class FormatterFr {
      * @return (String immuable de l'heure formatée)
      */
     public static String formatTime(LocalDateTime dateTime) {
-
 
         DateTimeFormatter fmt = new DateTimeFormatterBuilder()
                 .appendValue(ChronoField.HOUR_OF_DAY)
@@ -71,23 +72,24 @@ public final class FormatterFr {
      */
     public static String formatPlatformName(Stop stop) {
 
-        if(stop.platformName() == null || stop.platformName().isEmpty()){
+        // Si la gare ne contient pas de voie/quai ou bien le nom est vide,
+        // on retourne simplement une chaine vide
+        if (stop.platformName() == null || stop.platformName().isEmpty()) {
             return "";
         }
 
         StringBuilder builder = new StringBuilder();
 
-        if (Character.isDigit(stop.platformName().charAt(0))){
+        // Il faut différencier le cas d'une voie ou d'un quai
+        if (Character.isDigit(stop.platformName().charAt(0))) {
             builder.append("voie ");
             builder.append(stop.platformName());
-        }else{
+        } else {
             builder.append("quai ");
             builder.append(stop.platformName());
         }
 
         return builder.toString();
-
-
     }
 
     /**
@@ -115,9 +117,10 @@ public final class FormatterFr {
      */
     public static String formatLeg(Journey.Leg.Transport leg) {
 
-        // 16h26 Renens VD (voie 4) → Lausanne (arr. 16h33 voie 5)
+        // Exemple de formatage :
+        // "16h26 Renens VD (voie 4) → Lausanne (arr. 16h33 voie 5)"
 
-        // depTime
+        // Heure et arrivée
         String depTimeString = formatTime(leg.depTime());
         String arrTimeString = formatTime(leg.arrTime());
 
@@ -126,10 +129,11 @@ public final class FormatterFr {
                 .append(" ")
                 .append(leg.depStop().name());
 
-
-        if (leg.depStop().platformName() != null) {
-            builder.append(" (voie ")
-                    .append(leg.depStop().platformName())
+        // s'il existe un formatage pour le quai de départ, on l'
+        // ajoute dans des parenthèses
+        if (!formatPlatformName(leg.depStop()).isEmpty()) {
+            builder.append(" (")
+                    .append(formatPlatformName(leg.depStop()))
                     .append(")");
         }
 
@@ -138,9 +142,10 @@ public final class FormatterFr {
                 .append(" (arr. ")
                 .append(arrTimeString);
 
-        if (leg.arrStop().platformName() != null) {
-            builder.append(" voie ")
-                    .append(leg.arrStop().platformName());
+        // Il faut ajouter un espace vide, s'il y a un nom de plateforme
+        // pour l'arrivée
+        if (!formatPlatformName(leg.arrStop()).isEmpty()) {
+            builder.append(" ").append(formatPlatformName(leg.arrStop()));
         }
 
         builder.append(")");
@@ -156,13 +161,13 @@ public final class FormatterFr {
      */
     public static String formatRouteDestination(Journey.Leg.Transport transportLeg) {
 
-        // IR 15 Direction Luzern
+        // Exemple:
+        // "IR 15 Direction Luzern"
 
         StringBuilder string = new StringBuilder()
                 .append(transportLeg.route())
                 .append(" Direction ")
                 .append(transportLeg.destination());
-
 
         return string.toString();
 
