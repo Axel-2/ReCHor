@@ -11,6 +11,7 @@ import java.util.List;
 /**
  * Classe qui représente un extracteur de voyage.
  * Publique et non instantiable.
+ * TODO nom
  */
 public final class JourneyExtractor {
 
