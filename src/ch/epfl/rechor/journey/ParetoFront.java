@@ -186,50 +186,47 @@ public final class ParetoFront {
          */
         public Builder add(long packedTuple) {
 
-            // On stock la position d'insertion, au début à -1 car aucune position n'a été trouvée
+            // ------------- 1) On cherche la position d'insertion ----------------
             int insertionPosition = -1;
 
             for (int i = 0; i < effectiveSize; i++) {
 
-                // On enlève le payload avec une variable temporaire pour éviter les problèmes de comparaison
+                // On les compare sans les payload
                 long packedTupleWithoutPayload = PackedCriteria.withPayload(packedTuple, 0);
                 long elementToCompareWithoutPayload = PackedCriteria.withPayload(arrayInConstruction[i], 0);
 
-                // On vérifie si le tuple à ajouter se fait dominer
-                if (PackedCriteria.dominatesOrIsEqual(elementToCompareWithoutPayload, packedTupleWithoutPayload)) {
-                    // si c'est le cas on ne change rien à la fontière et on sort de la fonction
+                // On check just que le tuple ne se fasse pas dominer, sinon ça sert à rien de l'ajouter
+                if (PackedCriteria.dominatesOrIsEqual(elementToCompareWithoutPayload, packedTupleWithoutPayload))
                     return this;
-                }
 
-                // On cherche le premier élément supérieur (dans l'ordre lexicographique) à celui à insérer
+                // On s'arrête d'itérer dès qu'un tuple est plus grand (dans l'ordre lexicographique)
                 if (packedTupleWithoutPayload < elementToCompareWithoutPayload) {
-
-                    // si la condition est validée, on stock l'index trouvé dans la
-                    // variable de position d'insertion
                     insertionPosition = i;
-
-                    // on sort de la boucle
                     break;
                 }
             }
 
             // Si aucune valeur n'a été assignée cela veut dire que
-            // la position d'insertion doit être tout à la fin après le dernier élment
             if (insertionPosition == -1) {
                 insertionPosition = effectiveSize;
             }
 
 
-            // Nombre de valeurs conservées dans le tableau final
+            // ------------- 2) Suppression de tous les tuples dominés par le nouveau ----------------
+            // Tous ceux de gauches seront gardés, c'est à droite que l'on va devoir trier
+            // On peut donc déjà initialiser la variable à une certaine valeur
             int nbOfConservatedValue = insertionPosition;
 
-            // Compactage
+            // On itère sur tous les critères à droite de la position d'insertion
             for (int src = insertionPosition; src < effectiveSize; src += 1) {
 
+                // Si le critère regardé se fait dominé par celui fraîchement ajouté, on ne le garde pas
                 if (PackedCriteria.dominatesOrIsEqual(packedTuple, arrayInConstruction[src])) {
                     continue;
                 }
 
+                // Si le critère regardé ne se fait pas dominé par celui fraîchement ajouté, on le place au
+                // bon endroit, en mettant à jour la taille des valeurs conservées (utile plus tard)
                 if (nbOfConservatedValue != src) {
                     arrayInConstruction[nbOfConservatedValue] = arrayInConstruction[src];
                 }
@@ -237,12 +234,11 @@ public final class ParetoFront {
                 nbOfConservatedValue += 1;
             }
 
-
-            // On met à jour la taille effective avec le nombre calculé plus haut
+            // On met à jour la taille effective du tableau pour quil englobe uniquement les tuples non dominés
             effectiveSize = nbOfConservatedValue;
 
-            // Vérifier qu'il y a de la place, et augmenter la taille sinon
-            // s'ils sont égaux, on augmente pour pouvoir ajouter la nouvelle valeur.
+
+            // ------------ 3) On augmente la taille si nécessaire ---------------
             if (effectiveSize == arrayInConstruction.length){
                 this.capacity *= 2;
                 long[] newArrayInConstruction = new long[capacity];
@@ -251,13 +247,9 @@ public final class ParetoFront {
             }
 
 
-            // Déplacer les éléments pour laisser un trou à insertionPosition :
+            // ------------ 4) On crée de la place pour ajouter notre tuple
             System.arraycopy(arrayInConstruction, insertionPosition, arrayInConstruction, insertionPosition + 1, effectiveSize - insertionPosition);
-
-            // On insère enfin le tuple à la bonne position
             arrayInConstruction[insertionPosition] = packedTuple;
-
-            // On oublie pas de mettre à jour la taille occupée
             effectiveSize++;
 
             return this;
