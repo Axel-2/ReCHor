@@ -43,22 +43,22 @@ public class PackedCriteria {
      */
     public static long pack(int arrMins, int changes, int payload) {
 
-        // changes doit être sur 7 bits
+        // On vérifie que "changes" doit est sur 7 bits
         Preconditions.checkArgument(MIN_CHANGES <= changes && changes <= MAX_CHANGES);
-
 
         // arrMin est exprimé en minutes écoulées depuis minuit
         // On teste si l'heure est valide
         Preconditions.checkArgument(MIN_ARR_MINS <= arrMins && arrMins < MAX_ARR_MINS);
 
-        // payload non signé pour éviter les erreurs
+        // Le payload non signé pour éviter les erreurs
         // d'extensions de signe
         long unsignedPayload = Integer.toUnsignedLong(payload);
 
-        // On translate pour garantir des valeurs positives
+        // On translate l'heure d'arrivée avec un offset prédéfinie
+        // pour garantir des valeurs positives dans le nombre
         arrMins += OFFSET;
 
-        // Long initial
+        // Long avec valeur initiale par défaut
         long resultLong = 0L;
 
         // ajout de l'heure de départ
@@ -130,11 +130,9 @@ public class PackedCriteria {
         // puis masque des 12 premiers bits
         long bits39to50 = (criteria >>> SHIFT_ARR_MINS) & MASK_12_BITS;
 
-        // on convertis en int puis on enlève l'offset de 4h
+        // Il faut convertir en int puis on enlève l'offset de 4h
         // pour avoir des minutes après minuit
-        int arrMins = (int) bits39to50 - OFFSET;
-
-        return arrMins;
+        return (int) bits39to50 - OFFSET;
     }
 
     /**
@@ -142,10 +140,11 @@ public class PackedCriteria {
      * @param criteria un long représentant les critères empaquetés
      * @return le nombre de changements
      */
-    public static int changes(long criteria){
+    public static int changes(long criteria) {
+
         // on shift de 32 bits et on prend seulement
         // les 7 bits de poids faible avec un masque
-        // 0x7F correspond à 127 qui correspond à 7 bits de poids faible
+        // 0x7F ce qui correspond à 127 qui correspond à 7 bits de poids faible
         long bits32to38 = (criteria >>> SHIFT_CHANGES) & MASK_7_BITS;
 
         // on retourne le résultat converti en int
@@ -153,7 +152,7 @@ public class PackedCriteria {
     }
 
     /**
-     * Retourne la «charge utile» associée aux critères empaquetés donnés.
+     * Retourne la charge utile associée aux critères empaquetés donnés.
      * @param criteria un long représentant les critères empaquetés
      * @return a charge utile
      */
@@ -161,7 +160,6 @@ public class PackedCriteria {
 
         // récupération des 32 bits de poids faible avec le masque 0xFFFFFFFFL
         // qui a 32 bits de poids faible
-
         return (int) (criteria & MASK_32_BITS);
     }
 
@@ -250,9 +248,7 @@ public class PackedCriteria {
         // (1L << 32) place le bit 1 à la position 32.
         long changeIncrement = 1L << SHIFT_CHANGES;
 
-        long updatedCriteria = criteria + changeIncrement;
-
-        return updatedCriteria;
+        return criteria + changeIncrement;
     }
 
     /**

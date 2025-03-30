@@ -8,9 +8,7 @@ package ch.epfl.rechor;
 public class PackedRange {
 
     // Pour rendre la classe non instantiable
-    private PackedRange() {
-
-    }
+    private PackedRange() {}
 
     /**
      * Crée un intervalle empaqueté dans un int à partir de ses deux bornes
