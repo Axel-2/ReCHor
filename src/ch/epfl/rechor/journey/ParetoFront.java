@@ -10,7 +10,7 @@ import java.util.function.LongConsumer;
  */
 public final class ParetoFront {
 
-    /
+    // tuples de la frontière stockée sous forme empaquetée
     private final long[] packedCriterias;
 
     /**
@@ -18,11 +18,14 @@ public final class ParetoFront {
      */
     public static final ParetoFront EMPTY = new ParetoFront(new long[0]);
 
-    // le constructeur doit être privé, car les instances sont constitutes par le bâtisseur
-    private ParetoFront(long[] packed_criterias){
+    /**
+     * Constructeur privé, qui stock les critères empaquetés sans les copier
+     * @param packedCriterias (critères empaquetés)
+     */
+    private ParetoFront(long[] packedCriterias){
 
         // il ne faut pas copier les critères
-        this.packedCriterias = packed_criterias;
+        this.packedCriterias = packedCriterias;
     }
 
     /**
@@ -101,7 +104,7 @@ public final class ParetoFront {
                     .append(PackedCriteria.changes(pc));
         }
 
-        return s.toString();
+        return s.append("\n\n").toString();
     }
 
     /**
@@ -115,7 +118,7 @@ public final class ParetoFront {
         private int effectiveSize;
 
         // capacité initiale du tableau de pareto
-        private final int INITIAL_CAPACITY = 2;
+        private static final int INITIAL_CAPACITY = 2;
 
         private int capacity;
 
@@ -183,26 +186,22 @@ public final class ParetoFront {
          */
         public Builder add(long packedTuple) {
 
-            // variable pour stocker la position d'insertion que l'on va trouver
-            // on l'initialise à -1 pour montrer que la variable n'a pas encore une valeur
-            // correcte
+            // On stock la position d'insertion, au début à -1 car aucune position n'a été trouvée
             int insertionPosition = -1;
 
             for (int i = 0; i < effectiveSize; i++) {
 
-                // on enlève le payload avec une variable temporaire pour éviter les problèmes
-                // de comparaison
+                // On enlève le payload avec une variable temporaire pour éviter les problèmes de comparaison
                 long packedTupleWithoutPayload = PackedCriteria.withPayload(packedTuple, 0);
                 long elementToCompareWithoutPayload = PackedCriteria.withPayload(arrayInConstruction[i], 0);
 
-                // on vérifie si le tuple à ajouter se fait dominer
+                // On vérifie si le tuple à ajouter se fait dominer
                 if (PackedCriteria.dominatesOrIsEqual(elementToCompareWithoutPayload, packedTupleWithoutPayload)) {
-                    // si c'est le cas on ne change rien à la fontière
-                    // actuelle et on sort de la fonction
+                    // si c'est le cas on ne change rien à la fontière et on sort de la fonction
                     return this;
                 }
 
-                // on cherche le premier élément supérieur (dans l'ordre lexicographique) à celui à insérer
+                // On cherche le premier élément supérieur (dans l'ordre lexicographique) à celui à insérer
                 if (packedTupleWithoutPayload < elementToCompareWithoutPayload) {
 
                     // si la condition est validée, on stock l'index trouvé dans la
@@ -214,15 +213,14 @@ public final class ParetoFront {
                 }
             }
 
-            // si aucune valeur n'a été assignée cela veut dire que
-            // la position dd'insertion doit être tout à la fin après le dernier
-            // élément
+            // Si aucune valeur n'a été assignée cela veut dire que
+            // la position d'insertion doit être tout à la fin après le dernier élment
             if (insertionPosition == -1) {
                 insertionPosition = effectiveSize;
             }
 
 
-            // nombre de valeurs conservées dans le tableau final
+            // Nombre de valeurs conservées dans le tableau final
             int nbOfConservatedValue = insertionPosition;
 
             // Compactage
@@ -240,7 +238,7 @@ public final class ParetoFront {
             }
 
 
-            // on met à jour la taille effective avec le nombre calculé plus haut
+            // On met à jour la taille effective avec le nombre calculé plus haut
             effectiveSize = nbOfConservatedValue;
 
             // Vérifier qu'il y a de la place, et augmenter la taille sinon
@@ -338,11 +336,8 @@ public final class ParetoFront {
          */
         public void forEach(LongConsumer action) {
 
-            // attention, on ne doit pas parcourir tout le tableau en construction,
-            // car il a des 0s en trop, il faut donc s'arrêter à la taille effective
             for (int i = 0; i < this.effectiveSize; ++i) {
 
-                // et on appelle l'action sur chaque tuple
                 action.accept(arrayInConstruction[i]);
             }
 
@@ -354,22 +349,19 @@ public final class ParetoFront {
          */
         public ParetoFront build() {
 
-            // la dernière étape est de récréer un tableau final qui a
-            // exactement la bonne taille
+            // La dernière étape est de récréer un tableau final qui a exactement la bonne taille
             long[] finalPackedCriteriaArray = new long[effectiveSize];
 
 
-            // on part du début dans les deux cas
+            // On part du début dans les deux cas
             int srcPos = 0;
             int desPos = 0;
 
-            // on fait la copie de notre ancien tableau dans le nouveau
-            // tableau qui a maitenant la bonne taille
+            // On fait la copie de notre ancien tableau dans le nouveau
+            // tableau qui a maintenant la bonne taille
             System.arraycopy(arrayInConstruction, srcPos, finalPackedCriteriaArray, desPos, effectiveSize);
 
-
-            // finalement, on crée notre instance
-            // et on la retourne
+            // Création de l'instance et on la retourne
             return new ParetoFront(
                     finalPackedCriteriaArray
             );
