@@ -4,3 +4,21 @@
 /out/
 /test2
 /timetable/
+
+# Dossier .idea (configurations IntelliJ)
+.idea/
+
+# Fichiers de configuration IntelliJ
+*.iml
+*.iws
+*.ipr
+*.iws
+.idea_modules/
+
+# Fichiers de compilation
+out/
+target/
+build/
+
+# Fichiers de configuration spécifiques aux tests (si nécessaire)
+.idea/runConfigurations/
