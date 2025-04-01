@@ -161,9 +161,19 @@ public final class JourneyExtractor {
             startingTimeOfCurrentLeg = transportLeg.arrTime();
             remainingChangesOfJourney--;
         }
+        // Ajout du segment de marche final si nécessaire
+        Stop finalStop = getStopInstance(profile, currentStopId);
+        Stop destinationStop = getStopInstance(profile, profile.arrStationId());
+        if (!finalStop.name().equals(destinationStop.name())) {
+            int transferDuration = profile.timeTable().transfers().minutesBetween(profile.timeTable().stationId(currentStopId), profile.arrStationId());
+            LocalDateTime finalFootLegDepTime = startingTimeOfCurrentLeg;
+            LocalDateTime finalFootLegArrTime = finalFootLegDepTime.plusMinutes(transferDuration);
+            legs.add(new Journey.Leg.Foot(finalStop, finalFootLegDepTime, destinationStop, finalFootLegArrTime));
+        }
 
         return new Journey(legs);
     }
+
 
     /**
      * Création d'une étape de transport, pour éviter la duplication de code
