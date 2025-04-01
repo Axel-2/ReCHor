@@ -183,7 +183,7 @@ public final class BufferedTransfers implements Transfers {
             }
         }
 
-        // Si on arrive jusqu'à là, c'est que aucun changement ne correspond, on retourne une exception
+        // Si on arrive jusqu'à là, c'est qu'aucun changement ne correspond, on retourne une exception
         throw new NoSuchElementException("Pas de changements entre " + depStationId + " et " + arrStationId);
 
     }
