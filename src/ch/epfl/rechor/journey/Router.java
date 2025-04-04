@@ -36,19 +36,17 @@ public record Router(FileTimeTable timetable) {
 
         int[] minutesBetweenForEveryStation  = new int[timetable.stations().size()-1];
 
-        // TODO vérifier si faut pas faire -1 dans la boucle ?
-        for (int i = 0; i < timetable.stations().size(); ++i) {
+        for (int i = 0; i < timetable.stations().size() - 1; ++i) {
             int currentMinutesBetween;
             try {
-                // on essaie d'obtenir le temps de transfer pour chaque gare
+                // On essaie d'obtenir le temps de transfer pour chaque gare
                 currentMinutesBetween = timetable.transfers().minutesBetween(i, arrStationId);
             } catch (NoSuchElementException e) {
-                // On retourne -1 si le trajet n'est pas
-                // faisable à pied
+                // On retourne -1 si le trajet n'est pas faisable à pied
                 currentMinutesBetween = -1;
             }
 
-            // et on le met dans notre tableau
+            // Et on le met dans notre tableau
             minutesBetweenForEveryStation[i] = currentMinutesBetween;
         }
 
