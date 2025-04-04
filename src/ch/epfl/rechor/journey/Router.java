@@ -52,8 +52,11 @@ public record Router(FileTimeTable timetable) {
 
 
         // Algorithme CSA
-        // On parcourt la totalité des liaisons de l'horaire
-        for(int i = 0; i < timetable.connectionsFor(date).size(); i++) {
+        // On parcourt la totalité des liaisons de l'horaire, dans l'ordre décroissant
+        // comme "connectionsFor" retourne déjà les connections dans l'ordre décroissant,
+        // il suffit de parcourir dans l'ordre croissant
+        for (int i = 0; i < timetable.connectionsFor(date).size(); i++) {
+
             // Extraction des informations de notre liaison actuelle
             int currentConnDepStopID = timetable.connectionsFor(date).depStopId(i);
             int currentConnArrStopID = timetable.connectionsFor(date).arrStopId(i);
@@ -69,19 +72,20 @@ public record Router(FileTimeTable timetable) {
             // d'arrivée (depuis la fin de notre liaison), on y marche
 
             boolean changeToFinalDestinationExist;
-            int changeDuration = 0;
 
             // on utilise le tableau calculé plus haut pour voir si un
             // changement existe entre les deux gares
-            changeToFinalDestinationExist = minutesBetweenForEveryStation[currentConnArrStopID] != -1;
+
+            int changeDuration = minutesBetweenForEveryStation[currentConnArrStopID];
+            changeToFinalDestinationExist = changeDuration != -1;
 
             if (changeToFinalDestinationExist) {
-                f.add(PackedCriteria.pack(currentConnArrMins + changeDuration, 0, 0)); // Payload 0
+                f.add(PackedCriteria.pack(currentConnArrMins + changeDuration, 0, 0));
             }
 
             // ------------------ Option 2) ---------------
             // On continue notre trajet normalement, et on
-            // ajoute à la frontière tous les tuples de ce trip (course)
+            // ajoute à la frontière tous les tuples de cette course
             f.addAll(profileBuilder.forTrip(currentConnTripId));
 
 
