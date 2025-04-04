@@ -90,7 +90,12 @@ public record Router(TimeTable timetable) {
             // ------------------ Option 2) ---------------
             // On continue notre trajet normalement, et on
             // ajoute à la frontière tous les tuples de cette course
-            paretoBuilder.addAll(profileBuilder.forTrip(currentConnTripId));
+
+            ParetoFront.Builder existingTripBuilder = profileBuilder.forTrip(currentConnTripId);
+            // Vérification si non null
+            if (existingTripBuilder != null) {
+                paretoBuilder.addAll(profileBuilder.forTrip(currentConnTripId));
+            }
 
 
             // ------------------ Option 3) ---------------
@@ -99,27 +104,34 @@ public record Router(TimeTable timetable) {
             // Préparons le flot pour effectuer méthodes
             ParetoFront.Builder pfb = profileBuilder.forStation(timetable.stationId(currentConnArrStopID));
             List<Long> tuples = new ArrayList<>();
-            pfb.forEach(tuples::add);
 
-            // Opérations sur le flot
-            tuples.stream()
-                    .filter(criteria -> PackedCriteria.hasDepMins(criteria) // On garde seulement ceux qui n'ont pas
-                            && PackedCriteria.depMins(criteria) >= currentConnArrMins) // d'anomalie temporelle
-                    .forEach(criteria -> {
-                        // Extraction des données
-                        int criteriaArrMin = PackedCriteria.arrMins(criteria);
-                        int criteriaChanges = PackedCriteria.changes(criteria);
 
-                        // Ajout à la frontière en cours de construction
-                        paretoBuilder.add(PackedCriteria.pack(criteriaArrMin, criteriaChanges + 1, 0)); // Payload 0
+            if (pfb != null) { // SEULEMENT si un builder existe pour cette gare
 
-                    });
+                pfb.forEach(tuples::add);
 
-            // Mise à jour de la frontière de la liaison
-            profileBuilder.forTrip(currentConnTripId).addAll(paretoBuilder);
+                // Opérations sur le flot
+                tuples.stream().filter(criteria -> PackedCriteria.hasDepMins(criteria) // On garde seulement ceux qui n'ont pas
+                                && PackedCriteria.depMins(criteria) >= currentConnArrMins) // d'anomalie temporelle
+                        .forEach(criteria -> {
+                            // Extraction des données
+                            int criteriaArrMin = PackedCriteria.arrMins(criteria);
+                            int criteriaChanges = PackedCriteria.changes(criteria);
+
+                            // Ajout à la frontière en cours de construction
+                            paretoBuilder.add(PackedCriteria.pack(criteriaArrMin, criteriaChanges + 1, 0)); // Payload 0
+
+                        });
+
+            }
+
 
 
             // ----------------- Dernière partie -------------------
+
+            // Mise à jour de la frontière de la liaison
+            ParetoFront.Builder tripToUpdate = profileBuilder.forTrip(currentConnTripId);
+
 
             // Récupération des changements arrivant au départ de notre liaison
             int depStationIdForTransfer = timetable.stationId(currentConnDepStopID);
