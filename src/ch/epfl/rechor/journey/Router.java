@@ -1,5 +1,6 @@
 package ch.epfl.rechor.journey;
 
+import ch.epfl.rechor.PackedRange;
 import ch.epfl.rechor.timetable.Connections;
 import ch.epfl.rechor.timetable.mapped.FileTimeTable;
 
@@ -25,13 +26,14 @@ public record Router(FileTimeTable timetable) {
      * @param arrStationId l'identifiant de la gare d'arrivée
      * @return le profil des voyages optimaux
      */
+    // TODO : gérer le payload
     public Profile profile(LocalDate date, int arrStationId) {
 
         Profile.Builder profileBuilder = new Profile.Builder(timetable, date, arrStationId);
 
         // Algorithme CSA
         // On parcourt la totalité des liaisons de l'horaire, dans l'ordre décroissant
-        for(int i = timetable.connectionsFor(date).size() - 1; i >= 0; i--) {
+        for(int i = 0; i < timetable.connectionsFor(date).size(); i++) {
             // Extraction des informations de notre liaison actuelle
             int currentConnDepStopID = timetable.connectionsFor(date).depStopId(i);
             int currentConnArrStopID = timetable.connectionsFor(date).arrStopId(i);
@@ -49,6 +51,7 @@ public record Router(FileTimeTable timetable) {
             boolean changeToFinalDestinationExist;
             int changeDuration = 0;
 
+            // TODO faire autrement qu'avec minutesBetween
             try {
                 changeDuration = timetable().transfers().minutesBetween(currentConnArrStopID, arrStationId);
                 changeToFinalDestinationExist = true;
@@ -70,7 +73,7 @@ public record Router(FileTimeTable timetable) {
             // Gère le changement de véhicule, donc les transitions entre les routes
 
             // Préparons le flot pour effectuer méthodes
-            ParetoFront.Builder pfb = profileBuilder.forStation(currentConnArrStopID).forEach();
+            ParetoFront.Builder pfb = profileBuilder.forStation(currentConnArrStopID);
             List<Long> tuples = new ArrayList<>();
             pfb.forEach(tuples::add);
 
@@ -88,12 +91,31 @@ public record Router(FileTimeTable timetable) {
 
                     });
 
-            //
+            // Mise à jour de la frontière de la liaison
+            profileBuilder.forTrip(currentConnTripId).addAll(f);
+
+            // Dernière partie
+            int intervalOfTransfersArrivingToDep = timetable.transfers().arrivingAt(currentConnDepStopID);
+            int transferStart = PackedRange.startInclusive(intervalOfTransfersArrivingToDep);
+            int transferEnd = PackedRange.endExclusive(intervalOfTransfersArrivingToDep);
+
+            for (int transferId = transferStart; transferId < transferEnd; transferId++) {
+                int transferDepStationID = timetable.transfers().depStationId(transferId);
+                int transferDuration = timetable.transfers().minutes(transferId);
+
+                // C'est l'heure (en minutes) où le transfert commence.
+                // Ou, vu autrement, c'est aussi l'heure ou la course précédente arrive.
+                int previousTripArrMins = currentConnDepMins - transferDuration;
+
+                // Pour tous les tuples de f :
+//                f.forEach(tuple -> {
+//                    profileBuilder.forStation(transferDepStationID).
+//                            add(PackedCriteria.pack(previousTripArrMins,))
+//                });
+            }
+
 
         }
-
-        // Va return le profil de tous les voyages optimaux permettant de se rendre
-        // à arrStationId (commentaire à suppr mais pour l'instant je laisse
-        return null;
+        return profileBuilder.build();
     }
 }
