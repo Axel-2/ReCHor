@@ -24,10 +24,9 @@ public final class StructuredBuffer {
         int nbOfByteInBuffer = buffer.capacity();
         Preconditions.checkArgument(nbOfByteInBuffer % structure.totalSize() == 0);
 
-        // on stocke les variables dans notre instance
+        // on stocke les paramètres dans notre instance
         this.structure = structure;
         this.buffer = buffer;
-
     }
 
     /**

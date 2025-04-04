@@ -27,6 +27,22 @@ public record FileTimeTable(Path directory,
                             Transfers transfers)
         implements TimeTable {
 
+
+    /**
+     * Charge et mappe en mémoire un fichier binaire en lecture seule.
+     *
+     * @param directory le répertoire contenant le fichier
+     * @param fileName le nom du fichier à charger
+     * @return un MappedByteBuffer correspondant au contenu du fichier
+     * @throws IOException en cas d'erreur d'accès au fichier
+     */
+    private static MappedByteBuffer loadMappedBuffer(Path directory, String fileName) throws IOException {
+        try (FileChannel channel = FileChannel.open(directory.resolve(fileName))) {
+            return channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
+        }
+    }
+
+
     /**
      * Méthode qui retourne une nouvelle instance de FileTimeTable dont les données aplaties
      * ont été obtenues à partir des fichiers se trouvant dans le dossier dont le chemin d'accès est donné
@@ -41,48 +57,23 @@ public record FileTimeTable(Path directory,
         List<String> txtFileContent = Files.readAllLines(stringsFilePath, StandardCharsets.ISO_8859_1);
         List<String> stringTable = List.copyOf(txtFileContent);
 
+        // --- Lecture des fichiers -----
+        MappedByteBuffer stationsBuffer = loadMappedBuffer(directory, "stations.bin");
+        BufferedStations stations = new BufferedStations(stringTable, stationsBuffer);
 
-        // Création des autres variables à retourner
-        // qui sont toutes nulles pour l'instant
-        Stations stations;
-        StationAliases stationAliases;
-        Platforms platforms;
-        Routes routes;
-        Transfers transfers;
+        MappedByteBuffer stationsAliasesBuffer = loadMappedBuffer(directory, "station-aliases.bin");
+        BufferedStationAliases stationAliases = new BufferedStationAliases(stringTable, stationsAliasesBuffer);
 
-        // STATIONS
-        try (FileChannel channel = FileChannel.open(directory.resolve("stations.bin"))) {
-            MappedByteBuffer stationsBuffer = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
-            stations = new BufferedStations(stringTable, stationsBuffer);
-        }
+        MappedByteBuffer platformsBuffer = loadMappedBuffer(directory, "platforms.bin");
+        BufferedPlatforms platforms = new BufferedPlatforms(stringTable, platformsBuffer);
 
-        // STATIONS_ALIASES
-        try (FileChannel channel = FileChannel.open(directory.resolve("station-aliases.bin"))) {
-            MappedByteBuffer stationsAliasesBuffer = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
-            stationAliases = new BufferedStationAliases(stringTable, stationsAliasesBuffer);
-        }
+        MappedByteBuffer routesBuffer = loadMappedBuffer(directory, "routes.bin");
+        BufferedRoutes routes = new BufferedRoutes(stringTable, routesBuffer);
 
-        // PLATFORMS
-        try (FileChannel channel = FileChannel.open(directory.resolve("platforms.bin"))) {
-            MappedByteBuffer platformsBuffer = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
-            platforms = new BufferedPlatforms(stringTable, platformsBuffer);
-        }
-
-        // ROUTES
-        try (FileChannel channel = FileChannel.open(directory.resolve("routes.bin"))) {
-            MappedByteBuffer routesBuffer = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
-            routes = new BufferedRoutes(stringTable, routesBuffer);
-        }
-
-        // TRANSFERS
-        try (FileChannel channel = FileChannel.open(directory.resolve("transfers.bin"))) {
-            MappedByteBuffer transfersBuffers = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
-            transfers = new BufferedTransfers(transfersBuffers);
-        }
-
+        MappedByteBuffer transfersBuffer = loadMappedBuffer(directory, "transfers.bin");
+        BufferedTransfers transfers = new BufferedTransfers(transfersBuffer);
 
         return new FileTimeTable(directory, stringTable, stations, stationAliases, platforms, routes, transfers);
-
     }
 
     /**
@@ -141,18 +132,13 @@ public record FileTimeTable(Path directory,
      */
     @Override
     public Trips tripsFor(LocalDate date) {
-
-        // Path du dossier contenant le "trips.bin" du jour actuel
-        Path tripsFilePath = directory.resolve(date.toString()).resolve("trips.bin");
-
-        // Même procédé que pour tous, avec le path ajusté
-        try(FileChannel channel = FileChannel.open(tripsFilePath)) {
-            MappedByteBuffer tripsBuffers = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
-            Trips trips = new BufferedTrips(stringTable, tripsBuffers);
-            return trips;
-
-        // Dans l'énoncé, on nous demande de gérer les exceptions comme ça
+        // Chemin du dossier contenant le "trips.bin" du jour actuel
+        Path tripsDir = directory.resolve(date.toString());
+        try {
+            MappedByteBuffer tripsBuffer = loadMappedBuffer(tripsDir, "trips.bin");
+            return new BufferedTrips(stringTable, tripsBuffer);
         } catch (IOException e) {
+            // Dans l'énoncé, on nous demande de gérer les exceptions comme ça
             throw new UncheckedIOException(e);
         }
     }
@@ -166,26 +152,14 @@ public record FileTimeTable(Path directory,
     @Override
     public Connections connectionsFor(LocalDate date) {
 
-        // Path du dossier contenant le "trips.bin" du jour actuel
-        Path connectionsFilePath = directory.resolve(date.toString()).resolve("connections.bin");
-        Path connectionsSuccFilePath = directory.resolve(date.toString()).resolve("connections-succ.bin");
-
-        // Même procédé que pour tous, avec le path ajusté
-        try(FileChannel connectionChannel = FileChannel.open(connectionsFilePath);
-            FileChannel connectionSuccChannel = FileChannel.open(connectionsSuccFilePath)
-        ) {
-
-            MappedByteBuffer connectionsBuffers = connectionChannel.map(FileChannel.MapMode.READ_ONLY,
-                    0, connectionChannel.size());
-            MappedByteBuffer connectionsSuccBuffers = connectionSuccChannel.map(FileChannel.MapMode.READ_ONLY,
-                    0, connectionSuccChannel.size());
-
-            Connections connections = new BufferedConnections(connectionsBuffers, connectionsSuccBuffers);
-            return connections;
-        }
-
-        // Dans l'énoncé, on nous demande de gérer les exceptions comme ça
-        catch (IOException e) {
+        // Répertoire du jour actuel
+        Path dayDirectory = directory.resolve(date.toString());
+        try {
+            MappedByteBuffer connectionsBuffers = loadMappedBuffer(dayDirectory, "connections.bin");
+            MappedByteBuffer connectionsSuccBuffers = loadMappedBuffer(dayDirectory, "connections-succ.bin");
+            return new BufferedConnections(connectionsBuffers, connectionsSuccBuffers);
+        } catch (IOException e) {
+            // Dans l'énoncé, on nous demande de gérer les exceptions comme ça
             throw new UncheckedIOException(e);
         }
     }

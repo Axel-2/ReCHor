@@ -22,7 +22,7 @@ public final class ParetoFront {
      * Constructeur privé, qui stock les critères empaquetés sans les copier
      * @param packedCriterias (critères empaquetés)
      */
-    private ParetoFront(long[] packedCriterias){
+    private ParetoFront(long[] packedCriterias) {
 
         // il ne faut pas copier les critères
         this.packedCriterias = packedCriterias;
@@ -44,10 +44,10 @@ public final class ParetoFront {
      * @param changes entier représentant le nombre de changements
      * @return le critère correspondant (long)
      */
-    public long get(int arrMins, int changes){
+    public long get(int arrMins, int changes) {
 
         // On itère sur tous les critères de notre liste
-        for (long pc : packedCriterias){
+        for (long pc : packedCriterias) {
             // si l'un est identique aux params, on le retourne
             if (PackedCriteria.arrMins(pc) == arrMins && PackedCriteria.changes(pc) == changes) {
                 return pc;
@@ -62,9 +62,9 @@ public final class ParetoFront {
      * Appelle la méthode accept de l'action de type LongConsumer donnée avec chacun des critères de la frontière
      * @param action action
      */
-    public void forEach(LongConsumer action){
+    public void forEach(LongConsumer action) {
 
-        // on itère sur tous les critères de notre liste
+        // On itère sur tous les critères de notre liste
         for (long packed_criteria : packedCriterias) {
 
             // on appelle la méthode accept de LongConsumer
@@ -77,7 +77,7 @@ public final class ParetoFront {
      * retourne une representation textuelle de la frontière de Pareto
      * @return la chaîne de caractère décrivant au mieux la classe
      */
-    public String toString(){
+    public String toString() {
 
         // Il n'y a pas de spécification, mais il faut que ce soit
         // aussi lisible que possible
@@ -117,7 +117,7 @@ public final class ParetoFront {
         private long[] arrayInConstruction;
         private int effectiveSize;
 
-        // capacité initiale du tableau de pareto
+        // Capacité initiale du tableau de pareto
         private static final int INITIAL_CAPACITY = 2;
 
         private int capacity;
@@ -146,6 +146,7 @@ public final class ParetoFront {
         public Builder(Builder that) {
             this.arrayInConstruction = that.arrayInConstruction.clone();
             this.effectiveSize = that.effectiveSize;
+            this.capacity = that.capacity;
         }
 
         /**
@@ -154,8 +155,8 @@ public final class ParetoFront {
          */
         public boolean isEmpty() {
 
-            // On contrôle cela avec la valeur d' effectiveSize
-            // Attention de pas faire ce test avec tableau.length car cela ne
+            // On contrôle cela avec la valeur d'effectiveSize
+            // Attention de ne pas faire ce test avec tableau.length car cela ne
             // représente pas la taille effective
             return effectiveSize == 0;
         }
@@ -195,7 +196,7 @@ public final class ParetoFront {
                 long packedTupleWithoutPayload = PackedCriteria.withPayload(packedTuple, 0);
                 long elementToCompareWithoutPayload = PackedCriteria.withPayload(arrayInConstruction[i], 0);
 
-                // On check just que le tuple ne se fasse pas dominer, sinon ça sert à rien de l'ajouter
+                // On check just que le tuple ne se fasse pas dominer, sinon ça ne sert à rien de l'ajouter
                 if (PackedCriteria.dominatesOrIsEqual(elementToCompareWithoutPayload, packedTupleWithoutPayload))
                     return this;
 
@@ -206,7 +207,8 @@ public final class ParetoFront {
                 }
             }
 
-            // Si aucune valeur n'a été assignée cela veut dire que
+            // Si aucune valeur n'a été assignée cela veut dire qu'on est à la fin
+            // et donc on met à jour effectiveSize
             if (insertionPosition == -1) {
                 insertionPosition = effectiveSize;
             }
@@ -277,7 +279,7 @@ public final class ParetoFront {
 
             // il faut d'abord build avant d'appliquer le forEach sinon
             // on va itérer sur des valeurs nulles du tableau qu'on ne veut pas
-            that.forEach(value -> this.add(value));
+            that.forEach(this::add);
             return this;
         }
 
@@ -303,7 +305,7 @@ public final class ParetoFront {
                 for (int j = 0; j < this.effectiveSize; j++){
 
                     // Si this domine that
-                    if(PackedCriteria.dominatesOrIsEqual(this.arrayInConstruction[j], modifiedValue)){
+                    if (PackedCriteria.dominatesOrIsEqual(this.arrayInConstruction[j], modifiedValue)) {
 
                         // On modifie la variable
                         hasBeenDominated = true;
@@ -361,13 +363,16 @@ public final class ParetoFront {
 
         @Override
         public String toString() {
+
             StringBuilder sb = new StringBuilder();
+
             for (long pc : arrayInConstruction) {
                 sb.append(PackedCriteria.arrMins(pc))
                         .append("|")
                         .append(PackedCriteria.changes(pc))
                         .append("  ");
             }
+
             return sb.toString();
         }
 

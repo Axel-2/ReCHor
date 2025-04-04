@@ -141,6 +141,7 @@ public final class JourneyExtractor {
             LocalDateTime footArrTime = startingTimeOfCurrentLeg.plusMinutes(transferDuration);
 
             legs.add(new Journey.Leg.Foot(currentStop, footDepTime, nextDepStop, footArrTime));
+            
             // -------------- Fin de l'étape à Pied ---------------//
 
             // ------------- Début de l'étape en transport ------- //
@@ -161,6 +162,7 @@ public final class JourneyExtractor {
             startingTimeOfCurrentLeg = transportLeg.arrTime();
             remainingChangesOfJourney--;
         }
+
         // Ajout du segment de marche final si nécessaire
         Stop finalStop = getStopInstance(profile, currentStopId);
         Stop destinationStop = getStopInstance(profile, profile.arrStationId());

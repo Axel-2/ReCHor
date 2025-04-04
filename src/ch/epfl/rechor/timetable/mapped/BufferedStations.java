@@ -25,14 +25,14 @@ public final class BufferedStations implements Stations {
 
     // constante de conversion utilisée
     // pour longitude et latitude
-    private final double CONVERSION_CONST = Math.scalb(360, -32);
+    private final static double CONVERSION_CONST = Math.scalb(360, -32);
 
     // Variable pour stocker le tableau structuré
-    private final StructuredBuffer structuredBuffer;
+    private final  StructuredBuffer structuredBuffer;
 
     // table de conversion qui contient les
     // chaines de charactère
-    private final List<String> stringTable;
+    private final  List<String> stringTable;
 
     /**
      * Constructeur de BufferedStations
@@ -73,10 +73,7 @@ public final class BufferedStations implements Stations {
         int nameId = structuredBuffer.getU16(NAME_ID, id);
 
         // on récupère ensuite la chaine dans la table à l'aide de l'id
-        String name = stringTable.get(nameId);
-
-        return name;
-
+        return stringTable.get(nameId);
     }
 
     /**

@@ -69,9 +69,10 @@ public final class IcalBuilder {
         // tant qu'il reste des characters dans la chaine initiale
         for (int currentIndex = 0; currentIndex < totalLength; currentIndex += maxStringLength) {
 
-            // après le premier tour de boucle, on passe la limite de ligne à 74, car
-            //  l'espace ajouté par le pliage compte comme caractère de plus
+
             if (currentIndex > 0) {
+                // après le premier tour de boucle, on passe la limite de ligne à 74, car
+                // l'espace ajouté par le pliage compte comme caractère de plus
                 maxStringLength = 74;
             }
 
