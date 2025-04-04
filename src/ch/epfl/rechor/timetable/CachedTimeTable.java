@@ -97,9 +97,10 @@ public final class CachedTimeTable implements TimeTable {
     public Connections connectionsFor(LocalDate date) {
 
         // On vérifie si la donnée est déjà mise en cache et si la date a changé
-        if (currentCachedConnection == null || !currentDate.equals(date)) {
+        if (currentCachedConnection == null || currentDate == null || !currentDate.equals(date)) {
             // s'il faut changer le cache, on va chercher les infos dans l'horaire
             currentCachedConnection = underlyingTimetable.connectionsFor(date);
+            currentDate = date;
         }
 
         return currentCachedConnection;
