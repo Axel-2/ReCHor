@@ -52,6 +52,7 @@ public record Router(FileTimeTable timetable) {
 
 
         // Algorithme CSA
+
         // On parcourt la totalité des liaisons de l'horaire, dans l'ordre décroissant
         // comme "connectionsFor" retourne déjà les connections dans l'ordre décroissant,
         // il suffit de parcourir dans l'ordre croissant
@@ -65,7 +66,7 @@ public record Router(FileTimeTable timetable) {
             int currentConnTripId = timetable.connectionsFor(date).tripId(i);
             int currentConnTripPos = timetable.connectionsFor(date).tripPos(i);
 
-            ParetoFront.Builder f = new ParetoFront.Builder();
+            ParetoFront.Builder paretoBuilder = new ParetoFront.Builder();
 
             // ------------------ Option 1) ---------------
             // Si il existe un changement jusqu'à la gare
@@ -80,13 +81,13 @@ public record Router(FileTimeTable timetable) {
             changeToFinalDestinationExist = changeDuration != -1;
 
             if (changeToFinalDestinationExist) {
-                f.add(PackedCriteria.pack(currentConnArrMins + changeDuration, 0, 0));
+                paretoBuilder.add(PackedCriteria.pack(currentConnArrMins + changeDuration, 0, 0));
             }
 
             // ------------------ Option 2) ---------------
             // On continue notre trajet normalement, et on
             // ajoute à la frontière tous les tuples de cette course
-            f.addAll(profileBuilder.forTrip(currentConnTripId));
+            paretoBuilder.addAll(profileBuilder.forTrip(currentConnTripId));
 
 
             // ------------------ Option 3) ---------------
@@ -107,12 +108,12 @@ public record Router(FileTimeTable timetable) {
                         int criteriaChanges = PackedCriteria.changes(criteria);
 
                         // Ajout à la frontière en cours de construction
-                        f.add(PackedCriteria.pack(criteriaArrMin, criteriaChanges + 1, 0)); // Payload 0
+                        paretoBuilder.add(PackedCriteria.pack(criteriaArrMin, criteriaChanges + 1, 0)); // Payload 0
 
                     });
 
             // Mise à jour de la frontière de la liaison
-            profileBuilder.forTrip(currentConnTripId).addAll(f);
+            profileBuilder.forTrip(currentConnTripId).addAll(paretoBuilder);
 
 
             // ----------------- Dernière partie -------------------
@@ -133,7 +134,7 @@ public record Router(FileTimeTable timetable) {
                 ParetoFront.Builder transferPf = profileBuilder.forStation(transferDepStationID);
 
                  // Pour tous les tuples de la frontière
-                f.forEach(tuple -> {
+                paretoBuilder.forEach(tuple -> {
 
                     // Extraction des données du tuple
                     int arrMins = PackedCriteria.arrMins(tuple);
