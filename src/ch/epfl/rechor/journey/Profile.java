@@ -138,7 +138,7 @@ public record Profile(TimeTable timeTable, LocalDate date, int arrStationId, Lis
         /**
          * Fonction qui fait la même chose que forStation mais pour la course d'index donné
          * @param tripId course d'index donné
-         * @return bâtisseur de la frontière de Pareto pour la gare d'index donné
+         * @return bâtisseur de la frontière de Pareto pour la route d'index donné
          * @throws IndexOutOfBoundsException si l'index est invalide
          */
         public ParetoFront.Builder forTrip(int tripId) {
