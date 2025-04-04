@@ -31,7 +31,7 @@ public record Router(FileTimeTable timetable) {
     // TODO : gérer le payload
     public Profile profile(LocalDate date, int arrStationId) {
 
-        // on crée un profil vide à l'aide du Builder
+        // On crée un profil vide à l'aide du Builder
         Profile.Builder profileBuilder = new Profile.Builder(timetable, date, arrStationId);
 
         int[] minutesBetweenForEveryStation  = new int[timetable.stations().size()-1];
@@ -112,7 +112,9 @@ public record Router(FileTimeTable timetable) {
             // Mise à jour de la frontière de la liaison
             profileBuilder.forTrip(currentConnTripId).addAll(f);
 
+
             // ----------------- Dernière partie -------------------
+
             // Récupération des changements arrivant au départ de notre liaison
             int intervalOfTransfersArrivingToDep = timetable.transfers().arrivingAt(currentConnDepStopID);
             int transferStart = PackedRange.startInclusive(intervalOfTransfersArrivingToDep);
@@ -130,12 +132,15 @@ public record Router(FileTimeTable timetable) {
 
                  // Pour tous les tuples de la frontière
                 f.forEach(tuple -> {
+
                     // Extraction des données du tuple
                     int arrMins = PackedCriteria.arrMins(tuple);
-                    int depMins = PackedCriteria.depMins(tuple);
                     int changes = PackedCriteria.changes(tuple);
 
-                    transferPf.add(previousTripArrMins, arrMins, changes);
+                    long tupleToAdd = PackedCriteria.pack(arrMins, changes, 0);
+                    tupleToAdd = PackedCriteria.withDepMins(tupleToAdd, previousTripArrMins);
+
+                    transferPf.add(tupleToAdd);
                 });
             }
 
