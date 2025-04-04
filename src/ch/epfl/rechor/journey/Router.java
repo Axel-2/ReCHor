@@ -1,9 +1,7 @@
 package ch.epfl.rechor.journey;
 
 import ch.epfl.rechor.PackedRange;
-import ch.epfl.rechor.timetable.Connections;
 import ch.epfl.rechor.timetable.TimeTable;
-import ch.epfl.rechor.timetable.mapped.FileTimeTable;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -68,9 +66,11 @@ public record Router(TimeTable timetable) {
             int currentConnTripId = timetable.connectionsFor(date).tripId(i);
             int currentConnTripPos = timetable.connectionsFor(date).tripPos(i);
 
-            ParetoFront.Builder paretoBuilder = new ParetoFront.Builder();
+            // 'f' est la frontière temporaire pour cette liaison 'l'
+            ParetoFront.Builder f = new ParetoFront.Builder();
 
-            // ------------------ Option 1) ---------------
+
+            // ------------------ Option 1) Marcher depuis arr(l) vers la destination finale ---------------
             // Si il existe un changement jusqu'à la gare
             // d'arrivée (depuis la fin de notre liaison), on y marche
 
@@ -80,37 +80,32 @@ public record Router(TimeTable timetable) {
             // changement existe entre les deux gares
 
             int arrStationIdForWalk = timetable.stationId(currentConnArrStopID);
-            int changeDuration = minutesBetweenForEveryStation[arrStationIdForWalk];
-            changeToFinalDestinationExist = changeDuration != -1;
+            int walkDuration = minutesBetweenForEveryStation[arrStationIdForWalk];
 
-            if (changeToFinalDestinationExist) {
-                paretoBuilder.add(PackedCriteria.pack(currentConnArrMins + changeDuration, 0, 0));
+            if (walkDuration != -1) {
+                f.add(PackedCriteria.pack(currentConnArrMins + walkDuration, 0, 0));
             }
 
-            // ------------------ Option 2) ---------------
+
+            // ------------------ Option 2) Rester sur la même course ---------------
             // On continue notre trajet normalement, et on
             // ajoute à la frontière tous les tuples de cette course
 
-            ParetoFront.Builder existingTripBuilder = profileBuilder.forTrip(currentConnTripId);
             // Vérification si non null
-            if (existingTripBuilder != null) {
-                paretoBuilder.addAll(profileBuilder.forTrip(currentConnTripId));
+            if (profileBuilder.forTrip(currentConnTripId) != null) {
+                f.addAll(profileBuilder.forTrip(currentConnTripId));
             }
 
-
-            // ------------------ Option 3) ---------------
+            // ------------------ Option 3) Changer de véhicule à arr(l) ---------------
             // Gère le changement de véhicule, donc les transitions entre les routes
 
             // Préparons le flot pour effectuer méthodes
-            ParetoFront.Builder pfb = profileBuilder.forStation(timetable.stationId(currentConnArrStopID));
             List<Long> tuples = new ArrayList<>();
 
+            if (profileBuilder.forStation(timetable.stationId(currentConnArrStopID)) != null) { // SEULEMENT si un builder existe pour cette gare
 
-            if (pfb != null) { // SEULEMENT si un builder existe pour cette gare
+                profileBuilder.forStation(timetable.stationId(currentConnArrStopID)).forEach(tuples::add);
 
-                pfb.forEach(tuples::add);
-
-                // Opérations sur le flot
                 tuples.stream().filter(criteria -> PackedCriteria.hasDepMins(criteria) // On garde seulement ceux qui n'ont pas
                                 && PackedCriteria.depMins(criteria) >= currentConnArrMins) // d'anomalie temporelle
                         .forEach(criteria -> {
@@ -119,7 +114,7 @@ public record Router(TimeTable timetable) {
                             int criteriaChanges = PackedCriteria.changes(criteria);
 
                             // Ajout à la frontière en cours de construction
-                            paretoBuilder.add(PackedCriteria.pack(criteriaArrMin, criteriaChanges + 1, 0)); // Payload 0
+                            f.add(PackedCriteria.pack(criteriaArrMin, criteriaChanges + 1, 0)); // Payload 0
 
                         });
 
@@ -130,8 +125,14 @@ public record Router(TimeTable timetable) {
             // ----------------- Dernière partie -------------------
 
             // Mise à jour de la frontière de la liaison
-            ParetoFront.Builder tripToUpdate = profileBuilder.forTrip(currentConnTripId);
 
+            if (profileBuilder.forTrip(currentConnTripId) != null) {
+                profileBuilder.forTrip(currentConnTripId).addAll(f);
+            } else {
+                profileBuilder.setForTrip(currentConnTripId, f);
+            }
+
+            // Mise à jour des frontières des gares
 
             // Récupération des changements arrivant au départ de notre liaison
             int depStationIdForTransfer = timetable.stationId(currentConnDepStopID);
@@ -147,10 +148,18 @@ public record Router(TimeTable timetable) {
                 // Ou, vu autrement, c'est aussi l'heure ou la course précédente arrive.
                 int previousTripArrMins = currentConnDepMins - transferDuration;
 
-                ParetoFront.Builder transferPf = profileBuilder.forStation(transferDepStationID);
+                ParetoFront.Builder depStationFront = profileBuilder.forStation(transferDepStationID);
+
+                if (depStationFront == null) {
+                    profileBuilder.setForStation(transferDepStationID , new ParetoFront.Builder());
+                }
+
+                if (profileBuilder.forStation(transferDepStationID) == null) {
+                    System.out.println("hhhhh");
+                }
 
                  // Pour tous les tuples de la frontière
-                paretoBuilder.forEach(tuple -> {
+                f.forEach(tuple -> {
 
                     // Extraction des données du tuple
                     int arrMins = PackedCriteria.arrMins(tuple);
@@ -159,7 +168,7 @@ public record Router(TimeTable timetable) {
                     long tupleToAdd = PackedCriteria.pack(arrMins, changes, 0);
                     tupleToAdd = PackedCriteria.withDepMins(tupleToAdd, previousTripArrMins);
 
-                    transferPf.add(tupleToAdd);
+                    profileBuilder.forStation(transferDepStationID).add(tupleToAdd);
                 });
             }
 
