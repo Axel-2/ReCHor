@@ -94,7 +94,8 @@ public record Router(FileTimeTable timetable) {
             // Mise à jour de la frontière de la liaison
             profileBuilder.forTrip(currentConnTripId).addAll(f);
 
-            // Dernière partie
+            // ----------------- Dernière partie -------------------
+            // Récupération des changements arrivant au départ de notre liaison
             int intervalOfTransfersArrivingToDep = timetable.transfers().arrivingAt(currentConnDepStopID);
             int transferStart = PackedRange.startInclusive(intervalOfTransfersArrivingToDep);
             int transferEnd = PackedRange.endExclusive(intervalOfTransfersArrivingToDep);
@@ -107,11 +108,17 @@ public record Router(FileTimeTable timetable) {
                 // Ou, vu autrement, c'est aussi l'heure ou la course précédente arrive.
                 int previousTripArrMins = currentConnDepMins - transferDuration;
 
-                // Pour tous les tuples de f :
-//                f.forEach(tuple -> {
-//                    profileBuilder.forStation(transferDepStationID).
-//                            add(PackedCriteria.pack(previousTripArrMins,))
-//                });
+                ParetoFront.Builder transferPf = profileBuilder.forStation(transferDepStationID);
+
+                 // Pour tous les tuples de la frontière
+                f.forEach(tuple -> {
+                    // Extraction des données du tuple
+                    int arrMins = PackedCriteria.arrMins(tuple);
+                    int depMins = PackedCriteria.depMins(tuple);
+                    int changes = PackedCriteria.changes(tuple);
+
+                    transferPf.add(previousTripArrMins, arrMins, changes);
+                });
             }
 
 
