@@ -48,6 +48,7 @@ public record Router(TimeTable timetable) {
             }
 
             // Et on le met dans notre tableau
+
             minutesBetweenForEveryStation[i] = currentMinutesBetween;
         }
 
@@ -78,7 +79,8 @@ public record Router(TimeTable timetable) {
             // on utilise le tableau calculé plus haut pour voir si un
             // changement existe entre les deux gares
 
-            int changeDuration = minutesBetweenForEveryStation[currentConnArrStopID];
+            int arrStationIdForWalk = timetable.stationId(currentConnArrStopID);
+            int changeDuration = minutesBetweenForEveryStation[arrStationIdForWalk];
             changeToFinalDestinationExist = changeDuration != -1;
 
             if (changeToFinalDestinationExist) {
@@ -95,7 +97,7 @@ public record Router(TimeTable timetable) {
             // Gère le changement de véhicule, donc les transitions entre les routes
 
             // Préparons le flot pour effectuer méthodes
-            ParetoFront.Builder pfb = profileBuilder.forStation(currentConnArrStopID);
+            ParetoFront.Builder pfb = profileBuilder.forStation(timetable.stationId(currentConnArrStopID));
             List<Long> tuples = new ArrayList<>();
             pfb.forEach(tuples::add);
 
@@ -120,7 +122,8 @@ public record Router(TimeTable timetable) {
             // ----------------- Dernière partie -------------------
 
             // Récupération des changements arrivant au départ de notre liaison
-            int intervalOfTransfersArrivingToDep = timetable.transfers().arrivingAt(currentConnDepStopID);
+            int depStationIdForTransfer = timetable.stationId(currentConnDepStopID);
+            int intervalOfTransfersArrivingToDep = timetable.transfers().arrivingAt(depStationIdForTransfer);
             int transferStart = PackedRange.startInclusive(intervalOfTransfersArrivingToDep);
             int transferEnd = PackedRange.endExclusive(intervalOfTransfersArrivingToDep);
 
