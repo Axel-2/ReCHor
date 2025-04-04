@@ -4,6 +4,8 @@ import ch.epfl.rechor.timetable.Connections;
 import ch.epfl.rechor.timetable.mapped.FileTimeTable;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 /**
@@ -66,8 +68,27 @@ public record Router(FileTimeTable timetable) {
 
             // ------------------ Option 3) ---------------
             // Gère le changement de véhicule, donc les transitions entre les routes
-            profileBuilder.forStation(currentConnArrStopID).forEach();
 
+            // Préparons le flot pour effectuer méthodes
+            ParetoFront.Builder pfb = profileBuilder.forStation(currentConnArrStopID).forEach();
+            List<Long> tuples = new ArrayList<>();
+            pfb.forEach(tuples::add);
+
+            // Opérations sur le flot
+            tuples.stream()
+                    .filter(criteria -> PackedCriteria.hasDepMins(criteria) // On garde seulement ceux qui n'ont pas
+                            && PackedCriteria.depMins(criteria) >= currentConnArrMins) // d'anomalie temporelle
+                    .forEach(criteria -> {
+                        // Extraction des données
+                        int criteriaArrMin = PackedCriteria.arrMins(criteria);
+                        int criteriaChanges = PackedCriteria.changes(criteria);
+
+                        // Ajout à la frontière en cours de construction
+                        f.add(PackedCriteria.pack(criteriaArrMin, criteriaChanges + 1, 0)); // Payload 0
+
+                    });
+
+            //
 
         }
 
