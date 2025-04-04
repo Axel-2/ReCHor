@@ -85,9 +85,10 @@ public final class CachedTimeTable implements TimeTable {
     public Trips tripsFor(LocalDate date) {
 
         // On vérifie si la donnée est déjà mise en cache et si la date a changé
-        if (currentCachedTrips == null || !currentDate.equals(date)) {
+        if (currentCachedTrips == null || currentDate == null || !currentDate.equals(date)) {
             // s'il faut changer le cache, on va chercher les infos dans l'horaire
             currentCachedTrips =  underlyingTimetable.tripsFor(date);
+            currentDate = date;
         }
 
         return currentCachedTrips;
