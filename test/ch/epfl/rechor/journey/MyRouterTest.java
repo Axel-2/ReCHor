@@ -1,32 +1,84 @@
 package ch.epfl.rechor.journey;
 
+import ch.epfl.rechor.timetable.CachedTimeTable;
+import ch.epfl.rechor.timetable.Stations;
+import ch.epfl.rechor.timetable.TimeTable;
 import ch.epfl.rechor.timetable.mapped.FileTimeTable;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.LocalDate;
+import java.time.Month;
+import java.util.NoSuchElementException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class MyRouterTest {
 
-    private FileTimeTable fileTimeTable;
-    private final Path testDirectory = Path.of("timetable");
-    private final LocalDate testDate = LocalDate.of(2025, 3, 17);
-
-    @BeforeEach
-    void setUp() throws IOException {
-        // Crée le TimeTable à partir des fichiers contenus dans le dossier "timetable"
-        fileTimeTable = (FileTimeTable) FileTimeTable.in(testDirectory);
+    static int stationId(Stations stations, String stationName) {
+        for (int i = 0; i < stations.size(); i += 1)
+            if (stations.name(i).equals(stationName)) return i;
+        throw new NoSuchElementException();
     }
-
 
     @Test
-    void checkProfile() {
-        Router router = new Router(fileTimeTable);
-        router.profile(testDate, 7872);
+    public void testTripFromEpflToGruyeres() throws IOException {
+        long tStart = System.nanoTime();
+
+        TimeTable timeTable = new CachedTimeTable(FileTimeTable.in(Path.of("timetable")));
+        Stations stations = timeTable.stations();
+        LocalDate date = LocalDate.of(2025, Month.APRIL, 1);
+        int depStationId = stationId(stations, "Ecublens VD, EPFL");
+        int arrStationId = stationId(stations, "Gruyères");
+        Router router = new Router(timeTable);
+        Profile profile = router.profile(date, arrStationId);
+
+        var journeys = JourneyExtractor.journeys(profile, depStationId);
+        assertFalse(journeys.isEmpty(), "La liste des voyages ne devrait pas être vide");
+
+        if (journeys.size() > 32) {
+            Journey journey = journeys.get(32);
+            String ical = JourneyIcalConverter.toIcalendar(journey);
+            System.out.println(ical);
+
+            // Vérifier quelques éléments de base du voyage
+            assertNotNull(journey);
+            assertEquals("Ecublens VD, EPFL", journey.depStop().name());
+            assertEquals("Gruyères", journey.arrStop().name());
+        } else {
+            System.out.println("Pas assez de voyages trouvés pour obtenir l'élément à l'index 32");
+        }
+
+        double elapsed = (System.nanoTime() - tStart) * 1e-9;
+        System.out.printf("Temps écoulé : %.3f s%n", elapsed);
     }
 
+    @Test
+    public void testMainMethod() throws IOException {
+        main(new String[0]);
+    }
+
+    public static void main(String[] args) throws IOException {
+        long tStart = System.nanoTime();
+
+        TimeTable timeTable = new CachedTimeTable(FileTimeTable.in(Path.of("timetable")));
+        Stations stations = timeTable.stations();
+        LocalDate date = LocalDate.of(2025, Month.APRIL, 1);
+        int depStationId = stationId(stations, "Ecublens VD, EPFL");
+        int arrStationId = stationId(stations, "Gruyères");
+        Router router = new Router(timeTable);
+        Profile profile = router.profile(date, arrStationId);
+
+        var journeys = JourneyExtractor.journeys(profile, depStationId);
+        if (journeys.size() > 32) {
+            Journey journey = journeys.get(32);
+            System.out.println(JourneyIcalConverter.toIcalendar(journey));
+        } else {
+            System.out.println("Pas assez de voyages trouvés pour obtenir l'élément à l'index 32");
+        }
+
+        double elapsed = (System.nanoTime() - tStart) * 1e-9;
+        System.out.printf("Temps écoulé : %.3f s%n", elapsed);
+    }
 }
