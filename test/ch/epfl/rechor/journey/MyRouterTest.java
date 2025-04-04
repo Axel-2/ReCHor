@@ -23,43 +23,7 @@ class MyRouterTest {
     }
 
     @Test
-    public void testTripFromEpflToGruyeres() throws IOException {
-        long tStart = System.nanoTime();
-
-        TimeTable timeTable = new CachedTimeTable(FileTimeTable.in(Path.of("timetable")));
-        Stations stations = timeTable.stations();
-        LocalDate date = LocalDate.of(2025, Month.APRIL, 1);
-        int depStationId = stationId(stations, "Ecublens VD, EPFL");
-        int arrStationId = stationId(stations, "Gruyères");
-        Router router = new Router(timeTable);
-        Profile profile = router.profile(date, arrStationId);
-
-        var journeys = JourneyExtractor.journeys(profile, depStationId);
-        assertFalse(journeys.isEmpty(), "La liste des voyages ne devrait pas être vide");
-
-        if (journeys.size() > 32) {
-            Journey journey = journeys.get(32);
-            String ical = JourneyIcalConverter.toIcalendar(journey);
-            System.out.println(ical);
-
-            // Vérifier quelques éléments de base du voyage
-            assertNotNull(journey);
-            assertEquals("Ecublens VD, EPFL", journey.depStop().name());
-            assertEquals("Gruyères", journey.arrStop().name());
-        } else {
-            System.out.println("Pas assez de voyages trouvés pour obtenir l'élément à l'index 32");
-        }
-
-        double elapsed = (System.nanoTime() - tStart) * 1e-9;
-        System.out.printf("Temps écoulé : %.3f s%n", elapsed);
-    }
-
-    @Test
-    public void testMainMethod() throws IOException {
-        main(new String[0]);
-    }
-
-    public static void main(String[] args) throws IOException {
+    public void routerTest() throws IOException {
         long tStart = System.nanoTime();
 
         TimeTable timeTable = new CachedTimeTable(FileTimeTable.in(Path.of("timetable")));

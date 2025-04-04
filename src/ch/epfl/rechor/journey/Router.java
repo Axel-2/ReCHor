@@ -2,6 +2,7 @@ package ch.epfl.rechor.journey;
 
 import ch.epfl.rechor.PackedRange;
 import ch.epfl.rechor.timetable.Connections;
+import ch.epfl.rechor.timetable.TimeTable;
 import ch.epfl.rechor.timetable.mapped.FileTimeTable;
 
 import java.time.LocalDate;
@@ -17,7 +18,7 @@ import java.util.NoSuchElementException;
  * @author Yoann Salamin (390522)
  * @author Axel Verga (398787)
  */
-public record Router(FileTimeTable timetable) {
+public record Router(TimeTable timetable) {
 
 
     /**
