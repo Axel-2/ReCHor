@@ -34,9 +34,9 @@ public record Router(FileTimeTable timetable) {
         // On crée un profil vide à l'aide du Builder
         Profile.Builder profileBuilder = new Profile.Builder(timetable, date, arrStationId);
 
-        int[] minutesBetweenForEveryStation  = new int[timetable.stations().size()-1];
+        int[] minutesBetweenForEveryStation  = new int[timetable.stations().size()];
 
-        for (int i = 0; i < timetable.stations().size() - 1; ++i) {
+        for (int i = 0; i < timetable.stations().size(); ++i) {
             int currentMinutesBetween;
             try {
                 // On essaie d'obtenir le temps de transfer pour chaque gare
