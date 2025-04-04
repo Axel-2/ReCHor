@@ -52,7 +52,7 @@ public record Router(FileTimeTable timetable) {
 
 
         // Algorithme CSA
-        // On parcourt la totalité des liaisons de l'horaire, dans l'ordre décroissant
+        // On parcourt la totalité des liaisons de l'horaire
         for(int i = 0; i < timetable.connectionsFor(date).size(); i++) {
             // Extraction des informations de notre liaison actuelle
             int currentConnDepStopID = timetable.connectionsFor(date).depStopId(i);
