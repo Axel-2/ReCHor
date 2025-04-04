@@ -18,6 +18,8 @@ import java.util.NoSuchElementException;
  * @author Axel Verga (398787)
  */
 public record Router(FileTimeTable timetable) {
+
+
     /**
      * Méthode qui retourne le profil de tous les voyages optimaux
      * permettant de se rendre de n'importe quelle gare du réseau à un gare d'arrivée donnée,
@@ -29,7 +31,27 @@ public record Router(FileTimeTable timetable) {
     // TODO : gérer le payload
     public Profile profile(LocalDate date, int arrStationId) {
 
+        // on crée un profil vide à l'aide du Builder
         Profile.Builder profileBuilder = new Profile.Builder(timetable, date, arrStationId);
+
+        int[] minutesBetweenForEveryStation  = new int[timetable.stations().size()-1];
+
+        // TODO vérifier si faut pas faire -1 dans la boucle ?
+        for (int i = 0; i < timetable.stations().size(); ++i) {
+            int currentMinutesBetween;
+            try {
+                // on essaie d'obtenir le temps de transfer pour chaque gare
+                currentMinutesBetween = timetable.transfers().minutesBetween(i, arrStationId);
+            } catch (NoSuchElementException e) {
+                // On retourne -1 si le trajet n'est pas
+                // faisable à pied
+                currentMinutesBetween = -1;
+            }
+
+            // et on le met dans notre tableau
+            minutesBetweenForEveryStation[i] = currentMinutesBetween;
+        }
+
 
         // Algorithme CSA
         // On parcourt la totalité des liaisons de l'horaire, dans l'ordre décroissant
@@ -51,13 +73,9 @@ public record Router(FileTimeTable timetable) {
             boolean changeToFinalDestinationExist;
             int changeDuration = 0;
 
-            // TODO faire autrement qu'avec minutesBetween
-            try {
-                changeDuration = timetable().transfers().minutesBetween(currentConnArrStopID, arrStationId);
-                changeToFinalDestinationExist = true;
-            } catch (NoSuchElementException e) {
-                changeToFinalDestinationExist = false;
-            }
+            // on utilise le tableau calculé plus haut pour voir si un
+            // changement existe entre les deux gares
+            changeToFinalDestinationExist = minutesBetweenForEveryStation[currentConnArrStopID] != -1;
 
             if (changeToFinalDestinationExist) {
                 f.add(PackedCriteria.pack(currentConnArrMins + changeDuration, 0, 0)); // Payload 0
