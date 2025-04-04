@@ -86,6 +86,7 @@ public final class BufferedTrips implements Trips {
      */
     @Override
     public int size() {
+
         // il suffit de retourner la taille du buffer
         return structuredBuffer.size();
     }

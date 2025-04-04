@@ -11,10 +11,10 @@ public final class Structure {
 
     // Tableau contenant la position, en octets, du premier
     // octet de chacun des champs dans la structure
-    private final short[] firstBytePositions;
+    private final short[] firstByteIndexOfEachField;
 
     // taille totale de la structure, en octets.
-    private final int totalStructureSize;
+    private final int totalStructureSizeInBytes;
 
     /**
      * Type énuméré des différentes tailles d'octet
@@ -54,14 +54,15 @@ public final class Structure {
      */
     public Structure(Field... fields) {
 
-        // Création du tableau contenant la position, en octets, du premier
+        // Initialisation du tableau contenant la position, en octets, du premier
         // octet de chacun des champs dans la structure,
         // Ce tableau a une taille égale au nombre de champs dans la structure
-        this.firstBytePositions = new short[fields.length];
+        this.firstByteIndexOfEachField = new short[fields.length];
 
         // Initialisation de la taille, qui va être incrémentée, mais qui commence à 0.
         int currentByteIndex = 0;
 
+        // On va itérer sur chaque champ
         for (int i = 0; i < fields.length; i++) {
 
             // 1) Vérifie que les champs sont donnés dans l'ordre
@@ -70,7 +71,7 @@ public final class Structure {
             }
 
             // 2) Stock l'index du premier octet de chacun des champs dans la structure
-            firstBytePositions[i] = (short) currentByteIndex;
+            firstByteIndexOfEachField[i] = (short) currentByteIndex;
 
             // 3) Ajoute à la taille actuelle (mesurée en nombre d'octets), la taille du champ d'index i
             switch (fields[i].type()) {
@@ -88,7 +89,7 @@ public final class Structure {
         }
 
         // Nous avons notre taille finale, l'incrémentation est finie. On l'injecte dans l'attribut
-        this.totalStructureSize = currentByteIndex;
+        this.totalStructureSizeInBytes = currentByteIndex;
     }
 
     /**
@@ -96,7 +97,7 @@ public final class Structure {
      * @return la taille
      */
     public int totalSize() {
-        return totalStructureSize;
+        return totalStructureSizeInBytes;
     }
 
     /**
@@ -110,12 +111,12 @@ public final class Structure {
     public int offset(int fieldIndex, int elementIndex) {
 
         // Vérifie que l'index du champ est valide
-        if (fieldIndex < 0 || fieldIndex >= firstBytePositions.length) {
+        if (fieldIndex < 0 || fieldIndex >= firstByteIndexOfEachField.length) {
             throw new IndexOutOfBoundsException();
         }
 
         // Retourne l'index correspondant dans le tableau de donnée aplati.
-        return firstBytePositions[fieldIndex] + (elementIndex * totalStructureSize);
+        return firstByteIndexOfEachField[fieldIndex] + (elementIndex * totalStructureSizeInBytes);
     }
 
 }

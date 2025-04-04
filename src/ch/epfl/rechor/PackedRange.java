@@ -19,15 +19,19 @@ public class PackedRange {
      */
     public static int pack(int startInclusive, int endExclusive) {
 
+        // Définition des constantes pour les masques
+        final int MASK_8_BITS  = 0xFF;
+        final int MASK_24_BITS = 0xFFFFFF;
+
         int intervalleSize = endExclusive - startInclusive;
 
         // On vérifie que l'intervalle tient sur 8 bits
         // c.-à-d. qu'il doit être <= 255 donc <= 0xFF
-        Preconditions.checkArgument(intervalleSize <= 0xFF && intervalleSize >= 0);
+        Preconditions.checkArgument(intervalleSize <= MASK_8_BITS && intervalleSize >= 0);
 
         // Ici, on fait le même test, mais cette fois-ci avec 24 bits
         // pour la borne inférieure
-        Preconditions.checkArgument(startInclusive  <= 0xFFFFFF);
+        Preconditions.checkArgument(startInclusive  <= MASK_24_BITS);
 
         // leur borne inférieure est toujours positive ou nulle, et plus petite que 224,
         Preconditions.checkArgument(startInclusive >= 0);

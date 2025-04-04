@@ -72,15 +72,15 @@ public record Profile(TimeTable timeTable, LocalDate date, int arrStationId, Lis
 
         // on stocke les attributs en cours de constructions pour pouvoir les passer
         // au constructeur de Profile
-        private TimeTable currentTimetable;
-        private LocalDate currentLocalDate;
-        private int currentArrStationId;
+        private final TimeTable currentTimetable;
+        private final LocalDate currentLocalDate;
+        private final int currentArrStationId;
 
         // tableau qui contient les bâtisseurs des frontières de Pareto des gares
-        private ParetoFront.Builder[] paretoFrontStationList;
+        private final ParetoFront.Builder[] paretoFrontStationList;
 
         // tableau qui contient les bâtisseurs des frontières de Pareto des courses
-        private ParetoFront.Builder[]  paretoFrontTripsList;
+        private final ParetoFront.Builder[]  paretoFrontTripsList;
 
 
         /**
@@ -144,8 +144,8 @@ public record Profile(TimeTable timeTable, LocalDate date, int arrStationId, Lis
         public ParetoFront.Builder forTrip(int tripId) {
 
             // on retourne simplement le bon élément dans le tableau
-            // la valeur est bien null si aucun appel à setForstation n'a
-            // été fait car le tabelau est initialisé avec de null;
+            // la valeur est bien nulle si aucun appel à setForstation n'a
+            // été fait, car le tableau est initialisé avec que des null
             return paretoFrontTripsList[tripId];
         }
 

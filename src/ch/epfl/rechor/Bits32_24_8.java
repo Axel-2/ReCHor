@@ -7,6 +7,14 @@ package ch.epfl.rechor;
  */
 public final class Bits32_24_8 {
 
+
+    // Définition des constantes pour les masques et le décalage
+
+    // Masque pour extraire les 24 bits de poids fort
+    private static final int MASK_24_BITS = 0xFFFFFF;
+    // Masque pour extraire les 8 bits de poids faible
+    private static final int MASK_8_BITS  = 0xFF;
+
     // Pour rendre la classe non instantiable
     private Bits32_24_8() {}
 
@@ -37,7 +45,7 @@ public final class Bits32_24_8 {
         // vers la droite pour écraser les 8 premiers bits
         // et n'avoir plus que 24 bits,
         // on utilise >>> pour ne pas préserver le signe
-        return (bits32 >>> 8) & 0xFFFFFF;
+        return (bits32 >>> 8) & MASK_24_BITS;
     }
 
     /**
@@ -47,6 +55,6 @@ public final class Bits32_24_8 {
      */
     public static int unpack8(int bits32) {
         // On récupère les 8 bits de poids faible avec le masque OxFF
-        return (bits32 & 0xFF);
+        return (bits32 & MASK_8_BITS);
     }
 }

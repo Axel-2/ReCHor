@@ -18,8 +18,8 @@ import java.util.List;
 public final class BufferedStationAliases implements StationAliases {
 
     // constantes pour la structure
-    private final int ALIAS_ID = 0;
-    private final int STATION_NAME_ID = 1;
+    private final static int ALIAS_ID = 0;
+    private final static int STATION_NAME_ID = 1;
 
     // table de conversion pour les chaines
     private final List<String> stringTable;

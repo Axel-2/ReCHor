@@ -71,7 +71,6 @@ public final class BufferedConnections implements Connections {
      */
     @Override
     public int depStopId(int id) {
-
         return connectionsStructuredBuffer.getU16(DEP_STOP_ID, id);
     }
 
@@ -84,7 +83,6 @@ public final class BufferedConnections implements Connections {
      */
     @Override
     public int depMins(int id) {
-
         return connectionsStructuredBuffer.getU16(DEP_MINUTES, id);
     }
 
@@ -96,7 +94,6 @@ public final class BufferedConnections implements Connections {
      */
     @Override
     public int arrStopId(int id) {
-
         return connectionsStructuredBuffer.getU16(ARR_STOP_ID, id);
     }
 
@@ -109,7 +106,6 @@ public final class BufferedConnections implements Connections {
      */
     @Override
     public int arrMins(int id) {
-
         return connectionsStructuredBuffer.getU16(ARR_MINUTES, id);
     }
 

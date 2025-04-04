@@ -44,7 +44,7 @@ public final class BufferedRoutes implements Routes {
                 // qui est un entier entre 0 et 6
                 Structure.field(KIND, Structure.FieldType.U8));
 
-        // ensuite on crée le tableau structuré à l'aide de notre
+        // ensuite, on crée le tableau structuré à l'aide de notre
         // structure
         this.structuredBuffer = new StructuredBuffer(routeStructure, buffer);
     }
