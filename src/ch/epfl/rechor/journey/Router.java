@@ -28,10 +28,11 @@ public record Router(TimeTable timetable) {
      * @return le profil des voyages optimaux
      */
     // TODO : gérer le payload
+    // TODO : faire l'optimisation
     public Profile profile(LocalDate date, int arrStationId) {
 
         // On crée un profil vide à l'aide du Builder
-        Profile.Builder profileBuilder = new Profile.Builder(timetable, date, arrStationId);
+        Profile.Builder p = new Profile.Builder(timetable, date, arrStationId);
 
         int[] minutesBetweenForEveryStation  = new int[timetable.stations().size()];
 
@@ -73,9 +74,6 @@ public record Router(TimeTable timetable) {
             // ------------------ Option 1) Marcher depuis arr(l) vers la destination finale ---------------
             // Si il existe un changement jusqu'à la gare
             // d'arrivée (depuis la fin de notre liaison), on y marche
-
-            boolean changeToFinalDestinationExist;
-
             // on utilise le tableau calculé plus haut pour voir si un
             // changement existe entre les deux gares
 
@@ -83,6 +81,7 @@ public record Router(TimeTable timetable) {
             int walkDuration = minutesBetweenForEveryStation[arrStationIdForWalk];
 
             if (walkDuration != -1) {
+                // TODO : Payload ici
                 f.add(PackedCriteria.pack(currentConnArrMins + walkDuration, 0, 0));
             }
 
@@ -91,20 +90,20 @@ public record Router(TimeTable timetable) {
             // On continue notre trajet normalement, et on
             // ajoute à la frontière tous les tuples de cette course
 
-            // Vérification si non null
-            if (profileBuilder.forTrip(currentConnTripId) != null) {
-                f.addAll(profileBuilder.forTrip(currentConnTripId));
+            // On vérifie que ce n'est pas null, sinon f.addAll(null) lèvera une exception
+            if (p.forTrip(currentConnTripId) != null) {
+                f.addAll(p.forTrip(currentConnTripId));
             }
 
             // ------------------ Option 3) Changer de véhicule à arr(l) ---------------
             // Gère le changement de véhicule, donc les transitions entre les routes
-
             // Préparons le flot pour effectuer méthodes
             List<Long> tuples = new ArrayList<>();
 
-            if (profileBuilder.forStation(timetable.stationId(currentConnArrStopID)) != null) { // SEULEMENT si un builder existe pour cette gare
+            // On vérifie que ce n'est pas null, sinon null.forEach lèvera une exception
+            if (p.forStation(timetable.stationId(currentConnArrStopID)) != null) { // SEULEMENT si un builder existe pour cette gare
 
-                profileBuilder.forStation(timetable.stationId(currentConnArrStopID)).forEach(tuples::add);
+                p.forStation(timetable.stationId(currentConnArrStopID)).forEach(tuples::add);
 
                 tuples.stream().filter(criteria -> PackedCriteria.hasDepMins(criteria) // On garde seulement ceux qui n'ont pas
                                 && PackedCriteria.depMins(criteria) >= currentConnArrMins) // d'anomalie temporelle
@@ -124,12 +123,11 @@ public record Router(TimeTable timetable) {
 
             // ----------------- Dernière partie -------------------
 
-            // Mise à jour de la frontière de la liaison
-
-            if (profileBuilder.forTrip(currentConnTripId) != null) {
-                profileBuilder.forTrip(currentConnTripId).addAll(f);
-            } else {
-                profileBuilder.setForTrip(currentConnTripId, f);
+            // Mise à jour de la frontière de la course
+            if (p.forTrip(currentConnTripId) != null) {
+                p.forTrip(currentConnTripId).addAll(f);
+            } else { // TODO Deuxième paramètre, f ou new ParetoFront.Builder() ?
+                p.setForTrip(currentConnTripId, f;
             }
 
             // Mise à jour des frontières des gares
@@ -144,18 +142,14 @@ public record Router(TimeTable timetable) {
                 int transferDepStationID = timetable.transfers().depStationId(transferId);
                 int transferDuration = timetable.transfers().minutes(transferId);
 
-                // C'est l'heure (en minutes) où le transfert commence.
-                // Ou, vu autrement, c'est aussi l'heure ou la course précédente arrive.
-                int previousTripArrMins = currentConnDepMins - transferDuration;
+                // C'est l'heure de départ du petit trajet d'avant, pour rejoindre la gare actuelle
+                int d = currentConnDepMins - transferDuration;
 
-                ParetoFront.Builder depStationFront = profileBuilder.forStation(transferDepStationID);
 
-                if (depStationFront == null) {
-                    profileBuilder.setForStation(transferDepStationID , new ParetoFront.Builder());
-                }
-
-                if (profileBuilder.forStation(transferDepStationID) == null) {
-                    System.out.println("hhhhh");
+                // Si c'est le premier cas où l'on a affaire à cette gare,
+                // ce sera null et il faut créer un builder de frontière
+                if (p.forStation(transferDepStationID) == null) {
+                    p.setForStation(transferDepStationID , new ParetoFront.Builder());
                 }
 
                  // Pour tous les tuples de la frontière
@@ -166,14 +160,14 @@ public record Router(TimeTable timetable) {
                     int changes = PackedCriteria.changes(tuple);
 
                     long tupleToAdd = PackedCriteria.pack(arrMins, changes, 0);
-                    tupleToAdd = PackedCriteria.withDepMins(tupleToAdd, previousTripArrMins);
+                    tupleToAdd = PackedCriteria.withDepMins(tupleToAdd, d);
 
-                    profileBuilder.forStation(transferDepStationID).add(tupleToAdd);
+                    p.forStation(transferDepStationID).add(tupleToAdd);
                 });
             }
 
 
         }
-        return profileBuilder.build();
+        return p.build();
     }
 }
