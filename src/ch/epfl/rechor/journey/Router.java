@@ -166,7 +166,7 @@ public record Router(TimeTable timetable) {
                     int intermediateStopsNumber = lastConnOfTripPos - currentConnTripPos;
                     // Le payload contient la liaison l dans les 24 bits de gauche,
                     // et le nombre d'arrêts intermédiaires dans les 8 bits de droite.
-                    int payload = connId << 12 | intermediateStopsNumber;
+                    int payload = connId << 8 | intermediateStopsNumber;
 
 
                     long tupleToAdd = PackedCriteria.pack(arrMins, changes, payload);
