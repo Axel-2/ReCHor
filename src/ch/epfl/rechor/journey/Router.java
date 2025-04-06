@@ -81,7 +81,6 @@ public record Router(TimeTable timetable) {
             int walkDuration = minutesBetweenForEveryStation[arrStationIdForWalk];
 
             if (walkDuration != -1) {
-                // TODO : Payload ici
                 f.add(PackedCriteria.pack(currentConnArrMins + walkDuration, 0, 0));
             }
 
@@ -126,7 +125,7 @@ public record Router(TimeTable timetable) {
             // Mise à jour de la frontière de la course
             if (p.forTrip(currentConnTripId) != null) {
                 p.forTrip(currentConnTripId).addAll(f);
-            } else { // TODO Deuxième paramètre, f ou new ParetoFront.Builder() ?
+            } else {
                 p.setForTrip(currentConnTripId, f);
             }
 
