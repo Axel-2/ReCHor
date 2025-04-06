@@ -80,8 +80,8 @@ public record Router(TimeTable timetable) {
             int arrStationIdForWalk = timetable.stationId(currentConnArrStopID);
             int walkDuration = minutesBetweenForEveryStation[arrStationIdForWalk];
 
-            if (walkDuration != -1) {
-                f.add(PackedCriteria.pack(currentConnArrMins + walkDuration, 0, 0));
+            if (walkDuration != -1) { // je suppose que le i est l'id de la course, il n'existe pas de currentConnId
+                f.add(PackedCriteria.pack(currentConnArrMins + walkDuration, 0, i));
             }
 
 
@@ -104,6 +104,7 @@ public record Router(TimeTable timetable) {
 
                 p.forStation(timetable.stationId(currentConnArrStopID)).forEach(tuples::add);
 
+                int connId = i;
                 tuples.stream().filter(criteria -> PackedCriteria.hasDepMins(criteria) // On garde seulement ceux qui n'ont pas
                                 && PackedCriteria.depMins(criteria) >= currentConnArrMins) // d'anomalie temporelle
                         .forEach(criteria -> {
@@ -112,7 +113,7 @@ public record Router(TimeTable timetable) {
                             int criteriaChanges = PackedCriteria.changes(criteria);
 
                             // Ajout à la frontière en cours de construction
-                            f.add(PackedCriteria.pack(criteriaArrMin, criteriaChanges + 1, 0)); // Payload 0
+                            f.add(PackedCriteria.pack(criteriaArrMin, criteriaChanges + 1, connId)); // Payload 0
 
                         });
 
@@ -152,13 +153,23 @@ public record Router(TimeTable timetable) {
                 }
 
                  // Pour tous les tuples de la frontière
+                int connId = i;
                 f.forEach(tuple -> {
 
                     // Extraction des données du tuple
                     int arrMins = PackedCriteria.arrMins(tuple);
                     int changes = PackedCriteria.changes(tuple);
 
-                    long tupleToAdd = PackedCriteria.pack(arrMins, changes, 0);
+                    // GESTION DU PAYLOAD
+                    int lastConnexionOfTripID = PackedCriteria.payload(tuple);
+                    int lastConnOfTripPos = timetable.connectionsFor(date).tripPos(lastConnexionOfTripID);
+                    int intermediateStopsNumber = lastConnOfTripPos - currentConnTripPos;
+                    // Le payload contient la liaison l dans les 24 bits de gauche,
+                    // et le nombre d'arrêts intermédiaires dans les 8 bits de droite.
+                    int payload = connId << 12 | intermediateStopsNumber;
+
+
+                    long tupleToAdd = PackedCriteria.pack(arrMins, changes, payload);
                     tupleToAdd = PackedCriteria.withDepMins(tupleToAdd, d);
 
                     p.forStation(transferDepStationID).add(tupleToAdd);
