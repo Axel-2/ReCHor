@@ -127,7 +127,7 @@ public record Router(TimeTable timetable) {
             if (p.forTrip(currentConnTripId) != null) {
                 p.forTrip(currentConnTripId).addAll(f);
             } else { // TODO Deuxième paramètre, f ou new ParetoFront.Builder() ?
-                p.setForTrip(currentConnTripId, f;
+                p.setForTrip(currentConnTripId, f);
             }
 
             // Mise à jour des frontières des gares
