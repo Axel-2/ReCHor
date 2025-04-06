@@ -27,8 +27,6 @@ public record Router(TimeTable timetable) {
      * @param arrStationId l'identifiant de la gare d'arrivée
      * @return le profil des voyages optimaux
      */
-    // TODO : gérer le payload
-    // TODO : faire l'optimisation
     public Profile profile(LocalDate date, int arrStationId) {
 
         // On crée un profil vide à l'aide du Builder
@@ -58,6 +56,8 @@ public record Router(TimeTable timetable) {
         // comme "connectionsFor" retourne déjà les connections dans l'ordre décroissant,
         // il suffit de parcourir dans l'ordre croissant
         for (int i = 0; i < timetable.connectionsFor(date).size(); i++) {
+            // 'f' est la frontière temporaire pour cette liaison 'l'
+            ParetoFront.Builder f = new ParetoFront.Builder();
 
             // Extraction des informations de notre liaison actuelle
             int currentConnDepStopID = timetable.connectionsFor(date).depStopId(i);
@@ -66,9 +66,8 @@ public record Router(TimeTable timetable) {
             int currentConnArrMins = timetable.connectionsFor(date).arrMins(i);
             int currentConnTripId = timetable.connectionsFor(date).tripId(i);
             int currentConnTripPos = timetable.connectionsFor(date).tripPos(i);
+            int currentConnDepStationId = timetable.stationId(currentConnArrStopID);
 
-            // 'f' est la frontière temporaire pour cette liaison 'l'
-            ParetoFront.Builder f = new ParetoFront.Builder();
 
 
             // ------------------ Option 1) Marcher depuis arr(l) vers la destination finale ---------------
@@ -77,8 +76,7 @@ public record Router(TimeTable timetable) {
             // on utilise le tableau calculé plus haut pour voir si un
             // changement existe entre les deux gares
 
-            int arrStationIdForWalk = timetable.stationId(currentConnArrStopID);
-            int walkDuration = minutesBetweenForEveryStation[arrStationIdForWalk];
+            int walkDuration = minutesBetweenForEveryStation[currentConnDepStationId];
 
             if (walkDuration != -1) { // je suppose que le i est l'id de la course, il n'existe pas de currentConnId
                 f.add(PackedCriteria.pack(currentConnArrMins + walkDuration, 0, i));
@@ -120,7 +118,7 @@ public record Router(TimeTable timetable) {
             }
 
 
-
+            if (f.isEmpty()) continue;
             // ----------------- Dernière partie -------------------
 
             // Mise à jour de la frontière de la course
@@ -130,8 +128,17 @@ public record Router(TimeTable timetable) {
                 p.setForTrip(currentConnTripId, f);
             }
 
-            // Mise à jour des frontières des gares
+            // OPTIMISATION :
+            // Si la frontière de la gare de départ domine entièrement f avec l'heure de départ de la liaison actuelle,
+            // alors on peut skip la dernière partie, car il n'y aura rien d'utile dans f aux gares de départ
+            if (p.forStation(timetable.stationId(currentConnDepStationId)) != null){
+                if(p.forStation(timetable.stationId(currentConnDepStationId)).fullyDominates(f, currentConnDepMins)){
+                    continue;
+                }
+            }
 
+
+            // Mise à jour des frontières des gares
             // Récupération des changements arrivant au départ de notre liaison
             int depStationIdForTransfer = timetable.stationId(currentConnDepStopID);
             int intervalOfTransfersArrivingToDep = timetable.transfers().arrivingAt(depStationIdForTransfer);
