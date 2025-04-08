@@ -2,6 +2,7 @@ package ch.epfl.rechor;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public sealed interface Json {
 
@@ -10,26 +11,13 @@ public sealed interface Json {
         @Override
         public String toString() {
 
-            StringBuilder bld = new StringBuilder();
-
-            // on commence par ouvrir la liste
-            bld.append("[");
-            // on itère sur tous les objets Json et on ajoute leur représation textuelle
-            // avec toString
-            jsonList.forEach(
-                    (json -> {
-                        bld.append(json.toString());
-                        bld.append(",");
-                    })
-            );
-            // on ferme la liste
-            bld.append("]");
-
-            String result = jsonList.stream()
-                    .map(json::to)
-
-
-            return bld.toString();
+            // on itère avec un stream et on ajoute toutes les
+            // représentations textuelles des objets Json puis on join tout
+            // avec les bons delimiters
+            return jsonList.stream()
+                    .map(Json::toString)
+                    // un assistant nous a conseillé d'utiliser joining
+                    .collect(Collectors.joining(",", "[", "]"));
 
         }
     }
@@ -39,36 +27,22 @@ public sealed interface Json {
         @Override
         public String toString() {
 
-            StringBuilder bld = new StringBuilder();
-
-            // on commence par ouvrir l'objet
-            bld.append("{\"")
-            jsonStringMap.forEach(
-                    (string, json) -> {
-                        bld
-                                .append("\"")
-                                .append(string)
-                                .append("\"")
-                                .append(": ")
-                                .append(json.toString())
-                                .append("}")
-                                .append(",");
-                    }
-            );
-            // on ferme l'objet
-            bld.append("}");
-
-
+            // on fait de la même façon que dans JArray
+            return jsonStringMap.entrySet()
+                    .stream()
+                    .map(entry -> String.format("\"%s\":%s", entry.getKey(), entry.getValue()))
+                    .collect(Collectors.joining(",", "{", "}"));
         }
     }
+
+
 
     record JString(String jsonString) implements Json {
 
         @Override
         public String toString() {
-            return "JString{" +
-                    "jsonString='" + jsonString + '\'' +
-                    '}';
+            // ici une simple concaténation est la façon la plus et propre
+            return  "\"" + jsonString + "\"";
         }
     }
 
@@ -76,9 +50,7 @@ public sealed interface Json {
 
         @Override
         public String toString() {
-            return "JNumber{" +
-                    "jsonNumber=" + jsonNumber +
-                    '}';
+            return Double.toString(jsonNumber);
         }
     }
 

@@ -7,7 +7,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-public class JourneyGeoJsonConverter {
+public final class JourneyGeoJsonConverter {
 
     // pour la rendre non instanciable
     private JourneyGeoJsonConverter() {};
@@ -19,11 +19,11 @@ public class JourneyGeoJsonConverter {
      */
     public Json toGeoJson(Journey journey){
 
-
         // Création de la map qui sera retournée sous sa version Json, représente le fichier GeoJson
         Map<String, Json> geoJsonMap = new HashMap<>();
         geoJsonMap.put("type", new Json.JString("LineString"));
-        List<Json.JArray> coordsContainer = new LinkedList<>();
+
+        List<Json> coordsContainer = new LinkedList<>();
 
         // On s'occupe juste du premier stop, avant de rentrer dans la boucle
         List<Json> coords = new LinkedList<>();
@@ -56,7 +56,7 @@ public class JourneyGeoJsonConverter {
         }
 
         // On a tout, on transforme la Liste<Json> en JArray et on return la map JObject
-        geoJsonMap.put("coordinates", new Json.JArray(coords));
+        geoJsonMap.put("coordinates", new Json.JArray(coordsContainer));
         return new Json.JObject(geoJsonMap);
 
     }
