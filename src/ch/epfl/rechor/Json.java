@@ -5,25 +5,60 @@ import java.util.Map;
 
 public sealed interface Json {
 
-    record Jarray(List<Json> jsonList) implements Json {
-
-        // TODO mais c'est juste chiant
+    record JArray(List<Json> jsonList) implements Json {
 
         @Override
         public String toString() {
-            return "Jarray{" +
-                    "jsonList=" + jsonList +
-                    '}';
+
+            StringBuilder bld = new StringBuilder();
+
+            // on commence par ouvrir la liste
+            bld.append("[");
+            // on itère sur tous les objets Json et on ajoute leur représation textuelle
+            // avec toString
+            jsonList.forEach(
+                    (json -> {
+                        bld.append(json.toString());
+                        bld.append(",");
+                    })
+            );
+            // on ferme la liste
+            bld.append("]");
+
+            String result = jsonList.stream()
+                    .map(json::to)
+
+
+            return bld.toString();
+
         }
     }
 
-    record JObject(Map<Json, String> jsonStringMap) {
+    record JObject(Map<String, Json> jsonStringMap) {
 
         @Override
         public String toString() {
-            return "JObject{" +
-                    "jsonStringMap=" + jsonStringMap +
-                    '}';
+
+            StringBuilder bld = new StringBuilder();
+
+            // on commence par ouvrir l'objet
+            bld.append("{\"")
+            jsonStringMap.forEach(
+                    (string, json) -> {
+                        bld
+                                .append("\"")
+                                .append(string)
+                                .append("\"")
+                                .append(": ")
+                                .append(json.toString())
+                                .append("}")
+                                .append(",");
+                    }
+            );
+            // on ferme l'objet
+            bld.append("}");
+
+
         }
     }
 
