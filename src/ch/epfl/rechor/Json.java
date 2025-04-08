@@ -1,2 +1,4 @@
-package ch.epfl.rechor;public interface Json {
+package ch.epfl.rechor;
+public interface Json {
+    record JArray()
 }
