@@ -4,6 +4,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+
+/**
+ * Interface qui représente un document JSON
+ * @author Yoann Salamin (390522)
+ * @author Axel Verga (398787)
+ */
 public sealed interface Json {
 
     record JArray(List<Json> jsonList) implements Json {
