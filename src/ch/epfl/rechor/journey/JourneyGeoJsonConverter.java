@@ -2,10 +2,7 @@ package ch.epfl.rechor.journey;
 
 import ch.epfl.rechor.Json;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public final class JourneyGeoJsonConverter {
 
@@ -17,16 +14,16 @@ public final class JourneyGeoJsonConverter {
      * @param journey voyage à convertir
      * @return Json constitué d'une ligne brisée
      */
-    public Json toGeoJson(Journey journey){
+    public static Json toGeoJson(Journey journey){
 
         // Création de la map qui sera retournée sous sa version Json, représente le fichier GeoJson
         Map<String, Json> geoJsonMap = new HashMap<>();
         geoJsonMap.put("type", new Json.JString("LineString"));
 
-        List<Json> coordsContainer = new LinkedList<>();
+        List<Json> coordsContainer = new ArrayList<>();
 
         // On s'occupe juste du premier stop, avant de rentrer dans la boucle
-        List<Json> coords = new LinkedList<>();
+        List<Json> coords = new ArrayList<>();
 
         Stop journeyFirstStop = journey.depStop();
         coords.add(new Json.JNumber((Math.round(journeyFirstStop.longitude() * 100000d)/100000d)));
