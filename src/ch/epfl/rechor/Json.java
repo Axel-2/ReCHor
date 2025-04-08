@@ -37,7 +37,7 @@ public sealed interface Json {
 
 
 
-    record JString(String jsonString) {
+    record JString(String jsonString) implements Json {
 
         @Override
         public String toString() {
@@ -46,7 +46,7 @@ public sealed interface Json {
         }
     }
 
-    record JNumber(double jsonNumber) {
+    record JNumber(double jsonNumber) implements Json {
 
         @Override
         public String toString() {
