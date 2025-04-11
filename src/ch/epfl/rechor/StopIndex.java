@@ -1,9 +1,6 @@
 package ch.epfl.rechor;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -17,6 +14,7 @@ public final class StopIndex {
     // TODO vérifier immuabilité à la fin
 
     public static Map<Character, String> mapEquivalences = new TreeMap<>();
+    public Map<String, String> alternateNamesMap = new TreeMap<>();
 
     private final List<String> stopsList;
 
@@ -33,11 +31,14 @@ public final class StopIndex {
         mapEquivalences.put('o', "[oóòôö]");
         mapEquivalences.put('u', "[uúùûü]");
 
-        this.stopsList = stopsList;
+        this.stopsList = List.copyOf(stopsList);
+        this.alternateNamesMap = Map.copyOf(alternateNamesMap);
 
     }
 
     public List<String> stopsMatching(String rqt, int maxNumbersOfStopsToReturn) {
+
+        List<String> resultList = new ArrayList<>();
 
         // --- étape 1 : découper en subqueries------
 
@@ -49,28 +50,41 @@ public final class StopIndex {
                     .mapToObj(this::transformCharToRE).collect(Collectors.joining()))
                 .toList();
 
-        // itérer sur les subQueries et trouver les arrêts qui correspondent
-        for (String subQuery: subQueriesWithRE) {
-
+        // itérer sur les noms de gares normaux
+        for (String stopName : stopsList) {
             // TODO vérifier que les flags soient corrects parce que je crois que c'est juste
             // un exemple dans la doc
-            int flags = Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
-            Pattern pattern = Pattern.compile(subQuery);
 
-            for (String stopName : stopsList) {
+           for (String subQuery: subQueriesWithRE) {
+
+               int flags = Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
+               Pattern pattern = Pattern.compile(subQuery);
                 if (pattern.matcher(stopName).find()) {
                     int start = pattern.matcher(stopName).start();
                     int end = pattern.matcher(stopName).end();
-                }
 
+                    resultList.add(stopName);
+                }
+            }
+        }
+
+        // itérer sur les noms alternatifs
+        for (Map.Entry<String, String> entry: alternateNamesMap.entrySet()) {
+            for (String subQuery: subQueriesWithRE) {
+                int flags = Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
+                Pattern pattern = Pattern.compile(subQuery);
+                if (pattern.matcher(entry.getKey()).find()) {
+                    int start = pattern.matcher(entry.getKey()).start();
+                    int end = pattern.matcher(entry.getKey()).end();
+
+                    resultList.add(entry.getValue());
+                }
+            }
         }
 
         // ---- étape finale : trier la liste ------
 
-
-
-    }
-        return null;
+        return resultList;
     }
 
     /**
