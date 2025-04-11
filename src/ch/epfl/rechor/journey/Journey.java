@@ -117,7 +117,7 @@ public record Journey(List<Leg> legs) {
          * @author Yoann Salamin (390522)
          * @author Axel Verga (398787)
          */
-        public record IntermediateStop(Stop stop, LocalDateTime arrTime, LocalDateTime depTime) {
+         record IntermediateStop(Stop stop, LocalDateTime arrTime, LocalDateTime depTime) {
 
             public IntermediateStop {
 
