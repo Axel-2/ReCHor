@@ -71,6 +71,8 @@ public final class StopIndex {
 
 
         return Stream.concat(stopsMatching, alternatesMatching)
+                // on enlève les doublons
+                .distinct()
                 // on trie avec la méthode définie ci-dessus
                 .sorted((stopName1, stopName2) -> Integer.compare(
                         score(stopName1, subQueriesWithPattern),
@@ -109,6 +111,8 @@ public final class StopIndex {
             finalScore += subScore * multiplier;
 
         }
+
+        System.out.println(finalScore);
         return finalScore;
     }
 

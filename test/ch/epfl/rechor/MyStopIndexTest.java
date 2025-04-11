@@ -84,8 +84,6 @@ class MyStopIndexTest {
         List<String> actual = stopIndex.stopsMatching("mez vil", 5);
 
         // Trier pour comparer indépendamment de l'ordre
-        Collections.sort(expected);
-        Collections.sort(actual);
         assertEquals(expected, actual, "Multi-subquery match failed or elements differ");
     }
 
