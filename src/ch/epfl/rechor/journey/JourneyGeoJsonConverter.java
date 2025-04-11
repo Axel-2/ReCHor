@@ -17,19 +17,15 @@ public final class JourneyGeoJsonConverter {
     public static Json toGeoJson(Journey journey){
 
         // Création de la map qui sera retournée sous sa version Json, représente le fichier GeoJson
-        Map<String, Json> geoJsonMap = new HashMap<>();
-        geoJsonMap.put("type", new Json.JString("LineString"));
+        Map<String, Json> geoJsonMap = new LinkedHashMap<>();
 
+        // Tableau "parent" de tous les petits tableaux de coordonnées
         List<Json> coordsContainer = new ArrayList<>();
 
-        // On s'occupe juste du premier stop, avant de rentrer dans la boucle
-        List<Json> coords = new ArrayList<>();
+        // ------------------- AJOUT DE TOUTES LES COORDONNÉES ----------------- //
 
-        Stop journeyFirstStop = journey.depStop();
-        coords.add(new Json.JNumber((Math.round(journeyFirstStop.longitude() * 100000d)/100000d)));
-        coords.add(new Json.JNumber((Math.round(journeyFirstStop.latitude() * 100000d)/100000d)));
-        coordsContainer.add(new Json.JArray(coords));
-        coords.clear();
+        // On s'occupe juste du premier stop, avant de rentrer dans la boucle
+        stopsCoordsToArray(journey.depStop(), coordsContainer);
 
         // Boucle sur TOUS les stops du voyage, et ajoute leurs coordonnées dans la liste
         for (Journey.Leg leg : journey.legs()){
@@ -38,23 +34,32 @@ public final class JourneyGeoJsonConverter {
 
             // 1) intermediateStop
             for (Journey.Leg.IntermediateStop iStop : leg.intermediateStops()){
-                coords.add(new Json.JNumber((Math.round(iStop.stop().longitude() * 100000d)/100000d)));
-                coords.add(new Json.JNumber((Math.round(iStop.stop().latitude() * 100000d)/100000d)));
-                coordsContainer.add(new Json.JArray(coords));
-                coords.clear();
+                iStopsCoordsToArray(iStop, coordsContainer);
             }
 
             // 2) arrStop
-            coords.add(new Json.JNumber((Math.round(leg.arrStop().longitude() * 100000d)/100000d)));
-            coords.add(new Json.JNumber((Math.round(leg.arrStop().latitude() * 100000d)/100000d)));
-            coordsContainer.add(new Json.JArray(coords));
-            coords.clear();
+            stopsCoordsToArray(leg.arrStop(), coordsContainer);
 
         }
 
         // On a tout, on transforme la Liste<Json> en JArray et on return la map JObject
+        geoJsonMap.put("type", new Json.JString("LineString"));
         geoJsonMap.put("coordinates", new Json.JArray(coordsContainer));
         return new Json.JObject(geoJsonMap);
 
+    }
+
+    private static void stopsCoordsToArray(Stop stop, List<Json> list){
+        List<Json> coords = new ArrayList<>();
+        coords.add(new Json.JNumber((Math.round(stop.longitude() * 100000d)/100000d)));
+        coords.add(new Json.JNumber((Math.round(stop.latitude() * 100000d)/100000d)));
+        list.add(new Json.JArray(coords));
+    }
+
+    private static void iStopsCoordsToArray(Journey.Leg.IntermediateStop iStop, List<Json> list){
+        List<Json> coords = new ArrayList<>();
+        coords.add(new Json.JNumber((Math.round(iStop.stop().longitude() * 100000d)/100000d)));
+        coords.add(new Json.JNumber((Math.round(iStop.stop().latitude() * 100000d)/100000d)));
+        list.add(new Json.JArray(coords));
     }
 }
