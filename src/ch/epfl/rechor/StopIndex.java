@@ -77,6 +77,16 @@ public final class StopIndex {
     }
 
     /**
+     * Calcule le score de compatibilité entre une query et un stop Name
+     * @param stopName nom d'arrêt, nom de requête
+     * @return score de compatibilité (int)
+     */
+    private int score(String stopName, Pattern subqueryRe){
+        int score  = 0;
+
+    }
+
+    /**
      * Transforme un caractère en sa représentation RE
      */
     private String transformCharToRE(int c) {
