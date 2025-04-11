@@ -54,7 +54,7 @@ public record Router(TimeTable timetable) {
 
         // On parcourt la totalité des liaisons de l'horaire, dans l'ordre décroissant
         // comme "connectionsFor" retourne déjà les connections dans l'ordre décroissant,
-        // il suffit de parcourir dans l'ordre croissant
+        // il suffit de parcourir dans l'ordre croissant.
         for (int i = 0; i < timetable.connectionsFor(date).size(); i++) {
             // 'f' est la frontière temporaire pour cette liaison 'l'
             ParetoFront.Builder f = new ParetoFront.Builder();
@@ -111,7 +111,7 @@ public record Router(TimeTable timetable) {
                             int criteriaChanges = PackedCriteria.changes(criteria);
 
                             // Ajout à la frontière en cours de construction
-                            f.add(PackedCriteria.pack(criteriaArrMin, criteriaChanges + 1, connId)); // Payload 0
+                            f.add(PackedCriteria.pack(criteriaArrMin, criteriaChanges + 1, connId));
 
                         });
 
