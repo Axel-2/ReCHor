@@ -74,7 +74,7 @@ public final class StopIndex {
 
         // ---- étape finale : trier la liste ------
         resultList.sort((stopName1, stopName2) ->
-            Integer.compare(score(stopName1, rqt), score(stopName2, rqt))
+            Integer.compare(score(stopName1, subQueriesWithPattern), score(stopName2, subQueriesWithPattern))
         );
 
         return resultList;
@@ -91,6 +91,10 @@ public final class StopIndex {
         for (Pattern subQueryRE : subQueries) {
 
             Matcher matcher = subQueryRE.matcher(stopName);
+            // on ne teste que la première occurence
+            // on est sur qu'elle existe
+            matcher.find();
+
             int subScore = 0;
             int multiplier = 1;
 

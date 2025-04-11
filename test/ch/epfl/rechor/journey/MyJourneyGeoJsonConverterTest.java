@@ -16,7 +16,7 @@ import java.util.NoSuchElementException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class JourneyGeoJsonConverterTest {
+class MyJourneyGeoJsonConverterTest {
 
     // Fonction utilitaire pour trouver l'ID d'une station par nom (reprise du test précédent)
     static int stationId(Stations stations, String stationName) {
