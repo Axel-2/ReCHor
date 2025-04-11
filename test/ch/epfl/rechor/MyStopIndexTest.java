@@ -69,8 +69,6 @@ class MyStopIndexTest {
         List<String> actual = stopIndex.stopsMatching("Mezieres", 5);
 
         // Pour vérifier l'égalité sans tenir compte de l'ordre : trier les deux listes
-        Collections.sort(expected);
-        Collections.sort(actual);
         assertEquals(expected, actual, "Accent matching failed or elements differ");
     }
 
