@@ -112,7 +112,6 @@ public final class StopIndex {
 
         }
 
-        System.out.println(finalScore);
         return finalScore;
     }
 
