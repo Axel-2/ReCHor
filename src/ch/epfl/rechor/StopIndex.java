@@ -68,8 +68,9 @@ public final class StopIndex {
         // ---- étape finale : trier la liste ------
 
 
-    return null;
 
+    }
+        return null;
     }
 
     /**
@@ -78,7 +79,7 @@ public final class StopIndex {
     private String transformCharToRE(int c) {
         char ch = (char) c;
         if (mapEquivalences.containsKey(ch)) {
-            return Pattern.quote(mapEquivalences.get(ch));
+            return mapEquivalences.get(ch);
         } else {
             return Pattern.quote(String.valueOf(ch));
         }
