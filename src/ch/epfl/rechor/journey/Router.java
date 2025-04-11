@@ -183,7 +183,6 @@ public record Router(TimeTable timetable) {
                 });
             }
 
-
         }
         return p.build();
     }
