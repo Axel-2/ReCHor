@@ -75,10 +75,9 @@ public final class StopIndex {
                 .distinct()
                 // on trie avec la méthode définie ci-dessus
                 .sorted((stopName1, stopName2) -> Integer.compare(
-                        score(stopName1, subQueriesWithPattern),
-                        score(stopName2, subQueriesWithPattern)))
-                .collect(Collectors.toList())
-                .subList(0, maxNumbersOfStopsToReturn);
+                        score(stopName2, subQueriesWithPattern),
+                        score(stopName1, subQueriesWithPattern)))
+                .collect(Collectors.toList());
     }
 
     /**
@@ -101,7 +100,7 @@ public final class StopIndex {
             int multiplier = 1;
 
             // 1) subScore += sub.length() / stop.length()
-            subScore += (matcher.end() - matcher.start()) / stopName.length(); // pas besoin de find car on le sait true
+            subScore += (int) Math.floor(100.0 *((double)(matcher.end() - matcher.start()) / stopName.length()));
 
             // 2) Si début : multiplier * 4
             if (matcher.start() == 0) multiplier *= 4;
@@ -112,7 +111,8 @@ public final class StopIndex {
             finalScore += subScore * multiplier;
 
         }
-        System.out.println("Stop name :" + stopName + "\n Points : " + finalScore);
+
+        System.out.println(finalScore);
         return finalScore;
     }
 
