@@ -69,7 +69,8 @@ public final class StopIndex {
                 )
                 .map(Map.Entry::getValue);
 
-        System.out.println("test");
+        System.out.println("ss");
+
         return Stream.concat(stopsMatching, alternatesMatching)
                 // on enlève les doublons
                 .distinct()
@@ -100,7 +101,7 @@ public final class StopIndex {
             int multiplier = 1;
 
             // 1) subScore += sub.length() / stop.length()
-            subScore += 100 * (matcher.end() - matcher.start()) / stopName.length();
+            subScore += (int) Math.floor(100.0 *((double)(matcher.end() - matcher.start()) / stopName.length()));
 
             // 2) Si début : multiplier * 4
             if (matcher.start() == 0) multiplier *= 4;
@@ -111,6 +112,7 @@ public final class StopIndex {
             finalScore += subScore * multiplier;
 
         }
+
         return finalScore;
     }
 
