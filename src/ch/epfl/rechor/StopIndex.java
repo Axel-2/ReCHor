@@ -69,15 +69,13 @@ public final class StopIndex {
                 )
                 .map(Map.Entry::getValue);
 
-        List<String> resultList = Stream.concat(stopsMatching, alternatesMatching)
+
+        return Stream.concat(stopsMatching, alternatesMatching)
+                // on trie avec la méthode définie ci-dessus
+                .sorted((stopName1, stopName2) -> Integer.compare(
+                        score(stopName1, subQueriesWithPattern),
+                        score(stopName2, subQueriesWithPattern)))
                 .collect(Collectors.toList());
-
-        // ---- étape finale : trier la liste ------
-        resultList.sort((stopName1, stopName2) ->
-            Integer.compare(score(stopName1, subQueriesWithPattern), score(stopName2, subQueriesWithPattern))
-        );
-
-        return resultList;
     }
 
     /**
@@ -86,13 +84,14 @@ public final class StopIndex {
      * @return score de compatibilité (int)
      */
     private int score(String stopName, List<Pattern> subQueries) {
-        int finalScore  = 0;
+        int finalScore = 0;
 
         for (Pattern subQueryRE : subQueries) {
 
             Matcher matcher = subQueryRE.matcher(stopName);
-            // on ne teste que la première occurence
-            // on est sur qu'elle existe
+
+            // On ne teste que la première occurrence
+            // On est sûr qu'elle existe car la liste contient uniquement des matchs
             matcher.find();
 
             int subScore = 0;
