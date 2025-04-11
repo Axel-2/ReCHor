@@ -43,7 +43,7 @@ class MyStopIndexTest {
     @Test
     void stopsMatchingFindsExactMatch() {
         List<String> expected = List.of("Lausanne");
-        List<String> actual = stopIndex.stopsMatching("Lausanne", 5);
+        List<String> actual = stopIndex.stopsMatching("mez vil", 5);
         assertEquals(expected, actual); // Vérifie contenu et ordre
     }
 

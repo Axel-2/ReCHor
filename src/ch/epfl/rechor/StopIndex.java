@@ -69,6 +69,7 @@ public final class StopIndex {
                 )
                 .map(Map.Entry::getValue);
 
+        System.out.println("ss");
 
         return Stream.concat(stopsMatching, alternatesMatching)
                 // on enlève les doublons
