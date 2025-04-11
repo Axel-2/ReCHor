@@ -100,7 +100,7 @@ public final class StopIndex {
             int multiplier = 1;
 
             // 1) subScore += sub.length() / stop.length()
-            subScore += (matcher.start() - matcher.end()) / stopName.length(); // pas besoin de find car on le sait true
+            subScore += (matcher.end() - matcher.start()) / stopName.length(); // pas besoin de find car on le sait true
 
             // 2) Si début : multiplier * 4
             if (matcher.start() == 0) multiplier *= 4;
@@ -111,8 +111,7 @@ public final class StopIndex {
             finalScore += subScore * multiplier;
 
         }
-
-        System.out.println(finalScore);
+        
         return finalScore;
     }
 
