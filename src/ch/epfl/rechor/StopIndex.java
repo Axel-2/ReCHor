@@ -1,6 +1,7 @@
 package ch.epfl.rechor;
 
 import java.util.*;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -83,6 +84,9 @@ public final class StopIndex {
         }
 
         // ---- étape finale : trier la liste ------
+        resultList.sort((stopName1, stopName2) ->
+            Integer.compare(score(stopName1, rqt), score(stopName2, rqt))
+        );
 
         return resultList;
     }
@@ -92,9 +96,28 @@ public final class StopIndex {
      * @param stopName nom d'arrêt, nom de requête
      * @return score de compatibilité (int)
      */
-    private int score(String stopName, Pattern subqueryRe){
-        int score  = 0;
+    private int score(String stopName, List<Pattern> subQueries) {
+        int finalScore  = 0;
 
+        for (Pattern subQueryRE : subQueries) {
+
+            Matcher matcher = subQueryRE.matcher(stopName);
+            int subScore = 0;
+            int multiplier = 1;
+
+            // 1) subScore += sub.length() / stop.length()
+            subScore += (matcher.start() - matcher.end()) / stopName.length(); // pas besoin de find car on le sait true
+
+            // 2) Si début : multiplier * 4
+            if (matcher.start() == 0) multiplier *= 4;
+
+            // 3) Si fin : multiplier * 2
+            if (matcher.end() == stopName.length() -1) multiplier *= 2;
+
+            finalScore += subScore * multiplier;
+
+        }
+        return finalScore;
     }
 
     /**
