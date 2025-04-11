@@ -3,6 +3,7 @@ package ch.epfl.rechor;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  *  Classe qui représente un index de nom d'arrêts dans lequel
@@ -38,8 +39,6 @@ public final class StopIndex {
 
     public List<String> stopsMatching(String rqt, int maxNumbersOfStopsToReturn) {
 
-        List<String> resultList = new ArrayList<>();
-
         // --- étape 1 : découper en subqueries------
 
         String[] originalSubQueries = rqt.split(" ");
@@ -50,37 +49,27 @@ public final class StopIndex {
                     .mapToObj(this::transformCharToRE).collect(Collectors.joining()))
                 .toList();
 
-        // itérer sur les noms de gares normaux
-        for (String stopName : stopsList) {
-            // TODO vérifier que les flags soient corrects parce que je crois que c'est juste
-            // un exemple dans la doc
+        int flags = Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
 
-           for (String subQuery: subQueriesWithRE) {
+                // Filtrer et récupérer les noms dans la liste stopsList
+        Stream<String> stopsMatching = stopsList.stream()
+                .filter(stopName ->
+                        subQueriesWithRE.stream().allMatch(subQuery ->
+                                Pattern.compile(subQuery, flags).matcher(stopName).find()
+                        )
+                );
 
-               int flags = Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
-               Pattern pattern = Pattern.compile(subQuery);
-                if (pattern.matcher(stopName).find()) {
-                    int start = pattern.matcher(stopName).start();
-                    int end = pattern.matcher(stopName).end();
+        // Filtrer la Map et récupérer les valeurs associées pour lesquelles la clé correspond
+        Stream<String> alternatesMatching = alternateNamesMap.entrySet().stream()
+                .filter(entry ->
+                        subQueriesWithRE.stream().anyMatch(subQuery ->
+                                Pattern.compile(subQuery, flags).matcher(entry.getKey()).find()
+                        )
+                )
+                .map(Map.Entry::getValue);
 
-                    resultList.add(stopName);
-                }
-            }
-        }
-
-        // itérer sur les noms alternatifs
-        for (Map.Entry<String, String> entry: alternateNamesMap.entrySet()) {
-            for (String subQuery: subQueriesWithRE) {
-                int flags = Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
-                Pattern pattern = Pattern.compile(subQuery);
-                if (pattern.matcher(entry.getKey()).find()) {
-                    int start = pattern.matcher(entry.getKey()).start();
-                    int end = pattern.matcher(entry.getKey()).end();
-
-                    resultList.add(entry.getValue());
-                }
-            }
-        }
+        List<String> resultList = Stream.concat(stopsMatching, alternatesMatching)
+                .collect(Collectors.toList());
 
         // ---- étape finale : trier la liste ------
 
