@@ -53,13 +53,36 @@ public final class JourneyGeoJsonConverter {
         List<Json> coords = new ArrayList<>();
         coords.add(new Json.JNumber((Math.round(stop.longitude() * 100000d)/100000d)));
         coords.add(new Json.JNumber((Math.round(stop.latitude() * 100000d)/100000d)));
-        list.add(new Json.JArray(coords));
+        Json.JArray JArrayWithCoords = new Json.JArray(coords);
+
+        // On ajoute seulement si les coordonnées sont différentes du dernier stop
+        // Dans le cas ou la liste n'est pas nulle, sinon il n'y a pas de dernier stop
+        if (!list.isEmpty()){
+            if (!list.getLast().equals(JArrayWithCoords)) {
+                list.add(JArrayWithCoords);
+            }
+        } else {
+            list.add(JArrayWithCoords);
+        }
     }
 
     private static void iStopsCoordsToArray(Journey.Leg.IntermediateStop iStop, List<Json> list){
+
         List<Json> coords = new ArrayList<>();
         coords.add(new Json.JNumber((Math.round(iStop.stop().longitude() * 100000d)/100000d)));
         coords.add(new Json.JNumber((Math.round(iStop.stop().latitude() * 100000d)/100000d)));
-        list.add(new Json.JArray(coords));
+        Json.JArray JArrayWithCoords = new Json.JArray(coords);
+
+        // On ajoute seulement si les coordonnées sont différentes du dernier stop
+        // Dans le cas ou la liste n'est pas nulle, sinon il n'y a pas de dernier stop
+        if (!list.isEmpty()){
+            if (!list.getLast().equals(JArrayWithCoords)) {
+                list.add(JArrayWithCoords);
+            }
+        } else {
+            list.add(JArrayWithCoords);
+        }
+
+
     }
 }
