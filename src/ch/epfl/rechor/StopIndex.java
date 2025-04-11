@@ -42,28 +42,28 @@ public final class StopIndex {
         // --- étape 1 : découper en subqueries------
 
         String[] originalSubQueries = rqt.split(" ");
-
-        // transformation des subQueries en subQueries RE
-        List<String> subQueriesWithRE = Arrays.stream(originalSubQueries)
-                .map(subQuery -> subQuery.chars()
-                    .mapToObj(this::transformCharToRE).collect(Collectors.joining()))
-                .toList();
-
         int flags = Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
 
-                // Filtrer et récupérer les noms dans la liste stopsList
+        // transformation des subQueries en liste de pattern RegEx
+        List<Pattern> subQueriesWithPattern = Arrays.stream(originalSubQueries)
+                .map(subQuery -> subQuery.chars()
+                    .mapToObj(this::transformCharToRE).collect(Collectors.joining()))
+                .map(subQueryRe -> Pattern.compile(subQueryRe, flags))
+                .toList();
+
+        // Filtrer et récupérer les noms dans la liste stopsList
         Stream<String> stopsMatching = stopsList.stream()
                 .filter(stopName ->
-                        subQueriesWithRE.stream().allMatch(subQuery ->
-                                Pattern.compile(subQuery, flags).matcher(stopName).find()
+                        subQueriesWithPattern.stream().allMatch(subQueryPattern ->
+                                subQueryPattern.matcher(stopName).find()
                         )
                 );
 
         // Filtrer la Map et récupérer les valeurs associées pour lesquelles la clé correspond
         Stream<String> alternatesMatching = alternateNamesMap.entrySet().stream()
                 .filter(entry ->
-                        subQueriesWithRE.stream().anyMatch(subQuery ->
-                                Pattern.compile(subQuery, flags).matcher(entry.getKey()).find()
+                        subQueriesWithPattern.stream().anyMatch(pattern ->
+                                pattern.matcher(entry.getKey()).find()
                         )
                 )
                 .map(Map.Entry::getValue);
