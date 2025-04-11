@@ -92,7 +92,7 @@ public final class StopIndex {
      * @param stopName nom d'arrêt, nom de requête
      * @return score de compatibilité (int)
      */
-    private int score(String stopName, String subquery){
+    private int score(String stopName, Pattern subqueryRe){
         int score  = 0;
 
     }
