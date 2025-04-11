@@ -17,11 +17,8 @@ public final class StopIndex {
     // TODO vérifier immuabilité à la fin
 
     public static Map<Character, String> mapEquivalences = new TreeMap<>();
-
+    public final Map<String, String> alternateNamesMap;
     private final List<String> stopsList;
-
-
-
 
     public StopIndex(List<String> stopsList, Map<String, String> alternateNamesMap) {
 
@@ -34,6 +31,7 @@ public final class StopIndex {
         mapEquivalences.put('u', "[uúùûü]");
 
         this.stopsList = stopsList;
+        this.alternateNamesMap = alternateNamesMap;
 
     }
 
