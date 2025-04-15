@@ -13,15 +13,11 @@ import java.util.stream.Stream;
  * @author Axel Verga (398787)
  */
 public final class StopIndex {
-    // TODO vérifier immuabilité à la fin
 
-    public static Map<Character, String> mapEquivalences = new TreeMap<>();
-    public Map<String, String> alternateNamesMap = new TreeMap<>();
+    private static final Map<Character, String> mapEquivalences = new TreeMap<>();
+    private final Map<String, String> alternateNamesMap;
 
     private final List<String> stopsList;
-
-
-
 
     public StopIndex(List<String> stopsList, Map<String, String> alternateNamesMap) {
 
@@ -38,12 +34,27 @@ public final class StopIndex {
 
     }
 
+    /**
+     * Retourne la liste des arrêts correspondants à la requête
+     * @param rqt requête émise par l'utilisateur
+     * @param maxNumbersOfStopsToReturn nombre maximal de propositions affichées
+     * @return list des noms d'arrêts correspondant à la requête
+     */
     public List<String> stopsMatching(String rqt, int maxNumbersOfStopsToReturn) {
+
+        Preconditions.checkArgument(maxNumbersOfStopsToReturn > 0);
 
         // --- étape 1 : découper en subqueries------
 
+        // TODO case vérifier
+        // flags par défaut
+        final int flags;
         String[] originalSubQueries = rqt.split(" ");
-        int flags = Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
+        if (rqt.toLowerCase().equals(rqt)) {
+            flags = Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
+        } else {
+            flags = Pattern.UNICODE_CASE;
+        }
 
         // transformation des subQueries en liste de pattern RegEx
         List<Pattern> subQueriesWithPattern = Arrays.stream(originalSubQueries)
@@ -56,20 +67,16 @@ public final class StopIndex {
         Stream<String> stopsMatching = stopsList.stream()
                 .filter(stopName ->
                         subQueriesWithPattern.stream().allMatch(subQueryPattern ->
-                                subQueryPattern.matcher(stopName).find()
-                        )
+                                subQueryPattern.matcher(stopName).find())
                 );
 
         // Filtrer la Map et récupérer les valeurs associées pour lesquelles la clé correspond
         Stream<String> alternatesMatching = alternateNamesMap.entrySet().stream()
                 .filter(entry ->
-                        subQueriesWithPattern.stream().anyMatch(pattern ->
-                                pattern.matcher(entry.getKey()).find()
-                        )
+                        subQueriesWithPattern.stream().anyMatch(subQueryPattern ->
+                                subQueryPattern.matcher(entry.getKey()).find())
                 )
                 .map(Map.Entry::getValue);
-
-        System.out.println("ss");
 
         return Stream.concat(stopsMatching, alternatesMatching)
                 // on enlève les doublons
@@ -78,6 +85,7 @@ public final class StopIndex {
                 .sorted((stopName1, stopName2) -> Integer.compare(
                         score(stopName2, subQueriesWithPattern),
                         score(stopName1, subQueriesWithPattern)))
+                .limit(maxNumbersOfStopsToReturn)
                 .collect(Collectors.toList());
     }
 
@@ -87,6 +95,9 @@ public final class StopIndex {
      * @return score de compatibilité (int)
      */
     private int score(String stopName, List<Pattern> subQueries) {
+
+        Preconditions.checkArgument(!stopName.isEmpty());
+
         int finalScore = 0;
 
         for (Pattern subQueryRE : subQueries) {
@@ -101,13 +112,18 @@ public final class StopIndex {
             int multiplier = 1;
 
             // 1) subScore += sub.length() / stop.length()
-            subScore += (int) Math.floor(100.0 *((double)(matcher.end() - matcher.start()) / stopName.length()));
+            subScore += (int) Math.floor(100 *((double)(matcher.end() - matcher.start()) / stopName.length()));
 
-            // 2) Si début : multiplier * 4
-            if (matcher.start() == 0) multiplier *= 4;
+            // 2) Si début ou espace avant: multiplier * 4
+            if (matcher.start() == 0 || !Character.isLetter(stopName.charAt(matcher.start()-1))) {
+                multiplier *= 4;
+            }
 
-            // 3) Si fin : multiplier * 2
-            if (matcher.end() == stopName.length() -1) multiplier *= 2;
+
+            // 3) Si fin ou espace après : multiplier * 2
+            if (matcher.end() == stopName.length() || !Character.isLetter(stopName.charAt(matcher.end()))) {
+                multiplier *= 2;
+            }
 
             finalScore += subScore * multiplier;
 
