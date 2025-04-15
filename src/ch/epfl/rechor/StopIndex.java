@@ -69,7 +69,7 @@ public final class StopIndex {
                 )
                 .map(Map.Entry::getValue);
 
-        System.out.println("ss");
+        System.out.println(score("Mézières FR, village", subQueriesWithPattern));
 
         return Stream.concat(stopsMatching, alternatesMatching)
                 // on enlève les doublons
@@ -104,7 +104,7 @@ public final class StopIndex {
             subScore += (int) Math.floor(100.0 *((double)(matcher.end() - matcher.start()) / stopName.length()));
 
             // 2) Si début : multiplier * 4
-            if (matcher.start() == 0) multiplier *= 4;
+            if (matcher.start() == 0 || Character.isLetter(stopName.charAt(matcher.start()-1))) multiplier *= 4;
 
             // 3) Si fin : multiplier * 2
             if (matcher.end() == stopName.length() -1) multiplier *= 2;
