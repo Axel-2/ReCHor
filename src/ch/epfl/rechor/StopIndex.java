@@ -110,7 +110,7 @@ public final class StopIndex {
 
 
             // 3) Si fin ou espace après : multiplier * 2
-            if (matcher.end() == stopName.length() - 1 || !Character.isLetter(stopName.length())) {
+            if (matcher.end() == stopName.length() - 1 || !Character.isLetter(stopName.charAt(matcher.end()))) {
                 multiplier *= 2;
             }
 
