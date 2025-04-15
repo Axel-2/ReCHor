@@ -50,10 +50,12 @@ public final class StopIndex {
         // flags par défaut
         final int flags;
         String[] originalSubQueries = rqt.split(" ");
+
+        // TODO A SUPPRIMER ET FAIRE POUR LES SUBREQUETES
         if (rqt.toLowerCase().equals(rqt)) {
             flags = Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
         } else {
-            flags = Pattern.UNICODE_CASE;
+            flags = Pattern.UNICODE_CASE; // TODO (JATTENDS ED) MAIS ICI SI UNE SUB EST EN MAJ, TOUTE LES AUTRES DEVIENNENT SENSITIVE
         }
 
         // transformation des subQueries en liste de pattern RegEx
@@ -73,7 +75,7 @@ public final class StopIndex {
         // Filtrer la Map et récupérer les valeurs associées pour lesquelles la clé correspond
         Stream<String> alternatesMatching = alternateNamesMap.entrySet().stream()
                 .filter(entry ->
-                        subQueriesWithPattern.stream().anyMatch(subQueryPattern ->
+                        subQueriesWithPattern.stream().allMatch(subQueryPattern -> // TODO j'ai mis allMatch c'est comme au dessus
                                 subQueryPattern.matcher(entry.getKey()).find())
                 )
                 .map(Map.Entry::getValue);
