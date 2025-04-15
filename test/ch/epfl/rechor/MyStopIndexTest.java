@@ -79,7 +79,7 @@ class MyStopIndexTest {
                 "Mézières VD, village",
                 "Mézery-près-Donneloye, village"
         );
-        List<String> actual = stopIndex.stopsMatching("mez vil", 5);
+        List<String> actual = stopIndex.stopsMatching("mez age", 1);
 
         // Trier pour comparer indépendamment de l'ordre
         assertEquals(expected, actual, "Multi-subquery match failed or elements differ");
