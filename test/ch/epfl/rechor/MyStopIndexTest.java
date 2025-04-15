@@ -42,9 +42,10 @@ class MyStopIndexTest {
 
     @Test
     void stopsMatchingFindsExactMatch() {
-        List<String> expected = List.of("Lausanne");
+        List<String> expected = List.of("Mézières FR, village" , "Mézières VD, village", "Mézery-près-Donneloye, village"
+                , "Charleville-Mézières");
         List<String> actual = stopIndex.stopsMatching("mez vil", 5);
-        assertEquals(expected, actual); // Vérifie contenu et ordre
+        assertArrayEquals(expected.toArray(), actual.toArray()); // Vérifie contenu et ordre
     }
 
     @Test
@@ -63,7 +64,6 @@ class MyStopIndexTest {
         List<String> expected = List.of(
                 "Mézières FR, village",
                 "Mézières VD, village",
-                "Mézery-près-Donneloye, village",
                 "Charleville-Mézières"
         );
         List<String> actual = stopIndex.stopsMatching("Mezieres", 5);
@@ -75,9 +75,7 @@ class MyStopIndexTest {
     @Test
     void stopsMatchingWithMultipleSubQueries() {
         List<String> expected = List.of(
-                "Mézières FR, village",
-                "Mézières VD, village",
-                "Mézery-près-Donneloye, village"
+                "Mézières FR, village"
         );
         List<String> actual = stopIndex.stopsMatching("mez age", 1);
 

@@ -15,8 +15,8 @@ import java.util.stream.Stream;
 public final class StopIndex {
     // TODO vérifier immuabilité à la fin
 
-    public static Map<Character, String> mapEquivalences = new TreeMap<>();
-    public Map<String, String> alternateNamesMap = new TreeMap<>();
+    private final static Map<Character, String> mapEquivalences = new TreeMap<>();
+    private Map<String, String> alternateNamesMap = new TreeMap<>();
 
     private final List<String> stopsList;
 
