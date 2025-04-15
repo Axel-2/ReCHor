@@ -20,9 +20,6 @@ public final class StopIndex {
 
     private final List<String> stopsList;
 
-
-
-
     public StopIndex(List<String> stopsList, Map<String, String> alternateNamesMap) {
 
         // remplissage du tableau
@@ -40,10 +37,17 @@ public final class StopIndex {
 
     public List<String> stopsMatching(String rqt, int maxNumbersOfStopsToReturn) {
 
-        // --- étape 1 : découper en subqueries------
+        Preconditions.checkArgument(maxNumbersOfStopsToReturn > 0);
 
+        // --- étape 1 : découper en subqueries------
+        // flags par défaut
+        final int flags;
         String[] originalSubQueries = rqt.split(" ");
-        int flags = Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
+        if (rqt.toLowerCase().equals(rqt)) {
+            flags = Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
+        } else {
+            flags = 0;
+        }
 
         // transformation des subQueries en liste de pattern RegEx
         List<Pattern> subQueriesWithPattern = Arrays.stream(originalSubQueries)
