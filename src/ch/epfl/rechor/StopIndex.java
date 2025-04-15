@@ -13,7 +13,6 @@ import java.util.stream.Stream;
  * @author Axel Verga (398787)
  */
 public final class StopIndex {
-    // TODO vérifier immuabilité à la fin
 
     private static final Map<Character, String> mapEquivalences = new TreeMap<>();
     private final Map<String, String> alternateNamesMap;
@@ -46,13 +45,15 @@ public final class StopIndex {
         Preconditions.checkArgument(maxNumbersOfStopsToReturn > 0);
 
         // --- étape 1 : découper en subqueries------
+
+        // TODO case vérifier
         // flags par défaut
         final int flags;
         String[] originalSubQueries = rqt.split(" ");
         if (rqt.toLowerCase().equals(rqt)) {
             flags = Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
         } else {
-            flags = 0;
+            flags = Pattern.UNICODE_CASE;
         }
 
         // transformation des subQueries en liste de pattern RegEx

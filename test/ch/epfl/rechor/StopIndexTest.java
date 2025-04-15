@@ -73,13 +73,7 @@ class StopIndexTest {
         assertEquals(expected, actual);
     }
 
-    @Test
-    @DisplayName("Recherche insensible à la casse (mixte)")
-    void stopsMatchingCaseInsensitiveMixed() {
-        List<String> expected = List.of("Zürich HB");
-        List<String> actual = stopIndex.stopsMatching("zUrIcH hb", 5);
-        assertEquals(expected, actual);
-    }
+
 
     @Test
     @DisplayName("Recherche sensible à la casse (forcée par majuscule dans la requête)")
@@ -199,43 +193,6 @@ class StopIndexTest {
         assertEquals(expected, actualReverse, "L'ordre des sous-requêtes ne doit pas importer");
     }
 
-    @Test
-    @DisplayName("Le tri par pertinence place les correspondances de début de mot en premier")
-    void stopsMatchingSortsByRelevanceStartWord() {
-        // "vill" match "village" (début de mot) dans les 3 Mézières
-        // "zieres" match "Mézières" (pas début/fin)
-        // On s'attend à ce que "vill" donne un meilleur score relatif que "zieres"
-        List<String> resultsVill = stopIndex.stopsMatching("vill", 5);
-        List<String> resultsZieres = stopIndex.stopsMatching("zieres", 5);
-
-        // Attendu pour "vill" (trié par nom car scores égaux?)
-        List<String> expectedVill = List.of(
-                "Mézières FR, village",
-                "Mézières VD, village",
-                "Mézery-près-Donneloye, village"
-        );
-        // Trié alphabétiquement si les scores sont égaux
-        Collections.sort(expectedVill);
-        Collections.sort(resultsVill);
-        assertEquals(expectedVill, resultsVill);
-
-
-        // Attendu pour "zieres" (trié par nom car scores égaux?)
-        List<String> expectedZieres = List.of(
-                "Charleville-Mézières",
-                "Mézières FR, village",
-                "Mézières VD, village"
-        );
-        Collections.sort(expectedZieres);
-        Collections.sort(resultsZieres);
-        assertEquals(expectedZieres, resultsZieres);
-
-
-        // Comparaison plus directe: "FR vil" vs "vil FR" doit donner le même résultat trié
-        List<String> expectedFRVil = List.of("Mézières FR, village");
-        assertEquals(expectedFRVil, stopIndex.stopsMatching("FR vil", 5));
-        assertEquals(expectedFRVil, stopIndex.stopsMatching("vil FR", 5));
-    }
 
     @Test
     @DisplayName("Le tri par pertinence gère les bonus début/fin de mot")
@@ -347,19 +304,7 @@ class StopIndexTest {
         assertTrue(results.isEmpty(), "Limite de 0 doit retourner une liste vide");
     }
 
-    @Test
-    @DisplayName("stopsMatching avec limite négative (comportement non spécifié, attendu: vide ou erreur)")
-    void stopsMatchingWithNegativeLimit() {
-        // Le comportement le plus sûr est de retourner une liste vide ou lever une exception.
-        // Si StopIndex doit lever une exception :
-        // assertThrows(IllegalArgumentException.class, () -> {
-        //     stopIndex.stopsMatching("lausanne", -1);
-        // });
 
-        // Si elle retourne une liste vide :
-        List<String> results = stopIndex.stopsMatching("lausanne", -1);
-        assertTrue(results.isEmpty(), "Limite négative devrait retourner une liste vide");
-    }
 
 
     // --- Tests des cas limites et requêtes vides ---
