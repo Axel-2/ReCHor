@@ -15,8 +15,8 @@ import java.util.stream.Stream;
 public final class StopIndex {
     // TODO vérifier immuabilité à la fin
 
-    private final static Map<Character, String> mapEquivalences = new TreeMap<>();
-    private Map<String, String> alternateNamesMap = new TreeMap<>();
+    private static final Map<Character, String> mapEquivalences = new TreeMap<>();
+    private final Map<String, String> alternateNamesMap;
 
     private final List<String> stopsList;
 
@@ -56,15 +56,14 @@ public final class StopIndex {
         Stream<String> stopsMatching = stopsList.stream()
                 .filter(stopName ->
                         subQueriesWithPattern.stream().allMatch(subQueryPattern ->
-                                subQueryPattern.matcher(stopName).find()
-                        )
+                                subQueryPattern.matcher(stopName).find())
                 );
 
         // Filtrer la Map et récupérer les valeurs associées pour lesquelles la clé correspond
         Stream<String> alternatesMatching = alternateNamesMap.entrySet().stream()
                 .filter(entry ->
-                        subQueriesWithPattern.stream().anyMatch(pattern ->
-                                pattern.matcher(entry.getKey()).find())
+                        subQueriesWithPattern.stream().anyMatch(subQueryPattern ->
+                                subQueryPattern.matcher(entry.getKey()).find())
                 )
                 .map(Map.Entry::getValue);
 
