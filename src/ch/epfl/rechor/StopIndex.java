@@ -64,12 +64,9 @@ public final class StopIndex {
         Stream<String> alternatesMatching = alternateNamesMap.entrySet().stream()
                 .filter(entry ->
                         subQueriesWithPattern.stream().anyMatch(pattern ->
-                                pattern.matcher(entry.getKey()).find()
-                        )
+                                pattern.matcher(entry.getKey()).find())
                 )
                 .map(Map.Entry::getValue);
-
-        System.out.println("ss");
 
         return Stream.concat(stopsMatching, alternatesMatching)
                 // on enlève les doublons
@@ -78,6 +75,7 @@ public final class StopIndex {
                 .sorted((stopName1, stopName2) -> Integer.compare(
                         score(stopName2, subQueriesWithPattern),
                         score(stopName1, subQueriesWithPattern)))
+                .limit(maxNumbersOfStopsToReturn)
                 .collect(Collectors.toList());
     }
 
@@ -87,6 +85,9 @@ public final class StopIndex {
      * @return score de compatibilité (int)
      */
     private int score(String stopName, List<Pattern> subQueries) {
+
+        Preconditions.checkArgument(!stopName.isEmpty());
+
         int finalScore = 0;
 
         for (Pattern subQueryRE : subQueries) {
@@ -110,7 +111,7 @@ public final class StopIndex {
 
 
             // 3) Si fin ou espace après : multiplier * 2
-            if (matcher.end() == stopName.length() - 1 || !Character.isLetter(stopName.length())) {
+            if (matcher.end() == stopName.length() || !Character.isLetter(stopName.charAt(matcher.end()))) {
                 multiplier *= 2;
             }
 
