@@ -35,6 +35,12 @@ public final class StopIndex {
 
     }
 
+    /**
+     * Retourne la liste des arrêts correspondants à la requête
+     * @param rqt requête émise par l'utilisateur
+     * @param maxNumbersOfStopsToReturn nombre maximal de propositions affichées
+     * @return list des noms d'arrêts correspondant à la requête
+     */
     public List<String> stopsMatching(String rqt, int maxNumbersOfStopsToReturn) {
 
         Preconditions.checkArgument(maxNumbersOfStopsToReturn > 0);
