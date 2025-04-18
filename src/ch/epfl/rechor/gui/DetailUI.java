@@ -23,6 +23,7 @@ import java.util.Objects; // Pour gérer le chemin CSS
  */
 public record DetailUI(Node rootNode) {
 
+    public static final String NOJOURNEYID = "no-journey";
 
     /**
      * Fonction dont le but est de créer le graphe de
@@ -32,7 +33,16 @@ public record DetailUI(Node rootNode) {
     public static DetailUI create(ObservableValue<Journey> journeyObservableValue) {
 
         // Noeud principal
-        //StackPane scrollPane= new ScrollPane();
+        ScrollPane scrollPane= new ScrollPane();
+
+        StackPane stackPane = new StackPane();
+        scrollPane.setContent(stackPane);
+
+        VBox noJourney = new VBox();
+        noJourney.setId(NOJOURNEYID);
+        VBox existJourney = new VBox();
+
+
 
         GridPane gridPane = new GridPane();
 
@@ -54,6 +64,7 @@ public record DetailUI(Node rootNode) {
         //GridPane.setRowIndex(,3);
 
 
-        return new DetailUI(gridPane);
+
+        return new DetailUI(scrollPane);
     }
 }
