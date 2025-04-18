@@ -3,6 +3,8 @@ package ch.epfl.rechor.gui; // Mettre dans le bon package
 import ch.epfl.rechor.FormatterFr;
 import ch.epfl.rechor.Json; // Importer si nécessaire pour Journey plus tard
 import ch.epfl.rechor.journey.Journey; // Importer Journey
+import ch.epfl.rechor.journey.JourneyGeoJsonConverter;
+import ch.epfl.rechor.journey.JourneyIcalConverter;
 import javafx.beans.value.ObservableValue;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -16,7 +18,10 @@ import javafx.scene.shape.Line;   // Importer pour plus tard
 import javafx.scene.text.Text;
 import javafx.beans.property.SimpleObjectProperty; // Pour le test initial
 
+import java.net.URI;
 import java.util.Objects; // Pour gérer le chemin CSS
+
+import static java.awt.Desktop.getDesktop;
 
 /**
  * Classe qui représente la partie de l'interface
@@ -29,9 +34,12 @@ public record DetailUI(Node rootNode) {
     // ID's
     private static final String NO_JOURNEY_ID = "no-journey";
     private static final String DETAIL_ID = "detail";
+    private static final String HBOX_ID = "buttons";
 
     // Textes
     private static final String NO_JOURNEY_TEXT = "Aucun voyage";
+    private static final String MAP_BUTTON_TEXT = "Carte";
+    private static final String CALENDAR_BUTTON_TEXT = "Calendrier";
 
 
     /**
@@ -102,9 +110,15 @@ public record DetailUI(Node rootNode) {
         //GridPane.setRowIndex(,3);
 
 
+
+        // Boutons map et calendrier
+        Button mapButton = new Button(MAP_BUTTON_TEXT);
+        Button calendarButton = new Button(CALENDAR_BUTTON_TEXT);
+
+
         // (4) Stack pane et HBox
-        ScrollPane scrollPane2 = new ScrollPane();
-        HBox hbox = new HBox();
+        StackPane stackPane2 = new StackPane(gridPane);
+        HBox buttonsBox = new HBox(mapButton, calendarButton);
 
 
 
@@ -113,7 +127,7 @@ public record DetailUI(Node rootNode) {
 
         // (3) Deux box (enfants du stack pane)
         VBox noJourneyBox = new VBox(noJourneyBoxText);
-        VBox journeyBox = new VBox(gridPane); // TODO mettre la stackPane
+        VBox journeyBox = new VBox(stackPane2, buttonsBox);
 
         // On affiche la bonne box en fonction de la présence d'un voyage ou non
         boolean isJourneyToDisplay = (journey != null);
@@ -142,7 +156,24 @@ public record DetailUI(Node rootNode) {
         // ID's
         scrollPane.setId(DETAIL_ID);
         noJourneyBox.setId(NO_JOURNEY_ID);
+        buttonsBox.setId(HBOX_ID);
 
         return new DetailUI(scrollPane);
+    }
+
+    private static void mapClick(Journey j){
+        try {
+            URI url = new URI(
+                    "https",
+                    "umap.osm.ch",
+                    "/fr/map",
+                    "data=" + JourneyGeoJsonConverter.toGeoJson(j),
+                    null
+            );
+
+            getDesktop().browse(url);
+        } catch(Exception e){
+            System.out.println("Erreur dans l'ouverture du browser");
+        }
     }
 }
