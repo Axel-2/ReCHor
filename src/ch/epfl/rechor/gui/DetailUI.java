@@ -71,7 +71,7 @@ public record DetailUI(Node rootNode) {
 
 
         // (5) GridPane
-        GridPane gridPane = new GridPane();
+        GridPane gridPane = new LineGridPane(annotationsPane, circles);
         gridPane.getStylesheets().add("legs");
 
         int currentRow = 0;
@@ -115,7 +115,6 @@ public record DetailUI(Node rootNode) {
                     ++currentRow;
 
                     // Partie 2 Image et destination
-                    // TODO l'image est cassée
                     ImageView icon =  new ImageView(VehicleIcons.iconFor(transportLeg.vehicle()));
                     icon.setFitHeight(31);
                     icon.setFitWidth(31);
@@ -304,6 +303,13 @@ public record DetailUI(Node rootNode) {
                         first.getBoundsInParent().getCenterY(),
                         second.getBoundsInParent().getCenterX(),
                         second.getBoundsInParent().getCenterY());
+
+                // Modifications selon énoncé
+                line.setStroke(javafx.scene.paint.Color.RED);
+                line.setStrokeWidth(2);
+
+                // On l'ajoute
+                annotationsPane.getChildren().add(line);
             }
         }
     }
