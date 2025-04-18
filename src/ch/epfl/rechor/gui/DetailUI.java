@@ -17,8 +17,14 @@ import javafx.scene.shape.Circle; // Importer pour plus tard
 import javafx.scene.shape.Line;   // Importer pour plus tard
 import javafx.scene.text.Text;
 import javafx.beans.property.SimpleObjectProperty; // Pour le test initial
+import javafx.stage.FileChooser;
 
+import java.io.File;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.time.LocalDate;
+import java.util.Date;
 import java.util.Objects; // Pour gérer le chemin CSS
 
 import static java.awt.Desktop.getDesktop;
@@ -119,6 +125,11 @@ public record DetailUI(Node rootNode) {
             mapClick(journey);
         });
 
+        calendarButton.setOnAction(event -> {
+            calendarClick(journey,calendarButton);
+        });
+
+
 
 
 
@@ -167,6 +178,7 @@ public record DetailUI(Node rootNode) {
         return new DetailUI(scrollPane);
     }
 
+    // méthode privée pour la gestion d'un clic sur le bouton carte
     private static void mapClick(Journey j){
         try {
             URI url = new URI(
@@ -180,6 +192,21 @@ public record DetailUI(Node rootNode) {
             getDesktop().browse(url);
         } catch(Exception e){
             System.out.println("Erreur dans l'ouverture du browser");
+        }
+    }
+    // méthode privée pour la gestion d'un clic sur le bouton calendrier
+    private static void calendarClick(Journey j, Node node){
+        try {
+            FileChooser fileChooser = new FileChooser();
+            String calendar = JourneyIcalConverter.toIcalendar(j);
+            String title = String.format("voyage_%s.ics", LocalDate.now());
+            fileChooser.setInitialFileName(title);
+
+            File file = fileChooser.showSaveDialog(node.getScene().getWindow());
+            Files.writeString(file.toPath(), calendar, StandardCharsets.UTF_8);
+
+        } catch (Exception e) {
+            System.out.println("Erreur dans l'écriture du calendrier");
         }
     }
 }
