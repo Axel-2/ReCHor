@@ -4,6 +4,7 @@ import ch.epfl.rechor.journey.Journey;
 import javafx.beans.Observable;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.Node;
+import javafx.scene.layout.GridPane;
 
 /**
  * Classe qui représente la partie de l'interface
@@ -21,7 +22,10 @@ public record DetailUI(Node rootNode) {
      */
     public static DetailUI create(ObservableValue<Journey> journeyObservableValue) {
 
-        
+        return GridPane();
+
+
+
 
     }
 }
