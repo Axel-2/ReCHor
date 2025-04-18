@@ -13,7 +13,6 @@ import java.util.stream.Stream;
  * @author Axel Verga (398787)
  */
 public final class StopIndex {
-    // TODO vérifier immuabilité à la fin
 
     private static final Map<Character, String> mapEquivalences = new TreeMap<>();
     private final Map<String, String> alternateNamesMap;
