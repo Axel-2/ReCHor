@@ -8,6 +8,8 @@ import javafx.beans.value.ObservableValue;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
+import javafx.scene.shape.Circle;
+import javafx.scene.shape.Line;
 import javafx.scene.text.Text;
 import javafx.beans.property.SimpleObjectProperty; // Pour le test initial
 import javafx.stage.FileChooser;
@@ -17,7 +19,9 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Objects; // Pour gérer le chemin CSS
 
 import static java.awt.Desktop.getDesktop;
@@ -34,6 +38,10 @@ public record DetailUI(Node rootNode) {
     private static final String NO_JOURNEY_ID = "no-journey";
     private static final String DETAIL_ID = "detail";
     private static final String HBOX_ID = "buttons";
+    private static final String LEGS_ID = "legs";
+    private static final String ANNOTATIONS_ID = "annotations";
+
+
 
     // Textes
     private static final String NO_JOURNEY_TEXT = "Aucun voyage";
@@ -53,6 +61,14 @@ public record DetailUI(Node rootNode) {
 
 
         // ---------- Création des composants ----------- (de bas en haut)
+
+
+        // (6) Annotations
+        List<Circle> circles = new ArrayList<>();
+
+        Pane annotationsPane = new Pane();
+
+
 
 
         // (5) GridPane
@@ -199,6 +215,8 @@ public record DetailUI(Node rootNode) {
         scrollPane.setId(DETAIL_ID);
         noJourneyBox.setId(NO_JOURNEY_ID);
         buttonsBox.setId(HBOX_ID);
+        gridPane.setId(LEGS_ID);
+        annotationsPane.setId(ANNOTATIONS_ID);
 
         return new DetailUI(scrollPane);
     }
@@ -232,6 +250,39 @@ public record DetailUI(Node rootNode) {
 
         } catch (Exception e) {
             System.out.println("Erreur dans l'écriture du calendrier");
+        }
+    }
+
+    private static class LineGridPane extends GridPane{
+        private final Pane annotationsPane;
+        private final List<Circle> circles;
+
+        public LineGridPane(Pane annotationsPane, List<Circle> circles){
+            this.annotationsPane = annotationsPane;
+            this.circles = circles;
+        }
+
+        @Override
+        protected void layoutChildren(){
+            super.layoutChildren();
+
+            if(circles.size() % 2 != 0){
+                System.out.println("Nombre de cercles impair...");
+                return;
+            }
+
+            // Pour chaque paire de cercle
+            for (int i = 0; i < circles.size(); i += 2) {
+                Circle first = circles.get(i);
+                Circle second = circles.get(i+1);
+
+                // Création de la ligne
+                Line line = new Line(
+                        first.getBoundsInParent().getCenterX(),
+                        first.getBoundsInParent().getCenterY(),
+                        second.getBoundsInParent().getCenterX(),
+                        second.getBoundsInParent().getCenterY());
+            }
         }
     }
 }
