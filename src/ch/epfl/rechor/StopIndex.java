@@ -45,20 +45,26 @@ public final class StopIndex {
         Preconditions.checkArgument(maxNumbersOfStopsToReturn > 0);
 
         // --- étape 1 : découper en subqueries------
-        // flags par défaut
-        final int flags;
+
+
+
         String[] originalSubQueries = rqt.split(" ");
-        if (rqt.toLowerCase().equals(rqt)) {
-            flags = Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
-        } else {
-            flags = 0;
-        }
+
 
         // transformation des subQueries en liste de pattern RegEx
         List<Pattern> subQueriesWithPattern = Arrays.stream(originalSubQueries)
-                .map(subQuery -> subQuery.chars()
-                    .mapToObj(this::transformCharToRE).collect(Collectors.joining()))
-                .map(subQueryRe -> Pattern.compile(subQueryRe, flags))
+                .filter(subQuery -> !subQuery.isEmpty())
+                .map(subQuery -> {
+                    // Gestion du case sensitive pour chaque sous-requête
+                    int flags;
+                    boolean containsCapitalLetter = !subQuery.equals(subQuery.toLowerCase());
+                    if (containsCapitalLetter) {flags = Pattern.UNICODE_CASE;}
+                    else {flags = Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;}
+                    String subQueryRE = subQuery.chars()
+                            .mapToObj(this::transformCharToRE).collect(Collectors.joining());
+                    return Pattern.compile(subQueryRE, flags);
+
+                })
                 .toList();
 
         // Filtrer et récupérer les noms dans la liste stopsList
@@ -71,7 +77,7 @@ public final class StopIndex {
         // Filtrer la Map et récupérer les valeurs associées pour lesquelles la clé correspond
         Stream<String> alternatesMatching = alternateNamesMap.entrySet().stream()
                 .filter(entry ->
-                        subQueriesWithPattern.stream().anyMatch(subQueryPattern ->
+                        subQueriesWithPattern.stream().allMatch(subQueryPattern ->
                                 subQueryPattern.matcher(entry.getKey()).find())
                 )
                 .map(Map.Entry::getValue);
