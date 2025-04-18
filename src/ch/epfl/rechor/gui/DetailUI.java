@@ -22,7 +22,14 @@ public record DetailUI(Node rootNode) {
      */
     public static DetailUI create(ObservableValue<Journey> journeyObservableValue) {
 
+<<<<<<< HEAD
         GridPane gridPane = new GridPane();
+=======
+        return GridPane();
+
+
+
+>>>>>>> 867ece0595b56bd7a61f0b6263a591695781236b
 
         // colonne 0: heures de départ et d'arrivée, et icône du véhicule
        // GridPane.setRowIndex(,0 );
