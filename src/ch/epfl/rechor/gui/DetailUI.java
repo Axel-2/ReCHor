@@ -6,6 +6,7 @@ import ch.epfl.rechor.journey.Journey; // Importer Journey
 import javafx.beans.value.ObservableValue;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
+import javafx.scene.control.Accordion;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
@@ -58,12 +59,28 @@ public record DetailUI(Node rootNode) {
                 String text = FormatterFr.formatLeg((Journey.Leg.Foot) leg);
                 Text walkText = new Text(text);
 
+                // occupe les colonnes 2 à 3 sur une seule ligne
                 gridPane.add(walkText, 2, row);
 
             } else {
-                Text depTime = new Text(FormatterFr.formatTime(leg.depTime()));
 
+                // ligne 1 heure et nom
+                Text depTime = new Text(FormatterFr.formatTime(leg.depTime()));
                 gridPane.add(depTime, 0, row);
+
+                Text depStation = new Text(leg.depStop().name());
+                gridPane.add(depStation, 2, row);
+
+                Text depPlatform = new Text(FormatterFr.formatPlatformName(leg.depStop()));
+                gridPane.add(depPlatform, 3, row);
+                depPlatform.getStyleClass().add("departure");
+
+                if (!leg.intermediateStops().isEmpty()) {
+                    Accordion acc = new Accordion();
+
+                    gridPane.add(acc, 2, row, 2, 1);
+                }
+
             }
 
             ++row;
