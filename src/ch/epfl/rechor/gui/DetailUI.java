@@ -184,21 +184,6 @@ public record DetailUI(Node rootNode) {
 
 
 
-            // colonne 0: heures de départ et d'arrivée, et icône du véhicule
-        // GridPane.setRowIndex(,0 );
-
-
-        // colonne 1: cercles de départ et d'arrivée
-        // GridPane.setRowIndex(,1);
-
-        // colonne 2: nom de la gare de départ et d'arrivée
-        // GridPane.setRowIndex(,2);
-
-        // colonne 3: voie/quai de départ et d'arrivée
-        //GridPane.setRowIndex(,3);
-
-
-
         // Boutons map et calendrier
         Button mapButton = new Button(MAP_BUTTON_TEXT);
         Button calendarButton = new Button(CALENDAR_BUTTON_TEXT);
@@ -212,13 +197,9 @@ public record DetailUI(Node rootNode) {
         });
 
 
-
-
-
         // (4) Stack pane et HBox
-        StackPane stackPane2 = new StackPane(gridPane, annotationsPane);
+        StackPane stackPane2 = new StackPane(annotationsPane,  gridPane);
         HBox buttonsBox = new HBox(mapButton, calendarButton);
-
 
 
         // (3.5) Text de la box "noJourney"
@@ -306,6 +287,9 @@ public record DetailUI(Node rootNode) {
         @Override
         protected void layoutChildren(){
             super.layoutChildren();
+
+            // 1) Vider l’ancien contenu
+            annotationsPane.getChildren().clear();
 
             if(circles.size() % 2 != 0){
                 System.out.println("Nombre de cercles impair...");
