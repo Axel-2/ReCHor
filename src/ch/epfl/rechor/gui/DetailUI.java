@@ -1,10 +1,19 @@
-package ch.epfl.rechor.gui;
+package ch.epfl.rechor.gui; // Mettre dans le bon package
 
-import ch.epfl.rechor.journey.Journey;
-import javafx.beans.Observable;
+import ch.epfl.rechor.Json; // Importer si nécessaire pour Journey plus tard
+import ch.epfl.rechor.journey.Journey; // Importer Journey
 import javafx.beans.value.ObservableValue;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.layout.GridPane;
+import javafx.scene.control.Button;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.layout.*;
+import javafx.scene.shape.Circle; // Importer pour plus tard
+import javafx.scene.shape.Line;   // Importer pour plus tard
+import javafx.scene.text.Text;
+import javafx.beans.property.SimpleObjectProperty; // Pour le test initial
+
+import java.util.Objects; // Pour gérer le chemin CSS
 
 /**
  * Classe qui représente la partie de l'interface
@@ -22,14 +31,14 @@ public record DetailUI(Node rootNode) {
      */
     public static DetailUI create(ObservableValue<Journey> journeyObservableValue) {
 
-<<<<<<< HEAD
+        // Noeud principal
+        //StackPane scrollPane= new ScrollPane();
+
         GridPane gridPane = new GridPane();
-=======
-        return GridPane();
 
 
 
->>>>>>> 867ece0595b56bd7a61f0b6263a591695781236b
+
 
         // colonne 0: heures de départ et d'arrivée, et icône du véhicule
        // GridPane.setRowIndex(,0 );
