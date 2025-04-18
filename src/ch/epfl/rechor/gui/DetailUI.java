@@ -84,11 +84,16 @@ public record DetailUI(Node rootNode) {
                     gridPane.add(depStation, 2, row);
 
                     Text depPlatform = new Text(FormatterFr.formatPlatformName(transportLeg.depStop()));
-                    gridPane.add(depPlatform, 3, row);
                     depPlatform.getStyleClass().add("departure");
+                    gridPane.add(depPlatform, 3, row);
 
                     if (!leg.intermediateStops().isEmpty()) {
+
+                        // on oublie pas d'update le row
+                        ++row;
+
                         GridPane intermediateGrid = new GridPane();
+                        intermediateGrid.getStyleClass().add("intermediate-stops");
 
                         int rowIndexIntermediateSteps = 0;
                         for (Journey.Leg.IntermediateStop stop : leg.intermediateStops()) {
