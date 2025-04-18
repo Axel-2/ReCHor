@@ -112,6 +112,12 @@ public record DetailUI(Node rootNode) {
         Button mapButton = new Button(MAP_BUTTON_TEXT);
         Button calendarButton = new Button(CALENDAR_BUTTON_TEXT);
 
+        mapButton.setOnAction(event -> {
+            mapClick(journey);
+        });
+
+
+
 
         // (4) Stack pane et HBox
         StackPane stackPane2 = new StackPane(gridPane);
