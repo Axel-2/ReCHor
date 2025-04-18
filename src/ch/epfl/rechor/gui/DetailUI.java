@@ -64,7 +64,6 @@ public record DetailUI(Node rootNode) {
 
         // (6) Annotations
         List<Circle> circles = new ArrayList<>();
-
         Pane annotationsPane = new Pane();
 
 
@@ -99,10 +98,10 @@ public record DetailUI(Node rootNode) {
                     depTime.getStyleClass().add("departure");
                     gridPane.add(depTime, 0, currentRow);
 
-                    Circle cirle = new Circle();
-                    cirle.setRadius(3);
-                    circles.add(cirle);
-                    gridPane.add(cirle, 1, currentRow);
+                    Circle circle = new Circle();
+                    circle.setRadius(3);
+                    circles.add(circle);
+                    gridPane.add(circle, 1, currentRow);
 
 
                     Text depStation = new Text(leg.depStop().name());
@@ -196,7 +195,7 @@ public record DetailUI(Node rootNode) {
 
 
         // (4) Stack pane et HBox
-        StackPane stackPane2 = new StackPane(gridPane);
+        StackPane stackPane2 = new StackPane(gridPane, annotationsPane);
         HBox buttonsBox = new HBox(mapButton, calendarButton);
 
 
