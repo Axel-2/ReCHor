@@ -170,11 +170,11 @@ public record DetailUI(Node rootNode) {
                     gridPane.add(arrCircle, 1, currentRow);
 
                     // Nom de la gare d'arrivée (col. 2)
-                    Text arrStation = new Text(leg.depStop().name());
+                    Text arrStation = new Text(leg.arrStop().name());
                     gridPane.add(arrStation, 2, currentRow);
 
                     // Nom de la voie/quai d'arrivée (col. 3)
-                    Text arrPlatform = new Text(FormatterFr.formatPlatformName(transportLeg.depStop()));
+                    Text arrPlatform = new Text(FormatterFr.formatPlatformName(transportLeg.arrStop()));
                     gridPane.add(arrPlatform, 3, currentRow);
                 }
             }
