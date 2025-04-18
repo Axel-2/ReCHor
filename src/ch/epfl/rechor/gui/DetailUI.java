@@ -4,10 +4,7 @@ import ch.epfl.rechor.FormatterFr;
 import ch.epfl.rechor.journey.Journey; // Importer Journey
 import ch.epfl.rechor.journey.JourneyGeoJsonConverter;
 import ch.epfl.rechor.journey.JourneyIcalConverter;
-import ch.epfl.rechor.journey.Vehicle;
 import javafx.beans.value.ObservableValue;
-import javafx.geometry.HPos;
-import javafx.geometry.VPos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
@@ -15,7 +12,6 @@ import javafx.scene.layout.*;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import javafx.scene.text.Text;
-import javafx.beans.property.SimpleObjectProperty; // Pour le test initial
 import javafx.stage.FileChooser;
 
 import java.io.File;
@@ -24,7 +20,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Objects; // Pour gérer le chemin CSS
 
@@ -79,7 +74,7 @@ public record DetailUI(Node rootNode) {
         GridPane gridPane = new GridPane();
         gridPane.getStylesheets().add("legs");
 
-        int row = 0;
+        int currentRow = 0;
 
         for (Journey.Leg leg : journey.legs()) {
 
@@ -91,7 +86,7 @@ public record DetailUI(Node rootNode) {
                     Text walkText = new Text(text);
 
                     // occupe les colonnes 2 à 3 sur une seule ligne
-                    gridPane.add(walkText, 2, row);
+                    gridPane.add(walkText, 2, currentRow);
 
                 }
 
@@ -99,18 +94,25 @@ public record DetailUI(Node rootNode) {
 
 
                     // Partie 1 départ
+
                     Text depTime = new Text(FormatterFr.formatTime(transportLeg.depTime()));
                     depTime.getStyleClass().add("departure");
-                    gridPane.add(depTime, 0, row);
+                    gridPane.add(depTime, 0, currentRow);
+
+                    Circle cirle = new Circle();
+                    cirle.setRadius(3);
+                    circles.add(cirle);
+                    gridPane.add(cirle, 1, currentRow);
+
 
                     Text depStation = new Text(leg.depStop().name());
-                    gridPane.add(depStation, 2, row);
+                    gridPane.add(depStation, 2, currentRow);
 
                     Text depPlatform = new Text(FormatterFr.formatPlatformName(transportLeg.depStop()));
                     depPlatform.getStyleClass().add("departure");
-                    gridPane.add(depPlatform, 3, row);
+                    gridPane.add(depPlatform, 3, currentRow);
 
-                    ++row;
+                    ++currentRow;
 
                     // Partie 2 Image et destination
                     // TODO l'image est cassée
@@ -118,15 +120,15 @@ public record DetailUI(Node rootNode) {
                     icon.setFitHeight(31);
                     icon.setFitWidth(31);
                     int iconRowSpan = leg.intermediateStops().isEmpty() ? 1 : 2;
-                    gridPane.add(icon, 0, row, 1, iconRowSpan);
+                    gridPane.add(icon, 0, currentRow, 1, iconRowSpan);
                     Text routeDestinationText = new Text(FormatterFr.formatRouteDestination(transportLeg));
-                    gridPane.add(routeDestinationText, 2, row, 2,1);
+                    gridPane.add(routeDestinationText, 2, currentRow, 2,1);
 
 
                     if (!leg.intermediateStops().isEmpty()) {
 
-                        // on oublie pas d'update le row
-                        ++row;
+                        // on oublie pas d'update le currentRow
+                        ++currentRow;
 
                         GridPane intermediateGrid = new GridPane();
                         intermediateGrid.getStyleClass().add("intermediate-stops");
@@ -153,12 +155,12 @@ public record DetailUI(Node rootNode) {
 
                         Accordion accordion = new Accordion(titledPane);
 
-                        gridPane.add(accordion, 2, row, 2, 1);
+                        gridPane.add(accordion, 2, currentRow, 2, 1);
                     }
                 }
             }
 
-            ++row;
+            ++currentRow;
         }
 
 
