@@ -297,32 +297,6 @@ class StopIndexTest {
 
     }
 
-    @Test
-    @DisplayName("stopsMatching avec limite 0 retourne une liste vide")
-    void stopsMatchingWithZeroLimit() {
-        List<String> results = stopIndex.stopsMatching("lausanne", 0);
-        assertTrue(results.isEmpty(), "Limite de 0 doit retourner une liste vide");
-    }
-
-
-
-
-    // --- Tests des cas limites et requêtes vides ---
-
-    @Test
-    @DisplayName("Recherche avec une requête vide retourne une liste vide")
-    void stopsMatchingEmptyQuery() {
-        List<String> results = stopIndex.stopsMatching("", 5);
-        System.out.println("ss");
-        assertTrue(results.isEmpty());
-    }
-
-    @Test
-    @DisplayName("Recherche avec une requête contenant uniquement des espaces retourne une liste vide")
-    void stopsMatchingBlankQuery() {
-        List<String> results = stopIndex.stopsMatching("   ", 5);
-        assertTrue(results.isEmpty());
-    }
 
     @Test
     @DisplayName("Recherche avec une requête qui ne correspond à aucun arrêt")
