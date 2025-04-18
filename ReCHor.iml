@@ -38,5 +38,6 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="library" name="OpenJFX 21" level="application" />
   </component>
 </module>
