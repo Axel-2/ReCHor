@@ -27,6 +27,7 @@ public record DetailUI(Node rootNode) {
         // colonne 0: heures de départ et d'arrivée, et icône du véhicule
        // GridPane.setRowIndex(,0 );
 
+
         // colonne 1: cercles de départ et d'arrivée
        // GridPane.setRowIndex(,1);
 
