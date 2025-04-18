@@ -67,8 +67,6 @@ public record DetailUI(Node rootNode) {
         Pane annotationsPane = new Pane();
 
 
-
-
         // (5) GridPane
         GridPane gridPane = new LineGridPane(annotationsPane, circles);
         gridPane.getStylesheets().add("legs");
@@ -81,9 +79,7 @@ public record DetailUI(Node rootNode) {
 
                 case Journey.Leg.Foot footLeg -> {
 
-                    String text = FormatterFr.formatLeg(footLeg);
-                    Text walkText = new Text(text);
-
+                    Text walkText = new Text(FormatterFr.formatLeg(footLeg));
                     // occupe les colonnes 2 à 3 sur une seule ligne
                     gridPane.add(walkText, 2, currentRow);
 
@@ -94,18 +90,21 @@ public record DetailUI(Node rootNode) {
 
                     // Partie 1 départ
 
+                    // Heure de départ (col. 0)
                     Text depTime = new Text(FormatterFr.formatTime(transportLeg.depTime()));
                     depTime.getStyleClass().add("departure");
                     gridPane.add(depTime, 0, currentRow);
 
+
+                    // Cercle de départ (Circle de rayon 3, col. 1)
                     Circle circle = new Circle();
                     circle.setRadius(3);
                     circles.add(circle);
                     gridPane.add(circle, 1, currentRow);
 
-
                     Text depStation = new Text(leg.depStop().name());
                     gridPane.add(depStation, 2, currentRow);
+
 
                     Text depPlatform = new Text(FormatterFr.formatPlatformName(transportLeg.depStop()));
                     depPlatform.getStyleClass().add("departure");
@@ -114,6 +113,7 @@ public record DetailUI(Node rootNode) {
                     ++currentRow;
 
                     // Partie 2 Image et destination
+                    // icône du véhicule (col. 0)
                     ImageView icon =  new ImageView(VehicleIcons.iconFor(transportLeg.vehicle()));
                     icon.setFitHeight(31);
                     icon.setFitWidth(31);
@@ -155,6 +155,27 @@ public record DetailUI(Node rootNode) {
 
                         gridPane.add(accordion, 2, currentRow, 2, 1);
                     }
+                    ++currentRow;
+
+                    // Partie 4 heure d'arrivée
+
+                    // Heure d'arrivée (col. 0)
+                    Text arrTime = new Text(FormatterFr.formatTime(transportLeg.arrTime()));
+                    gridPane.add(arrTime, 0, currentRow);
+
+                    // Cercle d'arrivée (col. 1)
+                    Circle arrCircle = new Circle();
+                    arrCircle.setRadius(3);
+                    circles.add(arrCircle);
+                    gridPane.add(arrCircle, 1, currentRow);
+
+                    // Nom de la gare d'arrivée (col. 2)
+                    Text arrStation = new Text(leg.depStop().name());
+                    gridPane.add(arrStation, 2, currentRow);
+
+                    // Nom de la voie/quai d'arrivée (col. 3)
+                    Text arrPlatform = new Text(FormatterFr.formatPlatformName(transportLeg.depStop()));
+                    gridPane.add(arrPlatform, 3, currentRow);
                 }
             }
 
