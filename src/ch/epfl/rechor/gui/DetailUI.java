@@ -1,22 +1,13 @@
 package ch.epfl.rechor.gui; // Mettre dans le bon package
 
 import ch.epfl.rechor.FormatterFr;
-import ch.epfl.rechor.Json; // Importer si nécessaire pour Journey plus tard
 import ch.epfl.rechor.journey.Journey; // Importer Journey
 import ch.epfl.rechor.journey.JourneyGeoJsonConverter;
-import ch.epfl.rechor.journey.JourneyIcalConverter;
 import javafx.beans.value.ObservableValue;
-import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.control.Accordion;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
+import javafx.scene.control.*;
 import javafx.scene.layout.*;
-import javafx.scene.shape.Circle; // Importer pour plus tard
-import javafx.scene.shape.Line;   // Importer pour plus tard
 import javafx.scene.text.Text;
-import javafx.beans.property.SimpleObjectProperty; // Pour le test initial
 
 import java.net.URI;
 import java.util.Objects; // Pour gérer le chemin CSS
@@ -58,45 +49,71 @@ public record DetailUI(Node rootNode) {
 
         // (5) GridPane
         GridPane gridPane = new GridPane();
+        gridPane.getStylesheets().add("legs");
 
         int row = 0;
 
         for (Journey.Leg leg : journey.legs()) {
 
-            if (leg instanceof Journey.Leg.Foot) {
-                String text = FormatterFr.formatLeg((Journey.Leg.Foot) leg);
-                Text walkText = new Text(text);
+            switch (leg) {
 
-                // occupe les colonnes 2 à 3 sur une seule ligne
-                gridPane.add(walkText, 2, row);
+                case Journey.Leg.Foot footLeg -> {
 
-            } else {
+                    String text = FormatterFr.formatLeg(footLeg);
+                    Text walkText = new Text(text);
 
-                // ligne 1 heure et nom
-                Text depTime = new Text(FormatterFr.formatTime(leg.depTime()));
-                gridPane.add(depTime, 0, row);
+                    // occupe les colonnes 2 à 3 sur une seule ligne
+                    gridPane.add(walkText, 2, row);
 
-                Text depStation = new Text(leg.depStop().name());
-                gridPane.add(depStation, 2, row);
-
-                Text depPlatform = new Text(FormatterFr.formatPlatformName(leg.depStop()));
-                gridPane.add(depPlatform, 3, row);
-                depPlatform.getStyleClass().add("departure");
-
-                if (!leg.intermediateStops().isEmpty()) {
-                    Accordion acc = new Accordion();
-
-                    gridPane.add(acc, 2, row, 2, 1);
                 }
 
-            }
+                case Journey.Leg.Transport transportLeg -> {
+                    // ligne 1 heure et nom
+                    Text depTime = new Text(FormatterFr.formatTime(transportLeg.depTime()));
+                    gridPane.add(depTime, 0, row);
 
+                    Text depStation = new Text(leg.depStop().name());
+                    gridPane.add(depStation, 2, row);
+
+                    Text depPlatform = new Text(FormatterFr.formatPlatformName(transportLeg.depStop()));
+                    gridPane.add(depPlatform, 3, row);
+                    depPlatform.getStyleClass().add("departure");
+
+                    if (!leg.intermediateStops().isEmpty()) {
+                        GridPane intermediateGrid = new GridPane();
+
+                        int rowIndexIntermediateSteps = 0;
+                        for (Journey.Leg.IntermediateStop stop : leg.intermediateStops()) {
+                            Text depTimeText = new Text(FormatterFr.formatTime(stop.depTime()));
+                            Text arrTimeText = new Text(FormatterFr.formatTime(stop.arrTime()));
+                            Text name = new Text(stop.stop().name());
+
+                            intermediateGrid.add(arrTimeText, 0, rowIndexIntermediateSteps);
+                            intermediateGrid.add(depTimeText, 1, rowIndexIntermediateSteps);
+                            intermediateGrid.add(name, 2, rowIndexIntermediateSteps);
+
+                            rowIndexIntermediateSteps++;
+                        }
+
+                        String title = new StringBuilder()
+                                .append(leg.intermediateStops().size())
+                                .append(" arrêts, ")
+                                .append(FormatterFr.formatDuration(leg.duration()))
+                                .toString();
+                        TitledPane titledPane = new TitledPane(title, intermediateGrid);
+
+                        Accordion accordion = new Accordion(titledPane);
+
+                        gridPane.add(accordion, 2, row, 2, 1);
+                    }
+                }
+            }
             ++row;
         }
 
 
 
-        // colonne 0: heures de départ et d'arrivée, et icône du véhicule
+            // colonne 0: heures de départ et d'arrivée, et icône du véhicule
         // GridPane.setRowIndex(,0 );
 
 
