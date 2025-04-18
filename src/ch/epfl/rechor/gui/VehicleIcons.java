@@ -3,6 +3,7 @@ package ch.epfl.rechor.gui;
 import ch.epfl.rechor.journey.Vehicle;
 import javafx.scene.image.Image;
 
+import javax.swing.text.Element;
 import java.util.EnumMap;
 import java.util.Map;
 
@@ -13,7 +14,7 @@ import java.util.Map;
  */
 public final class VehicleIcons {
 
-    private final Map<Vehicle, Image> vehicleCacheMap = new EnumMap<>(Vehicle.class);
+    private final static Map<Vehicle, Image> vehicleCacheMap = new EnumMap<>(Vehicle.class);
 
     // non instantiable
     private VehicleIcons() {}
@@ -24,7 +25,7 @@ public final class VehicleIcons {
      * @param vehicle Un type de vehicle
      * @return une image JFX
      */
-    public Image iconFor(Vehicle vehicle) {
+    public static Image iconFor(Vehicle vehicle) {
         String vehiclePath = vehicle.name() + ".png";
         return vehicleCacheMap.computeIfAbsent(
                 vehicle, k -> new Image(vehiclePath)
