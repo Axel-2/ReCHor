@@ -46,11 +46,8 @@ public final class StopIndex {
 
         // --- étape 1 : découper en subqueries------
 
-
-
         String[] originalSubQueries = rqt.split(" ");
-
-
+        
         // transformation des subQueries en liste de pattern RegEx
         List<Pattern> subQueriesWithPattern = Arrays.stream(originalSubQueries)
                 .filter(subQuery -> !subQuery.isEmpty())
