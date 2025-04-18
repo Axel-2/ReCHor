@@ -79,6 +79,9 @@ public record DetailUI(Node rootNode) {
                 Text depStation = new Text(leg.depStop().name());
                 gridPane.add(depStation, 2, row);
 
+                Text depPlatform = new Text(FormatterFr.formatPlatformName(leg.depStop()));
+                gridPane.add(depPlatform, 3, row);
+                depPlatform.getStyleClass().add("departure");
 
                 if (!leg.intermediateStops().isEmpty()) {
                     Accordion acc = new Accordion();
