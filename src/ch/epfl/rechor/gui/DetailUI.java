@@ -25,6 +25,7 @@ import java.util.Objects; // Pour gérer le chemin CSS
 
 import static java.awt.Desktop.getDesktop;
 
+// TODO 
 /**
  * Classe qui représente la partie de l'interface
  * graphique qui montre les détails d'un voyage
@@ -32,6 +33,8 @@ import static java.awt.Desktop.getDesktop;
  * @author Axel Verga (398787)
  */
 public record DetailUI(Node rootNode) {
+
+    private static final String DETAIL_CSS_PATH = "/detail.css";
 
     // ID's
     private static final String NO_JOURNEY_ID = "no-journey";
@@ -45,6 +48,10 @@ public record DetailUI(Node rootNode) {
     private static final String MAP_BUTTON_TEXT = "Carte";
     private static final String CALENDAR_BUTTON_TEXT = "Calendrier";
 
+    // Cercles
+    private final static int CIRCLE_RADIUS = 3;
+    private final static int ICON_SIZE = 31;
+
 
     /**
      * Fonction dont le but est de créer le graphe de
@@ -56,189 +63,121 @@ public record DetailUI(Node rootNode) {
         // Récupération du voyage
         Journey journey = journeyObservableValue.getValue();
 
+        ScrollPane scroll = new ScrollPane();
+        scroll.setId(DETAIL_ID);
+        scroll.getStylesheets().add(loadCSS(DETAIL_CSS_PATH));
+        scroll.setContent(buildContent(journey));
+
+        return new DetailUI(scroll);
+
+    }
+
 
         // ---------- Création des composants ----------- (de bas en haut)
+        private static Node buildContent(Journey journey) {
+            List<Circle> circles = new ArrayList<>();
+            Pane annotationsPane = new Pane();
 
+            GridPane gridPane = createLegsGrid(journey, annotationsPane, circles);
 
-        // (6) Annotations
-        List<Circle> circles = new ArrayList<>();
-        Pane annotationsPane = new Pane();
+            Button mapBtn = new Button(HBOX_ID);
+            mapBtn.setOnAction(e -> mapClick(journey));
+            Button calBtn = new Button(CALENDAR_BUTTON_TEXT);
+            calBtn.setOnAction(e -> calendarClick(journey, calBtn));
+            HBox btnBox = new HBox(mapBtn, calBtn);
+            btnBox.setId(HBOX_ID);
 
+            Text noTxt = new Text(NO_JOURNEY_TEXT);
+            VBox noBox = new VBox(noTxt);
+            noBox.setId(NO_JOURNEY_ID);
+            VBox yesBox = new VBox(new StackPane(annotationsPane, gridPane), btnBox);
+            boolean hasJourney = journey != null;
+            noBox.setVisible(!hasJourney);
+            yesBox.setVisible(hasJourney);
 
-        // (5) GridPane
+            return new StackPane(noBox, yesBox);
+        }
+
+    private static GridPane createLegsGrid(Journey journey, Pane annotationsPane, List<Circle> circles) {
         GridPane gridPane = new LineGridPane(annotationsPane, circles);
+        gridPane.setId(LEGS_ID);
         gridPane.getStylesheets().add("legs");
 
         int currentRow = 0;
-
-        for (Journey.Leg leg : journey.legs()) {
-
-            switch (leg) {
-
-                case Journey.Leg.Foot footLeg -> {
-
-                    Text walkText = new Text(FormatterFr.formatLeg(footLeg));
-                    // occupe les colonnes 2 à 3 sur une seule ligne
-                    gridPane.add(walkText, 2, currentRow);
-
-                }
-
-                case Journey.Leg.Transport transportLeg -> {
-
-
-                    // Partie 1 départ
-
-                    // Heure de départ (col. 0)
-                    Text depTime = new Text(FormatterFr.formatTime(transportLeg.depTime()));
-                    depTime.getStyleClass().add("departure");
-                    gridPane.add(depTime, 0, currentRow);
-
-
-                    // Cercle de départ (Circle de rayon 3, col. 1)
-                    Circle circle = new Circle();
-                    circle.setRadius(3);
-                    circles.add(circle);
-                    gridPane.add(circle, 1, currentRow);
-
-                    Text depStation = new Text(leg.depStop().name());
-                    gridPane.add(depStation, 2, currentRow);
-
-
-                    Text depPlatform = new Text(FormatterFr.formatPlatformName(transportLeg.depStop()));
-                    depPlatform.getStyleClass().add("departure");
-                    gridPane.add(depPlatform, 3, currentRow);
-
-                    ++currentRow;
-
-                    // Partie 2 Image et destination
-                    // icône du véhicule (col. 0)
-                    ImageView icon =  new ImageView(VehicleIcons.iconFor(transportLeg.vehicle()));
-                    icon.setFitHeight(31);
-                    icon.setFitWidth(31);
-                    int iconRowSpan = leg.intermediateStops().isEmpty() ? 1 : 2;
-                    gridPane.add(icon, 0, currentRow, 1, iconRowSpan);
-                    Text routeDestinationText = new Text(FormatterFr.formatRouteDestination(transportLeg));
-                    gridPane.add(routeDestinationText, 2, currentRow, 2,1);
-
-
-                    if (!leg.intermediateStops().isEmpty()) {
-
-                        // on oublie pas d'update le currentRow
-                        ++currentRow;
-
-                        GridPane intermediateGrid = new GridPane();
-                        intermediateGrid.getStyleClass().add("intermediate-stops");
-
-                        int rowIndexIntermediateSteps = 0;
-                        for (Journey.Leg.IntermediateStop stop : leg.intermediateStops()) {
-                            Text depTimeText = new Text(FormatterFr.formatTime(stop.depTime()));
-                            Text arrTimeText = new Text(FormatterFr.formatTime(stop.arrTime()));
-                            Text name = new Text(stop.stop().name());
-
-                            intermediateGrid.add(arrTimeText, 0, rowIndexIntermediateSteps);
-                            intermediateGrid.add(depTimeText, 1, rowIndexIntermediateSteps);
-                            intermediateGrid.add(name, 2, rowIndexIntermediateSteps);
-
-                            rowIndexIntermediateSteps++;
-                        }
-
-                        String title = new StringBuilder()
-                                .append(leg.intermediateStops().size())
-                                .append(" arrêts, ")
-                                .append(FormatterFr.formatDuration(leg.duration()))
-                                .toString();
-                        TitledPane titledPane = new TitledPane(title, intermediateGrid);
-
-                        Accordion accordion = new Accordion(titledPane);
-
-                        gridPane.add(accordion, 2, currentRow, 2, 1);
+        if (journey != null) {
+            for (Journey.Leg leg : journey.legs()) {
+                switch (leg) {
+                    case Journey.Leg.Foot footLeg -> {
+                        Text walkText = new Text(FormatterFr.formatLeg(footLeg));
+                        gridPane.add(walkText, 2, currentRow);
                     }
-                    ++currentRow;
-
-                    // Partie 4 heure d'arrivée
-
-                    // Heure d'arrivée (col. 0)
-                    Text arrTime = new Text(FormatterFr.formatTime(transportLeg.arrTime()));
-                    gridPane.add(arrTime, 0, currentRow);
-
-                    // Cercle d'arrivée (col. 1)
-                    Circle arrCircle = new Circle();
-                    arrCircle.setRadius(3);
-                    circles.add(arrCircle);
-                    gridPane.add(arrCircle, 1, currentRow);
-
-                    // Nom de la gare d'arrivée (col. 2)
-                    Text arrStation = new Text(leg.arrStop().name());
-                    gridPane.add(arrStation, 2, currentRow);
-
-                    // Nom de la voie/quai d'arrivée (col. 3)
-                    Text arrPlatform = new Text(FormatterFr.formatPlatformName(transportLeg.arrStop()));
-                    gridPane.add(arrPlatform, 3, currentRow);
+                    case Journey.Leg.Transport transportLeg -> {
+                        currentRow = addTransportLeg(gridPane, circles, transportLeg, currentRow);
+                    }
                 }
+                ++currentRow;
             }
-
-            ++currentRow;
         }
+        return gridPane;
+    }
 
+    private static int addTransportLeg(GridPane gridPane, List<Circle> circles,
+                                       Journey.Leg.Transport t, int row) {
+        // Départ
+        Text depTime = new Text(FormatterFr.formatTime(t.depTime()));
+        depTime.getStyleClass().add("departure");
+        gridPane.add(depTime, 0, row);
+        Circle startCircle = new Circle(CIRCLE_RADIUS);
+        circles.add(startCircle);
+        gridPane.add(startCircle, 1, row);
+        gridPane.add(new Text(t.depStop().name()), 2, row);
+        Text depPlat = new Text(FormatterFr.formatPlatformName(t.depStop()));
+        depPlat.getStyleClass().add("departure");
+        gridPane.add(depPlat, 3, row);
+        ++row;
 
+        // Trajet
+        ImageView icon = new ImageView(VehicleIcons.iconFor(t.vehicle()));
+        icon.setFitWidth(ICON_SIZE);
+        icon.setFitHeight(ICON_SIZE);
+        int span = t.intermediateStops().isEmpty() ? 1 : 2;
+        gridPane.add(icon, 0, row, 1, span);
+        gridPane.add(new Text(FormatterFr.formatRouteDestination(t)), 2, row, 2, 1);
+        if (!t.intermediateStops().isEmpty()) {
+            ++row;
+            GridPane inner = new GridPane();
+            inner.getStyleClass().add("intermediate-stops");
+            int r = 0;
+            for (Journey.Leg.IntermediateStop stop : t.intermediateStops()) {
+                inner.add(new Text(FormatterFr.formatTime(stop.arrTime())), 0, r);
+                inner.add(new Text(FormatterFr.formatTime(stop.depTime())), 1, r);
+                inner.add(new Text(stop.stop().name()), 2, r++);
+            }
+            String title = t.intermediateStops().size() + " arrêts, " + FormatterFr.formatDuration(t.duration());
+            Accordion acc = new Accordion(new TitledPane(title, inner));
+            gridPane.add(acc, 2, row, 2, 1);
+        }
+        ++row;
 
-        // Boutons map et calendrier
-        Button mapButton = new Button(MAP_BUTTON_TEXT);
-        Button calendarButton = new Button(CALENDAR_BUTTON_TEXT);
+        // Arrivée
+        Text arrTime = new Text(FormatterFr.formatTime(t.arrTime()));
+        gridPane.add(arrTime, 0, row);
+        Circle endCircle = new Circle(CIRCLE_RADIUS);
+        circles.add(endCircle);
+        gridPane.add(endCircle, 1, row);
+        gridPane.add(new Text(t.arrStop().name()), 2, row);
+        gridPane.add(new Text(FormatterFr.formatPlatformName(t.arrStop())), 3, row);
 
-        mapButton.setOnAction(event -> {
-            mapClick(journey);
-        });
+        return row;
+    }
 
-        calendarButton.setOnAction(event -> {
-            calendarClick(journey,calendarButton);
-        });
-
-
-        // (4) Stack pane et HBox
-        StackPane stackPane2 = new StackPane(annotationsPane,  gridPane);
-        HBox buttonsBox = new HBox(mapButton, calendarButton);
-
-
-        // (3.5) Text de la box "noJourney"
-        Text noJourneyBoxText = new Text(NO_JOURNEY_TEXT);
-
-        // (3) Deux box (enfants du stack pane)
-        VBox noJourneyBox = new VBox(noJourneyBoxText);
-        VBox journeyBox = new VBox(stackPane2, buttonsBox);
-
-        // On affiche la bonne box en fonction de la présence d'un voyage ou non
-        boolean isJourneyToDisplay = (journey != null);
-        // isJourneyToDisplay = true;
-        noJourneyBox.setVisible(!isJourneyToDisplay);
-        journeyBox.setVisible(isJourneyToDisplay);
-
-        // (2) Noeud secondaire
-        StackPane stackPane = new StackPane(noJourneyBox, journeyBox); // On associe les box au stack pane
-
-        // (1) Noeud principal
-        ScrollPane scrollPane= new ScrollPane(stackPane);
-
-        // CSS
+    private static String loadCSS(String cssPath) {
         try {
-            String cssPath = Objects.requireNonNull(
-                    DetailUI.class.getResource("/detail.css") // Assure-toi que le chemin est correct
-            ).toExternalForm();
-            scrollPane.getStylesheets().add(cssPath);
-        } catch (Exception e) {
-            System.err.println("Erreur chargement CSS detail.css: " + e.getMessage());
-            // Gérer l'erreur ou l'ignorer si le CSS n'est pas critique pour ce test
+            return Objects.requireNonNull(DetailUI.class.getResource(cssPath)).toExternalForm();
+        } catch (NullPointerException e) {
+            System.err.println("Erreur de chargement CSS : " + cssPath);
+            return "";
         }
-
-
-        // ID's
-        scrollPane.setId(DETAIL_ID);
-        noJourneyBox.setId(NO_JOURNEY_ID);
-        buttonsBox.setId(HBOX_ID);
-        gridPane.setId(LEGS_ID);
-        annotationsPane.setId(ANNOTATIONS_ID);
-
-        return new DetailUI(scrollPane);
     }
 
     // méthode privée pour la gestion d'un clic sur le bouton carte
@@ -257,6 +196,8 @@ public record DetailUI(Node rootNode) {
             System.out.println("Erreur dans l'ouverture du browser");
         }
     }
+
+
     // méthode privée pour la gestion d'un clic sur le bouton calendrier
     private static void calendarClick(Journey j, Node node){
         try {
@@ -289,7 +230,7 @@ public record DetailUI(Node rootNode) {
             // 1) Vider l’ancien contenu
             annotationsPane.getChildren().clear();
 
-            if(circles.size() % 2 != 0){
+            if(circles.size() % 2 != 0) {
                 System.out.println("Nombre de cercles impair...");
                 return;
             }
@@ -316,3 +257,4 @@ public record DetailUI(Node rootNode) {
         }
     }
 }
+

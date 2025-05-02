@@ -45,24 +45,20 @@ public record SummaryUI(Node rootNode, ObservableValue<Journey> selectedJourneyO
      */
     public static SummaryUI create(ObservableValue<List<Journey>> journeyList, ObservableValue<LocalTime> time){
 
-        // Création d'une liste observable de journey vide
+        // 2) --------------- Initialisation ---------------------
+
+        // Création de notre listview à partir d'une liste observable
         ObservableList<Journey> buffer = FXCollections.observableArrayList();
-
-        // La liste view contient les données du buffer
         ListView<Journey> trueList = new ListView<>(buffer);
-
-        // On met à jour le buffer automatiquement à chaque fois qu'un nouveau voyage est cherché
-        // donc quand journeyList change
-        journeyList.subscribe((newList) -> buffer.setAll(newList));
+        journeyList.subscribe((newList) -> buffer.setAll(newList)); //on veut update à chaque nouveau voyage
 
         // On définit la formes de nos cells
         trueList.setCellFactory(JourneyCell::new);
 
-        // On utilise un ObjectBinding car le voyage seléctionné dépend
-        // d'un changement du temps et/ouu d'un changement de la liste de voyages.
-        // Donc la lambda à l'intérieur du lien est executée à chaque changement
-        // de la variable journeyList ou de time ce qui nous garanti d'avoir
-        // tout le temps le bon voyage séléctionné
+        // 2) --------------- Sélections ---------------------
+
+        // On crée un binding car on veut qu'à chaque changement de voyage ou de temps,
+        // notre liste de voyage se mette à jour
         ObjectBinding<Journey> currentSelectedJourney = Bindings.createObjectBinding(
                 () -> {
                     // Lorsque l'heure de voyage désirée change, le premier voyage
@@ -71,12 +67,11 @@ public record SummaryUI(Node rootNode, ObservableValue<Journey> selectedJourneyO
                     List<Journey> currentJourneyList = journeyList.getValue();
                     LocalTime currentTime = time.getValue();
                     if (currentJourneyList == null || currentJourneyList.isEmpty() || currentTime == null) {
-                        // on ne peut sélectionner un voyage que si les arguments sont valides
                         return null;
                     }
 
                     return currentJourneyList.stream()
-                            // on ne garde que les yoages qui sont après le temps sélectionnés
+                            // on ne garde que les voyages qui sont après le temps sélectionnés
                             .filter(journey -> !journey.depTime().toLocalTime().isBefore(currentTime))
                             // on prend le premier s'il y en a un
                             .findFirst()
@@ -87,14 +82,13 @@ public record SummaryUI(Node rootNode, ObservableValue<Journey> selectedJourneyO
                 time
         );
 
-        // Ensuite, dès que le voyage séléctionné change,
-        // on change la séléction dans l'interface
+        // Dès que le voyage séléctionné change, on change la séléction dans l'interface
         currentSelectedJourney.subscribe(
                 currentJourney -> trueList.getSelectionModel().select(currentJourney)
         );
 
 
-        // Ajout du fichier CSS
+        // 3) --------------- CSS ---------------------
         try {
             String cssPath = Objects.requireNonNull(
                     DetailUI.class.getResource("/summary.css") // Assure-toi que le chemin est correct
@@ -105,43 +99,46 @@ public record SummaryUI(Node rootNode, ObservableValue<Journey> selectedJourneyO
             // Gérer l'erreur ou l'ignorer si le CSS n'est pas critique pour ce test
         }
 
+        // 4) --------------- Return ---------------------
         return new SummaryUI(trueList, currentSelectedJourney);
 
     }
 }
 
+/**
+ * Classe qui représente une cellule affichant un voyage
+ */
 class JourneyCell extends ListCell<Journey> {
 
+    // Magic numbers
     private final static int ICON_SIZE = 20;
+    private final static int LINE_MARGIN = 5;
+    private final static int CIRCLE_RADIUS = 3;
 
-    // Elements du graphe de scène
-
-    private final Text depTimeText = new Text();
-    private final Text arrTimeText = new Text();
-
-    // Ligne / direction
+    // ---- Elements du graphe de scène ----
+    // Haut
     private final HBox topBox = new HBox();
     private final Text directionText = new Text();
     private final ImageView icon = new ImageView();
+    
+    // Gauche
+    private final Text depTimeText = new Text();
 
-    // Durée
-    private final Text durationText = new Text();
-    private final HBox bottomBox = new HBox();
+    // Droite
+    private final Text arrTimeText = new Text(); 
 
-    // Cercles
-    private final static int CIRCLE_RADIUS = 3;
+    // Bas
+    private final Text durationText = new Text(); // Bas
+    private final HBox bottomBox = new HBox(); //
     private final Group circles = new Group();
-
-    // Lignes
-    private final static int LINE_MARGING = 5;
-
-    // Notre Pane customisée
+    // Centre
     private final Pane centerPane = new Pane() {
-        private final Line line = new Line();
+         // "Collection" qui va contenir les cercles
+        private final Line line = new Line();      // Ligne modifiée par la suite
 
         {
             setPrefSize(0, 0);
-            getChildren().addAll(line, circles); // il contient les lignes et cercles
+            getChildren().addAll(line, circles);
         }
 
         @Override
@@ -152,9 +149,9 @@ class JourneyCell extends ListCell<Journey> {
             Journey journey = (Journey) getUserData();
             if (journey == null) return;
 
-            // Display des lignesl
-            double lineStart_x = LINE_MARGING; // Todo magic numbers
-            double lineEnd_x = getWidth() - LINE_MARGING;
+            // Display des lignes
+            double lineStart_x = LINE_MARGIN;
+            double lineEnd_x = getWidth() - LINE_MARGIN;
             double lineLength_x = lineEnd_x - lineStart_x;
             double y = getHeight() / 2;
 
@@ -164,32 +161,36 @@ class JourneyCell extends ListCell<Journey> {
             line.setEndY(y); // Pareil car ligne fine
 
             // Display des cercles
-            double totalDuration = journey.duration().toMinutes(); //utile pour proportion
+            double totalDuration = journey.duration().toMinutes(); // utile pour proportion
 
             circles.getChildren()
                     .forEach(node -> {
+                        // Transtypages nécessaires à la récupération des données
+                        if (node instanceof Circle) {
+                            Circle circle = (Circle) node;
+                            Object circleData = circle.getUserData();
+                            if (circleData instanceof LocalDateTime){
+                                // Extraction des données temporelles
+                                LocalDateTime circleTime = (LocalDateTime) circleData;
+                                LocalDateTime startingTime = journey.depTime();
 
-                        if (node instanceof Circle circle && circle.getUserData() instanceof LocalDateTime time) {
-                            LocalDateTime departure = journey.depTime();
-                            LocalDateTime circleTime = time;
+                                // Affichage du cercle à une position proportionelle à son apparition dans le voyage
+                                double apparitionTime = Duration.between(startingTime, circleTime).toMinutes();
+                                double proportion = apparitionTime / totalDuration;
+                                double positionX = lineStart_x + lineLength_x * proportion;
 
-                            double apparitionTime = Duration.between(departure, circleTime).toMinutes();
-                            double proportion = apparitionTime / totalDuration;
-                            double positionX = lineStart_x + lineLength_x * proportion;
-                            circle.setCenterX(positionX);
-                            circle.setCenterY(y);
-                        }
-                    }
-                    );
-
+                                // Centrages aux bonnes positions
+                                circle.setCenterX(positionX);
+                                circle.setCenterY(y);
+                            }}});
         }
-
     };
 
 
-    // Changements
+    // Root
     private final BorderPane root = new BorderPane(centerPane, topBox, arrTimeText, bottomBox, depTimeText);
 
+        // Constructeur
         public JourneyCell(ListView<Journey> journeyCellListView) {
             // Contenu de top Box (Ligne / Direction)
             icon.setFitWidth(ICON_SIZE);
@@ -209,8 +210,8 @@ class JourneyCell extends ListCell<Journey> {
 
     @Override
     protected void updateItem(Journey journey, boolean empty) {
-        // doit impérativement être appelée
         super.updateItem(journey, empty);
+
         // si il n y a aucun journey on affiche rien
         if (journey == null || empty) {
             setText(null);
@@ -218,12 +219,13 @@ class JourneyCell extends ListCell<Journey> {
         }
         else {
 
-            // On remplit nos noeuds avec les données du voyage
+            // Mise à jour des textes et des images
             updateData(journey);
 
-            // On crée tous les cercles nécessaires
+            // Créations des cercles
             populateCircles(journey);
 
+            // On stock le voyage dans le pane, car on en a besoin à l'intérieur
             centerPane.setUserData(journey);
 
             // On affiche !
@@ -267,7 +269,6 @@ class JourneyCell extends ListCell<Journey> {
      * @param journey
      */
     private void populateCircles(Journey journey) {
-        // 3) Dessin des lignes et cercles
         circles.getChildren().clear(); // On efface l'affichage précédent
 
         // Cercle de départ
