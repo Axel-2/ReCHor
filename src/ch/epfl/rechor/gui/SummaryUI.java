@@ -20,6 +20,7 @@ import javafx.scene.shape.Line;
 import javafx.scene.text.Text;
 import javafx.scene.image.ImageView;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
@@ -65,7 +66,7 @@ public record SummaryUI(Node rootNode, ObservableValue<Journey> selectedJourneyO
         ObjectBinding<Journey> currentSelectedJourney = Bindings.createObjectBinding(
                 () -> {
                     // Lorsque l'heure de voyage désirée change, le premier voyage
-                    // partant à cette heure-là, ou plus tard, est sélectionné dans la liste.
+                    // partant à cette heure-là, ou plus tard, est sélectionné dans la liste. 
                     // S'il n'y en a aucun, alors le dernier voyage de la liste est sélectionné.
                     List<Journey> currentJourneyList = journeyList.getValue();
                     LocalTime currentTime = time.getValue();
@@ -131,6 +132,9 @@ class JourneyCell extends ListCell<Journey> {
     private final static int CIRCLE_RADIUS = 3;
     private final Group circles = new Group();
 
+    // Lignes
+    private final static int LINE_MARGING = 5;
+
     // Notre Pane customisée
     private final Pane centerPane = new Pane() {
         private final Line line = new Line();
@@ -149,8 +153,8 @@ class JourneyCell extends ListCell<Journey> {
             if (journey == null) return;
 
             // Display des lignesl
-            double lineStart_x = 5.0; // Todo magic numbers
-            double lineEnd_x = getWidth() - 5.0;
+            double lineStart_x = LINE_MARGING; // Todo magic numbers
+            double lineEnd_x = getWidth() - LINE_MARGING;
             double lineLength_x = lineEnd_x - lineStart_x;
             double y = getHeight() / 2;
 
@@ -165,15 +169,17 @@ class JourneyCell extends ListCell<Journey> {
             circles.getChildren()
                     .forEach(node -> {
 
-                                if (node instanceof Circle circle && circle.getUserData() instanceof LocalDateTime time) {
-                                    System.out.println("test");
-                                    double apparitionTime = java.time.Duration.between(journey.depTime().toLocalTime(), time).toMinutes();
-                                    double proportion = apparitionTime / totalDuration;
-                                    double positionX = lineStart_x + lineLength_x * proportion;
-                                    circle.setCenterX(positionX);
-                                    circle.setCenterY(y);
-                                }
-                            }
+                        if (node instanceof Circle circle && circle.getUserData() instanceof LocalDateTime time) {
+                            LocalDateTime departure = journey.depTime();
+                            LocalDateTime circleTime = time;
+
+                            double apparitionTime = Duration.between(departure, circleTime).toMinutes();
+                            double proportion = apparitionTime / totalDuration;
+                            double positionX = lineStart_x + lineLength_x * proportion;
+                            circle.setCenterX(positionX);
+                            circle.setCenterY(y);
+                        }
+                    }
                     );
 
         }
@@ -184,21 +190,21 @@ class JourneyCell extends ListCell<Journey> {
     // Changements
     private final BorderPane root = new BorderPane(centerPane, topBox, arrTimeText, bottomBox, depTimeText);
 
-    public JourneyCell(ListView<Journey> journeyCellListView) {
-        // Contenu de top Box (Ligne / Direction)
-        icon.setFitWidth(ICON_SIZE);
-        icon.setFitHeight(ICON_SIZE);
-        topBox.getChildren().addAll(icon, directionText);
+        public JourneyCell(ListView<Journey> journeyCellListView) {
+            // Contenu de top Box (Ligne / Direction)
+            icon.setFitWidth(ICON_SIZE);
+            icon.setFitHeight(ICON_SIZE);
+            topBox.getChildren().addAll(icon, directionText);
 
-        //Contenu de bottom Box (Durée)
-        bottomBox.getChildren().add(durationText);
+            //Contenu de bottom Box (Durée)
+            bottomBox.getChildren().add(durationText);
 
-        // Styles
-        topBox.getStyleClass().add("route");
-        root.getStyleClass().add("journey");
-        depTimeText.getStyleClass().add("departure");
-        arrTimeText.getStyleClass().add("arrival");
-        bottomBox.getStyleClass().add("duration");
+            // Styles
+            topBox.getStyleClass().add("route");
+            root.getStyleClass().add("journey");
+            depTimeText.getStyleClass().add("departure");
+            arrTimeText.getStyleClass().add("arrival");
+            bottomBox.getStyleClass().add("duration");
     }
 
     @Override

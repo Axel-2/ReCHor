@@ -40,8 +40,6 @@ public record DetailUI(Node rootNode) {
     private static final String LEGS_ID = "legs";
     private static final String ANNOTATIONS_ID = "annotations";
 
-
-
     // Textes
     private static final String NO_JOURNEY_TEXT = "Aucun voyage";
     private static final String MAP_BUTTON_TEXT = "Carte";
