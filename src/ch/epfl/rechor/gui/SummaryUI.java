@@ -32,7 +32,7 @@ import java.util.Objects;
  * @author Yoann Salamin (390522)
  * @author Axel Verga (398787)
  */
-public record SummaryUI(Node rootNode, ObservableValue<Journey> selectedJourneyO) {
+public record SummaryUI(Node rootNode, ObservableValue<String> selectedJourneyO) {
 
     /**
      * Fonction dont le but est de créer le graphe de scène et de retourner
