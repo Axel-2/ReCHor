@@ -66,8 +66,9 @@ public record Router(TimeTable timetable) {
             int currentConnArrMins = timetable.connectionsFor(date).arrMins(i);
             int currentConnTripId = timetable.connectionsFor(date).tripId(i);
             int currentConnTripPos = timetable.connectionsFor(date).tripPos(i);
-            int currentConnDepStationId = timetable.stationId(currentConnArrStopID);
 
+            int currentConnArrStationId = timetable.stationId(currentConnArrStopID);
+            int currentConnDepStationId = timetable.stationId(currentConnDepStopID);
 
 
             // ------------------ Option 1) Marcher depuis arr(l) vers la destination finale ---------------
@@ -76,7 +77,7 @@ public record Router(TimeTable timetable) {
             // on utilise le tableau calculé plus haut pour voir si un
             // changement existe entre les deux gares
 
-            int walkDuration = minutesBetweenForEveryStation[currentConnDepStationId];
+            int walkDuration = minutesBetweenForEveryStation[currentConnArrStationId];
 
             if (walkDuration != -1) { // je suppose que le i est l'id de la course, il n'existe pas de currentConnId
                 f.add(PackedCriteria.pack(currentConnArrMins + walkDuration, 0, i));
@@ -131,8 +132,8 @@ public record Router(TimeTable timetable) {
             // OPTIMISATION :
             // Si la frontière de la gare de départ domine entièrement f avec l'heure de départ de la liaison actuelle,
             // alors on peut skip la dernière partie, car il n'y aura rien d'utile dans f aux gares de départ
-            if (p.forStation(timetable.stationId(currentConnDepStationId)) != null){
-                if(p.forStation(timetable.stationId(currentConnDepStationId)).fullyDominates(f, currentConnDepMins)){
+            if (p.forStation(currentConnDepStationId) != null) {
+                if (p.forStation(currentConnDepStationId).fullyDominates(f, currentConnDepMins)) {
                     continue;
                 }
             }
