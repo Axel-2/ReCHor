@@ -37,9 +37,9 @@ public final class TestSummaryUI extends Application {
         TimeTable timeTable = new CachedTimeTable(
                 FileTimeTable.in(Path.of("timetable")));
         Stations stations = timeTable.stations();
-        LocalDate date = LocalDate.of(2025, Month.APRIL, 29);
+        LocalDate date = LocalDate.of(2025, Month.APRIL, 15);
   
-        int depStationId = stationId(stations, "Ecublens VD, EPFL");
+        int depStationId = stationId(stations, "Lausanne");
         int arrStationId = stationId(stations, "Gruyères");
         Router router = new Router(timeTable);
         Profile profile = router.profile(date, arrStationId);
