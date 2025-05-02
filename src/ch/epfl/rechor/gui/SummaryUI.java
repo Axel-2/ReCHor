@@ -32,7 +32,7 @@ import java.util.Objects;
  * @author Yoann Salamin (390522)
  * @author Axel Verga (398787)
  */
-public record SummaryUI(Node rootNode, ObservableValue<String> selectedJourneyO) {
+public record SummaryUI(Node rootNode, ObservableValue<Journey> selectedJourneyO) {
 
     /**
      * Fonction dont le but est de créer le graphe de scène et de retourner
@@ -274,6 +274,7 @@ class JourneyCell extends ListCell<Journey> {
         journey.legs().stream()
                 .filter(leg -> leg instanceof Journey.Leg.Foot)
                 .map(leg -> (Journey.Leg.Foot) leg)
+                .filter(footLeg -> !journey.legs().getFirst().equals(footLeg))
                 .forEach(leg -> {
                     Circle intermediateCircle = new Circle(CIRCLE_RADIUS);
                     intermediateCircle.getStyleClass().add("transfer");
