@@ -7,13 +7,11 @@ import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.util.converter.LocalDateStringConverter;
 import javafx.util.converter.LocalTimeStringConverter;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
 import java.util.Objects;
 
 public record QueryUI(
@@ -33,25 +31,44 @@ public record QueryUI(
 
 
         // Départ, échange et arrivée
-        TextField depStop = new StopField();
+        StopField depStopField =  StopField.create(stopIndex);
         Button changeButton = new Button();
-        TextField arrTextField = new TextField();
+        StopField arrStopField = StopField.create(stopIndex);
 
         // Date et heure
-        DatePicker datePicker = new DatePicker();
+        DatePicker datePicker = new DatePicker(LocalDate.now());
         TextField hourTextField = new TextField();
 
         // TODO ca je suis pas trop sur de capter
         DateTimeFormatter displayFormatter = DateTimeFormatter.ofPattern("HH:mm");
         DateTimeFormatter parseFormatter = DateTimeFormatter.ofPattern("H:mm");
         LocalTimeStringConverter timeStringConverter = new LocalTimeStringConverter(displayFormatter, parseFormatter);
-        TextFormatter<LocalTime> textFormatter = new TextFormatter<>(timeStringConverter, LocalTime.of(1, 1));
+        TextFormatter<LocalTime> textFormatter = new TextFormatter<>(timeStringConverter, LocalTime.now());
         hourTextField.setTextFormatter(textFormatter);
 
 
-        HBox mainBox = createMainBox(depStop, changeButton, arrTextField);
+        HBox mainBox = createMainBox(depStopField, changeButton, arrStopField);
         HBox dateHourNode = createDateHourNode(datePicker, hourTextField);
 
+        ObservableValue<String> depStopO = depStopField.stopO();
+        ObservableValue<String> arrStop0 = arrStopField.stopO();
+        ObservableValue<LocalDate> date0 = datePicker.valueProperty();
+        ObservableValue<LocalTime> time0 = textFormatter.valueProperty();
+
+
+        // Logique observable
+
+        // Logique du bouton
+        changeButton.setText("↔");
+        changeButton.setOnAction(e -> {
+                    String d = depStopO.getValue();
+                    String a = arrStop0.getValue();
+                    depStopField.setTo(a);
+                    arrStopField.setTo(d);
+                }
+        );
+
+        // Création du nœud final
         VBox rootNode = new VBox();
         rootNode.getChildren().addAll(
                 mainBox,
@@ -59,45 +76,33 @@ public record QueryUI(
         );
         rootNode.getStylesheets().add(loadCSS(CSS_PATH));
 
-        stopIndex.stopsMatching("ss", 2);
-
-        ObservableValue<String> depStopO = new SimpleObjectProperty<>();
-        ObservableValue<String> arrStop0 = new SimpleObjectProperty<>();
-        ObservableValue<LocalDate> date0 = new SimpleObjectProperty<>(LocalDate.of(2025, 10,1));
-        ObservableValue<LocalTime> time0 = new SimpleObjectProperty<>(LocalTime.of(10, 10));
-
-        depStopO.subscribe(depStop::setText);
-        arrStop0.subscribe(arrTextField::setText);
-
-
         return new QueryUI(rootNode, depStopO, arrStop0, date0, time0);
     }
 
 
     public static HBox createMainBox(
-            TextField depStop,
+            StopField depStop,
             Button changeButton,
-            TextField arrTextField
+            StopField arrTextField
             ) {
 
         HBox mainBox = new HBox();
 
         // Départ
         Label depLabel = new Label("Départ\\u202f:");
-        depStop.setPromptText("Nom de l'arrêt de départ");
-        depStop.setId("depStop");
+        depStop.textField().setPromptText("Nom de l'arrêt de départ");
+        depStop.textField().setId("depStop");
 
         // Arrivée
         Label arrLabel = new Label("Arrivée\\u202f:");
-        arrTextField.setPromptText("Nom de l'arrêt d'arrivée");
-
+        arrTextField.textField().setPromptText("Nom de l'arrêt d'arrivée");
 
         mainBox.getChildren().addAll(
                 depLabel,
-                depStop,
+                depStop.textField(),
                 changeButton,
                 arrLabel,
-                arrTextField
+                arrTextField.textField()
         );
 
         return mainBox;
