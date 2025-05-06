@@ -8,6 +8,8 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.stage.Popup;
 
+import java.util.List;
+
 /**
  * Classe qui représente la combinaison d'un champ textuel et d'une fenêtre
  * @param textField champ textuel
@@ -22,6 +24,7 @@ public record StopField(TextField textField, ObservableValue<String> stopO) {
      * @return une instance de StopField
      */
     public static StopField create(StopIndex stopIndex) {
+         final int SUGGESTION_NUMBER = 30;
         // ------------ Champ textuel et String wrapper ----------------
         TextField textField = new TextField();
         // On a besoin de ce type pour utiliser .getReadOnlyProperty() après
@@ -36,6 +39,18 @@ public record StopField(TextField textField, ObservableValue<String> stopO) {
 
         popup.getContent().add(suggestions); // ajout à la fenêtre
 
+        // -------- Lambda qui gère la selection d'un stopName --------
+        Runnable select = () -> {
+            // Récupération du nom actuellement sélectionné
+            String selectedStopName = suggestions.getSelectionModel().getSelectedItem();
+
+            // Mise à jours des textes
+            stopNameWrapper.set(selectedStopName != null ? selectedStopName : ""); // "" en cas de null
+            textField.setText(selectedStopName != null ? selectedStopName : ""); // "" en cas de null
+
+            // Fermeture de la fenêtre
+            popup.hide();
+        };
         // ---------- Gestionnaire du clavier pour UP and DOWN ----------------
         textField.addEventHandler(
                 javafx.scene.input.KeyEvent.KEY_PRESSED,
@@ -46,7 +61,7 @@ public record StopField(TextField textField, ObservableValue<String> stopO) {
                             if (currentSelectIndex > 0) { // Si on est pas tout en haut, on descend
                                 suggestions.getSelectionModel().select(currentSelectIndex - 1);
                             }  else { // Si on est tout en haut, on va tout en bas
-                                suggestions.getSelectionModel().select(suggestions.getItems().size() - 1);
+                                suggestions.getSelectionModel().selectLast();
                             }
                             event.consume();
                         }
@@ -55,8 +70,13 @@ public record StopField(TextField textField, ObservableValue<String> stopO) {
                             if (currentSelectIndex < suggestions.getItems().size() - 1) { // Si on est pas tout en bas, on monte
                                 suggestions.getSelectionModel().select(currentSelectIndex + 1);
                             } else { // Si on est tout en bas, on va tout en haut
-                                suggestions.getSelectionModel().select(0);
+                                suggestions.getSelectionModel().selectFirst();
                             }
+                            event.consume();
+                        }
+                        case ENTER, TAB -> {
+                            // On sélectionne le nom d'arrêt
+                            select.run();
                             event.consume();
                         }
                         default -> {
@@ -66,41 +86,44 @@ public record StopField(TextField textField, ObservableValue<String> stopO) {
                 });
 
 
+        // -------- Observers de textField -------------
 
+        // Suggestions
+        textField.textProperty().addListener(
+                (observable2, oldValue2, newValue2) -> {
+                    // On met à jour la liste des suggestions
+                    List<String> suggestionsList = stopIndex.stopsMatching(newValue2, SUGGESTION_NUMBER);
+                    suggestions.getItems().clear();
+                    suggestions.getItems().addAll(suggestionsList);
 
+                    // MAJ de la popup
+                    if(!suggestionsList.isEmpty()) {
+                        suggestions.getSelectionModel().selectFirst();
+                        if(!popup.isShowing()) {
+                            popup.show(textField.getScene().getWindow()); // On affiche
+                        }
+                    } else {
+                        popup.hide();
+                    }
 
-        // -------- Gestion de focus -------------
-
+                });
+        // Bounds
+        textField.boundsInLocalProperty().addListener(
+                (observable, oldBounds, newBounds) -> {
+                    // On transforme la valeur dans le système de coordonnées de la fenêtre
+                    Bounds bounds = textField.localToScreen(newBounds);
+                    // On positionne la fenêtre pour qu'elle soit alignée en bas du champ
+                    popup.setAnchorX(bounds.getMinX());
+                    popup.setAnchorY(bounds.getMaxY());
+                });
+        // Focus
         textField.focusedProperty().addListener(
-                (observable1, oldValue1, newValue1) -> {
-                    if (newValue) { // Signifie que le champ est actif
-                        popup.show(); // Rend la fenêtre visible
-
-                        // Mise à jour des suggestions en fonction de ce qui est écrit - Première observation
-                        textField.textProperty().addListener(
-                                (observable2, oldValue2, newValue2) -> {
-                                    // On met à jour le nom de l'arrêt
-                                    stopNameWrapper.set(newValue2);
-                                    // On met à jour la liste des suggestions
-                                    suggestions.getItems().clear();
-                                    suggestions.getItems().addAll(stopIndex.stopsMatching(newValue2,5)); //TODO le 5 au bol
-                                });
-
-                        // Alignement de la fenêtre avec le textField - Deuxième observation
-                        textField.boundsInLocalProperty().addListener(
-                                (observable, oldBounds, newBounds) -> {
-                                    // On transforme la valeur dans le système de coordonnées de la fenêtre
-                                   Bounds bounds = textField.localToScreen(newBounds);
-                                   // On positionne la fenêtre pour qu'elle soit alignée en bas du champ
-                                   popup.setAnchorX(bounds.getMinX());
-                                   popup.setAnchorY(bounds.getMaxY());
-                                });
-                    } else { // champ inactif
-                        // Sinon : on observe plus, et la current selection et copié dans le txt field et dans la propriété text ?
+                (observable, oldFocus, newFocus) -> {
+                    if (!newFocus) { // Signifie que le champ est inactif
+                        select.run(); // On sélectionne le stopName
                     }
                 });
-        // TODO : Avant de le transformer en property observable, il faut s'assurer que
-        // TODO : stopNameWrapper est un nom de stop valide, ou une chaîne vide sinon
+
         return new StopField(textField, stopNameWrapper.getReadOnlyProperty());
     }
 
