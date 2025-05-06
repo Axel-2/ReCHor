@@ -74,11 +74,7 @@ public record StopField(TextField textField, ObservableValue<String> stopO) {
                             }
                             event.consume();
                         }
-                        case ENTER, TAB -> {
-                            // On sélectionne le nom d'arrêt
-                            select.run();
-                            event.consume();
-                        }
+
                         default -> {
                             // On ne fait rien
                         }
@@ -87,6 +83,7 @@ public record StopField(TextField textField, ObservableValue<String> stopO) {
 
 
         // -------- Observers de textField -------------
+        // TODO ici c'est pas encore bon
 
         // Suggestions
         textField.textProperty().addListener(
