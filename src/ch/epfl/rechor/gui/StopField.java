@@ -22,9 +22,21 @@ public record StopField(TextField textField, ObservableValue<String> stopO) {
      * @return une instance de StopField
      */
     public static StopField create(StopIndex stopIndex) {
-        // ------------ Champ textuel et gestionnaire d'évènements associé ----------------
+        // ------------ Champ textuel et String wrapper ----------------
         TextField textField = new TextField();
-        // Gestionnaire du clavier pour UP and DOWN
+        // On a besoin de ce type pour utiliser .getReadOnlyProperty() après
+        ReadOnlyStringWrapper stopNameWrapper = new ReadOnlyStringWrapper("");
+        // --------------------- Pop Up et liste déroulante + configurations ----------------
+        Popup popup = new Popup();
+        popup.setHideOnEscape(false);
+
+        ListView<String> suggestions = new ListView<>();
+        suggestions.setFocusTraversable(false);
+        suggestions.setMaxHeight(240);
+
+        popup.getContent().add(suggestions); // ajout à la fenêtre
+
+        // ---------- Gestionnaire du clavier pour UP and DOWN ----------------
         textField.addEventHandler(
                 javafx.scene.input.KeyEvent.KEY_PRESSED,
                 event -> {
@@ -54,19 +66,8 @@ public record StopField(TextField textField, ObservableValue<String> stopO) {
                 });
 
 
-        // On a besoin de ce type pour utiliser .getReadOnlyProperty() après
-        ReadOnlyStringWrapper stopNameWrapper = new ReadOnlyStringWrapper("");
 
 
-        // --------------------- Pop Up et liste déroulante + configurations ----------------
-        Popup popup = new Popup();
-        popup.setHideOnEscape(false);
-
-        ListView<String> suggestions = new ListView<>();
-        suggestions.setFocusTraversable(false);
-        suggestions.setMaxHeight(240);
-
-        popup.getContent().add(suggestions); // ajout à la fenêtre
 
         // -------- Gestion de focus -------------
 
