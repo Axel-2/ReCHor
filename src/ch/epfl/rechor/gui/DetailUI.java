@@ -115,8 +115,6 @@ public record DetailUI(Node rootNode) {
     private static GridPane createLegsGrid(Journey journey, Pane annotationsPane, List<Circle> circles) {
         GridPane gridPane = new LineGridPane(annotationsPane, circles);
         gridPane.setId(LEGS_ID);
-        // TODO y a une erreure dans la console avec legs not found
-        gridPane.getStylesheets().add("legs");
 
         // On parcourt toutes les étapes et on affiche ce qu'il faut en fonction du type
         int currentRow = 0;
