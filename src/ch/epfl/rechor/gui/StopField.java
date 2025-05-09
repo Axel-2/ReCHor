@@ -7,7 +7,9 @@ import javafx.geometry.Bounds;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.stage.Popup;
+import javafx.util.Subscription;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -39,18 +41,6 @@ public record StopField(TextField textField, ObservableValue<String> stopO) {
 
         popup.getContent().add(suggestions); // ajout à la fenêtre
 
-        // -------- Lambda qui gère la selection d'un stopName --------
-        Runnable select = () -> {
-            // Récupération du nom actuellement sélectionné
-            String selectedStopName = suggestions.getSelectionModel().getSelectedItem();
-
-            // Mise à jours des textes
-            stopNameWrapper.set(selectedStopName != null ? selectedStopName : ""); // "" en cas de null
-            textField.setText(selectedStopName != null ? selectedStopName : ""); // "" en cas de null
-
-            // Fermeture de la fenêtre
-            popup.hide();
-        };
         // ---------- Gestionnaire du clavier pour UP and DOWN ----------------
         textField.addEventHandler(
                 javafx.scene.input.KeyEvent.KEY_PRESSED,
@@ -83,13 +73,13 @@ public record StopField(TextField textField, ObservableValue<String> stopO) {
 
 
         // -------- Observers de textField -------------
-        // TODO ici c'est pas encore bon
-
-        // Suggestions
-        textField.textProperty().addListener(
-                (observable2, oldValue2, newValue2) -> {
+        ArrayList<Subscription> subscriptions = new ArrayList<>();
+        textField.focusedProperty().subscribe(value -> {
+            if (value) {
+                // On ajoute les auditeurs
+                subscriptions.add(textField.textProperty().subscribe(value2 -> {
                     // On met à jour la liste des suggestions
-                    List<String> suggestionsList = stopIndex.stopsMatching(newValue2, SUGGESTION_NUMBER);
+                    List<String> suggestionsList = stopIndex.stopsMatching(value2, SUGGESTION_NUMBER);
                     suggestions.getItems().clear();
                     suggestions.getItems().addAll(suggestionsList);
 
@@ -99,27 +89,26 @@ public record StopField(TextField textField, ObservableValue<String> stopO) {
                         if(!popup.isShowing()) {
                             popup.show(textField.getScene().getWindow()); // On affiche
                         }
-                    } else {
-                        popup.hide();
                     }
-
-                });
-        // Bounds
-        textField.boundsInLocalProperty().addListener(
-                (observable, oldBounds, newBounds) -> {
-                    // On transforme la valeur dans le système de coordonnées de la fenêtre
-                    Bounds bounds = textField.localToScreen(newBounds);
-                    // On positionne la fenêtre pour qu'elle soit alignée en bas du champ
+                }));
+                subscriptions.add(textField.boundsInLocalProperty().subscribe(value3 -> {
+                    // On met à jour la position de la popup
+                    Bounds bounds = textField.localToScreen(value3);
                     popup.setAnchorX(bounds.getMinX());
                     popup.setAnchorY(bounds.getMaxY());
-                });
-        // Focus
-        textField.focusedProperty().addListener(
-                (observable, oldFocus, newFocus) -> {
-                    if (!newFocus) { // Signifie que le champ est inactif
-                        select.run(); // On sélectionne le stopName
-                    }
-                });
+                }));
+            } else {
+                // On désabonne les auditeurs
+                subscriptions.forEach(Subscription::unsubscribe);
+                subscriptions.clear();
+                popup.hide();
+                // Récupération de l'arrêt sélectionné
+                String selectedStopName = suggestions.getSelectionModel().getSelectedItem();
+                // Mise à jour de la propriété et du wrapper
+                stopNameWrapper.set(selectedStopName != null ? selectedStopName : ""); // "" en cas de null
+                textField.setText(selectedStopName != null ? selectedStopName : ""); // "" en cas de null
+            }
+        });
 
         return new StopField(textField, stopNameWrapper.getReadOnlyProperty());
     }
