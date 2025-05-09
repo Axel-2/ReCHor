@@ -4,7 +4,6 @@ import ch.epfl.rechor.FormatterFr;
 import ch.epfl.rechor.journey.Journey; // Importer Journey
 import ch.epfl.rechor.journey.JourneyGeoJsonConverter;
 import ch.epfl.rechor.journey.JourneyIcalConverter;
-import javafx.beans.binding.Bindings;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.Node;
 import javafx.scene.control.*;
@@ -26,7 +25,7 @@ import java.util.Objects; // Pour gérer le chemin CSS
 
 import static java.awt.Desktop.getDesktop;
 
-// TODO 
+
 /**
  * Classe qui représente la partie de l'interface
  * graphique qui montre les détails d'un voyage
@@ -61,17 +60,19 @@ public record DetailUI(Node rootNode) {
      */
     public static DetailUI create(ObservableValue<Journey> journeyObservableValue) {
 
-        ScrollPane scroll = new ScrollPane();
+        // Récupération du voyage
+
+        ScrollPane scroll = new ScrollPane(); // Noeud racine
         scroll.setId(DETAIL_ID);
         scroll.getStylesheets().add(loadCSS(DETAIL_CSS_PATH));
 
-        // 1) initialisation
-        scroll.setContent(buildContent(journeyObservableValue.getValue()));
+        journeyObservableValue.subscribe(
+                () -> {
+                    System.out.println("hehhh");
+                    scroll.setContent(buildContent(journeyObservableValue.getValue())); // Ajout du contenu
+                }
+        );
 
-        // 2) à chaque changement, on ré-affiche
-        journeyObservableValue.addListener((obs, oldJ, newJ) -> {
-            scroll.setContent(buildContent(newJ));
-        });
         return new DetailUI(scroll);
 
     }

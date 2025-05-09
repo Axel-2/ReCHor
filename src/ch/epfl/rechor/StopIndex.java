@@ -106,28 +106,26 @@ public final class StopIndex {
             Matcher matcher = subQueryRE.matcher(stopName);
 
             // On ne teste que la première occurrence
-            // On est sûr qu'elle existe car la liste contient uniquement des matchs
-            matcher.find();
+            if (matcher.find()) {
+                int subScore = 0;
+                int multiplier = 1;
 
-            int subScore = 0;
-            int multiplier = 1;
+                // 1) subScore += sub.length() / stop.length()
+                subScore += (int) Math.floor(100 *((double)(matcher.end() - matcher.start()) / stopName.length()));
 
-            // 1) subScore += sub.length() / stop.length()
-            subScore += (int) Math.floor(100 *((double)(matcher.end() - matcher.start()) / stopName.length()));
+                // 2) Si début ou espace avant: multiplier * 4
+                if (matcher.start() == 0 || !Character.isLetter(stopName.charAt(matcher.start()-1))) {
+                    multiplier *= 4;
+                }
 
-            // 2) Si début ou espace avant: multiplier * 4
-            if (matcher.start() == 0 || !Character.isLetter(stopName.charAt(matcher.start()-1))) {
-                multiplier *= 4;
+
+                // 3) Si fin ou espace après : multiplier * 2
+                if (matcher.end() == stopName.length() || !Character.isLetter(stopName.charAt(matcher.end()))) {
+                    multiplier *= 2;
+                }
+
+                finalScore += subScore * multiplier;
             }
-
-
-            // 3) Si fin ou espace après : multiplier * 2
-            if (matcher.end() == stopName.length() || !Character.isLetter(stopName.charAt(matcher.end()))) {
-                multiplier *= 2;
-            }
-
-            finalScore += subScore * multiplier;
-
         }
 
         return finalScore;
