@@ -68,7 +68,6 @@ public record DetailUI(Node rootNode) {
 
         journeyObservableValue.subscribe(
                 () -> {
-                    System.out.println("hehhh");
                     scroll.setContent(buildContent(journeyObservableValue.getValue())); // Ajout du contenu
                 }
         );
