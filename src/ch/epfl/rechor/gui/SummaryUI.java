@@ -49,8 +49,6 @@ public record SummaryUI(Node rootNode, ObservableValue<Journey> selectedJourneyO
     public static SummaryUI create(ObservableValue<List<Journey>> journeyList, ObservableValue<LocalTime> time){
 
         // 2) --------------- Initialisation ---------------------
-
-
         // Création de notre listview à partir d'une liste observable
         ObservableList<Journey> buffer = FXCollections.observableArrayList();
         ListView<Journey> trueList = new ListView<>(buffer);
@@ -60,14 +58,17 @@ public record SummaryUI(Node rootNode, ObservableValue<Journey> selectedJourneyO
         trueList.setCellFactory(JourneyCell::new);
 
         // 2) --------------- Sélections ---------------------
-
         // On sélectionne le bon quand la journey change
         journeyList.addListener((obs, oldJ, nJ) -> {
-            trueList.getSelectionModel().select(selectedJourney(nJ, time.getValue()));
+            Journey selectedJourney = selectedJourney(nJ, time.getValue());
+            trueList.getSelectionModel().select(selectedJourney);
+            trueList.scrollTo(selectedJourney);
         });
         // On sélectionne le bon quand le time change
         time.addListener((obs, oldT, nT) -> {
-            trueList.getSelectionModel().select(selectedJourney(journeyList.getValue(), nT));
+            Journey selectedJourney = selectedJourney(journeyList.getValue(), nT);
+            trueList.getSelectionModel().select(selectedJourney);
+            trueList.scrollTo(selectedJourney);
         });
 
         ObservableValue<Journey> userSelection = trueList
