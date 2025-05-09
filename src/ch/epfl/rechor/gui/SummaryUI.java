@@ -36,6 +36,8 @@ import java.util.Objects;
  */
 public record SummaryUI(Node rootNode, ObservableValue<Journey> selectedJourneyO) {
 
+    private static ObjectBinding<Journey> autoSelect;
+
     /**
      * Fonction dont le but est de créer le graphe de scène et de retourner
      * une instance de SummaryUI contenant sa racine ainsi que la valeur
@@ -48,13 +50,6 @@ public record SummaryUI(Node rootNode, ObservableValue<Journey> selectedJourneyO
 
         // 2) --------------- Initialisation ---------------------
 
-        journeyList.subscribe(newList -> {
-            System.out.println("SummaryUI: journeyList dependency CHANGED.");
-        });
-
-        time.subscribe(newTime -> {
-            System.out.println("SummaryUI: time dependency CHANGED. New time: " + newTime);
-        });
 
         // Création de notre listview à partir d'une liste observable
         ObservableList<Journey> buffer = FXCollections.observableArrayList();
@@ -67,22 +62,38 @@ public record SummaryUI(Node rootNode, ObservableValue<Journey> selectedJourneyO
         // 2) --------------- Sélections ---------------------
 
         // On sélectionne le bon quand la journey change
-        journeyList.addListener((obs, oldJ, nJ) -> {
-            Journey toSelect =  nJ.stream() // Sélection du premier voyage après le temps indiqué
-                    .filter(journey -> !journey.depTime().toLocalTime().isBefore(time.getValue()))
-                    .findFirst()
-                    .orElse(nJ.getLast());
-            trueList.getSelectionModel().select(toSelect);
-        });
-        // On sélectionne le bon quand le time change
-        time.addListener((obs, oldT, nT) -> {
-            List<Journey> jList = journeyList.getValue();
-            Journey toSelect =  jList.stream() // Sélection du premier voyage après le temps indiqué
-                    .filter(journey -> !journey.depTime().toLocalTime().isBefore(nT))
-                    .findFirst()
-                    .orElse(jList.getLast());
-            trueList.getSelectionModel().select(toSelect);
-        });
+        autoSelect = Bindings.createObjectBinding(
+                () -> {
+                    // Lorsque l'heure de voyage désirée change, le premier voyage
+                    // partant à cette heure-là, ou plus tard, est sélectionné dans la liste.
+                    // S'il n'y en a aucun, alors le dernier voyage de la liste est sélectionné.
+                    List<Journey> currentJourneyList = journeyList.getValue();
+                    LocalTime currentTime = time.getValue();
+                    if (currentJourneyList == null || currentJourneyList.isEmpty() || currentTime == null) {
+                        return null;
+                    }
+
+                    return currentJourneyList.stream()
+                            // on ne garde que les voyages qui sont après le temps sélectionnés
+                            .filter(journey -> !journey.depTime().toLocalTime().isBefore(currentTime))
+                            // on prend le premier s'il y en a un
+                            .findFirst()
+                            // sinon, on prend le dernier
+                            .orElse(currentJourneyList.getLast());
+                },
+                journeyList,
+                time
+        );
+
+        // Dès que le voyage séléctionné change, on change la séléction dans l'interface
+         autoSelect.subscribe(
+
+                 currentJourney -> {
+                     System.out.println("auh");
+
+                     trueList.getSelectionModel().select(currentJourney);
+                 }
+         );
 
         ObservableValue<Journey> userSelection = trueList
                 .getSelectionModel()
