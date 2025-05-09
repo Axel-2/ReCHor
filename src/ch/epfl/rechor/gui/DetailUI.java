@@ -25,7 +25,7 @@ import java.util.Objects; // Pour gérer le chemin CSS
 
 import static java.awt.Desktop.getDesktop;
 
-// TODO 
+
 /**
  * Classe qui représente la partie de l'interface
  * graphique qui montre les détails d'un voyage
@@ -61,12 +61,17 @@ public record DetailUI(Node rootNode) {
     public static DetailUI create(ObservableValue<Journey> journeyObservableValue) {
 
         // Récupération du voyage
-        Journey journey = journeyObservableValue.getValue();
 
         ScrollPane scroll = new ScrollPane(); // Noeud racine
         scroll.setId(DETAIL_ID);
         scroll.getStylesheets().add(loadCSS(DETAIL_CSS_PATH));
-        scroll.setContent(buildContent(journey)); // Ajout du contenu
+
+        journeyObservableValue.subscribe(
+                () -> {
+                    System.out.println("hehhh");
+                    scroll.setContent(buildContent(journeyObservableValue.getValue())); // Ajout du contenu
+                }
+        );
 
         return new DetailUI(scroll);
 

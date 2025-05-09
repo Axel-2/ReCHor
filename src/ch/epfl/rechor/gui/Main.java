@@ -39,7 +39,6 @@ public class Main extends Application {
     public void start(Stage primaryStage) throws Exception {
 
         // Chargement des données horaires
-        // TODO utiliser le cacheFileTimeTable
         TimeTable timeTable = new CachedTimeTable(FileTimeTable.in(Path.of("timetable")));
 
         Stations stations = timeTable.stations();

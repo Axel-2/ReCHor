@@ -59,7 +59,7 @@ public record SummaryUI(Node rootNode, ObservableValue<Journey> selectedJourneyO
 
         // On crée un binding car on veut qu'à chaque changement de voyage ou de temps,
         // notre liste de voyage se mette à jour
-        ObjectBinding<Journey> currentSelectedJourney = Bindings.createObjectBinding(
+        ObjectBinding<Journey> autoSelect = Bindings.createObjectBinding(
                 () -> {
                     // Lorsque l'heure de voyage désirée change, le premier voyage
                     // partant à cette heure-là, ou plus tard, est sélectionné dans la liste. 
@@ -83,10 +83,15 @@ public record SummaryUI(Node rootNode, ObservableValue<Journey> selectedJourneyO
         );
 
         // Dès que le voyage séléctionné change, on change la séléction dans l'interface
-        currentSelectedJourney.subscribe(
+        autoSelect.subscribe(
                 currentJourney -> trueList.getSelectionModel().select(currentJourney)
         );
 
+        ObservableValue<Journey> userSelection = trueList
+                .getSelectionModel()
+                .selectedItemProperty();
+
+        userSelection.subscribe((e)-> System.out.println("ahhh"));
 
         // 3) --------------- CSS ---------------------
         try {
@@ -100,7 +105,7 @@ public record SummaryUI(Node rootNode, ObservableValue<Journey> selectedJourneyO
         }
 
         // 4) --------------- Return ---------------------
-        return new SummaryUI(trueList, currentSelectedJourney);
+        return new SummaryUI(trueList, userSelection);
 
     }
 }
