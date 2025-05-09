@@ -78,30 +78,7 @@ public record SummaryUI(Node rootNode, ObservableValue<Journey> selectedJourneyO
                     .orElse(jList.getLast());
             trueList.getSelectionModel().select(toSelect);
         });
-
-        ee
-                    return currentJourneyList.stream()
-                            // on ne garde que les voyages qui sont après le temps sélectionnés
-                            .filter(journey -> !journey.depTime().toLocalTime().isBefore(currentTime))
-                            // on prend le premier s'il y en a un
-                            .findFirst()
-                            // sinon, on prend le dernier
-                            .orElse(currentJourneyList.getLast());
-                },
-                journeyList,
-                time
-        );
-
-        // Dès que le voyage séléctionné change, on change la séléction dans l'interface
-         autoSelect.subscribe(
-
-                 currentJourney -> {
-                     System.out.println("auh");
-
-                     trueList.getSelectionModel().select(currentJourney);
-                 }
-         );
-
+        
         ObservableValue<Journey> userSelection = trueList
                 .getSelectionModel()
                 .selectedItemProperty();
