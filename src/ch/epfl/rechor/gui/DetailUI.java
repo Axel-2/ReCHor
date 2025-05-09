@@ -63,10 +63,10 @@ public record DetailUI(Node rootNode) {
         // Récupération du voyage
         Journey journey = journeyObservableValue.getValue();
 
-        ScrollPane scroll = new ScrollPane();
+        ScrollPane scroll = new ScrollPane(); // Noeud racine
         scroll.setId(DETAIL_ID);
         scroll.getStylesheets().add(loadCSS(DETAIL_CSS_PATH));
-        scroll.setContent(buildContent(journey));
+        scroll.setContent(buildContent(journey)); // Ajout du contenu
 
         return new DetailUI(scroll);
 
@@ -76,33 +76,40 @@ public record DetailUI(Node rootNode) {
         // ---------- Création des composants ----------- (de bas en haut)
         private static Node buildContent(Journey journey) {
             List<Circle> circles = new ArrayList<>();
-            Pane annotationsPane = new Pane();
 
+            Pane annotationsPane = new Pane();
             GridPane gridPane = createLegsGrid(journey, annotationsPane, circles);
 
-            Button mapBtn = new Button(HBOX_ID);
+            // Boutons
+            Button mapBtn = new Button(MAP_BUTTON_TEXT);
             mapBtn.setOnAction(e -> mapClick(journey));
             Button calBtn = new Button(CALENDAR_BUTTON_TEXT);
             calBtn.setOnAction(e -> calendarClick(journey, calBtn));
             HBox btnBox = new HBox(mapBtn, calBtn);
             btnBox.setId(HBOX_ID);
 
+            // À afficher s'il n'y a aucun voyage à charger
             Text noTxt = new Text(NO_JOURNEY_TEXT);
             VBox noBox = new VBox(noTxt);
             noBox.setId(NO_JOURNEY_ID);
+
+            // À afficher s'il y a un voyage à charger
             VBox yesBox = new VBox(new StackPane(annotationsPane, gridPane), btnBox);
+
             boolean hasJourney = journey != null;
             noBox.setVisible(!hasJourney);
             yesBox.setVisible(hasJourney);
 
-            return new StackPane(noBox, yesBox);
+            return new StackPane(noBox, yesBox); // Enfant direct du nœud racine
         }
 
+    // Création de la grille contenant toutes les étapes
     private static GridPane createLegsGrid(Journey journey, Pane annotationsPane, List<Circle> circles) {
         GridPane gridPane = new LineGridPane(annotationsPane, circles);
         gridPane.setId(LEGS_ID);
         gridPane.getStylesheets().add("legs");
 
+        // On parcourt toutes les étapes et on affiche ce qu'il faut en fonction du type
         int currentRow = 0;
         if (journey != null) {
             for (Journey.Leg leg : journey.legs()) {
@@ -153,7 +160,9 @@ public record DetailUI(Node rootNode) {
                 inner.add(new Text(FormatterFr.formatTime(stop.depTime())), 1, r);
                 inner.add(new Text(stop.stop().name()), 2, r++);
             }
-            String title = t.intermediateStops().size() + " arrêts, " + FormatterFr.formatDuration(t.duration());
+            String title = t.intermediateStops().size() == 1 ?
+                    "1 arrêt, " + FormatterFr.formatDuration(t.duration()) :
+                    t.intermediateStops().size() + " arrêts, " + FormatterFr.formatDuration(t.duration());
             Accordion acc = new Accordion(new TitledPane(title, inner));
             gridPane.add(acc, 2, row, 2, 1);
         }
@@ -171,6 +180,7 @@ public record DetailUI(Node rootNode) {
         return row;
     }
 
+    // Méthode privée s'occupant du CSS
     private static String loadCSS(String cssPath) {
         try {
             return Objects.requireNonNull(DetailUI.class.getResource(cssPath)).toExternalForm();
@@ -180,7 +190,7 @@ public record DetailUI(Node rootNode) {
         }
     }
 
-    // méthode privée pour la gestion d'un clic sur le bouton carte
+    // Méthode privée pour la gestion d'un clic sur le bouton carte
     private static void mapClick(Journey j){
         try {
             URI url = new URI(
@@ -198,7 +208,7 @@ public record DetailUI(Node rootNode) {
     }
 
 
-    // méthode privée pour la gestion d'un clic sur le bouton calendrier
+    // Méthode privée pour la gestion d'un clic sur le bouton calendrier
     private static void calendarClick(Journey j, Node node){
         try {
             FileChooser fileChooser = new FileChooser();
@@ -214,6 +224,7 @@ public record DetailUI(Node rootNode) {
         }
     }
 
+    // Redéfinition d'un gridPane pour afficher les lignes / cercles comme on veut
     private static class LineGridPane extends GridPane{
         private final Pane annotationsPane;
         private final List<Circle> circles;
@@ -227,20 +238,14 @@ public record DetailUI(Node rootNode) {
         protected void layoutChildren(){
             super.layoutChildren();
 
-            // 1) Vider l’ancien contenu
+            // Vider l’ancien contenu
             annotationsPane.getChildren().clear();
 
-            if(circles.size() % 2 != 0) {
-                System.out.println("Nombre de cercles impair...");
-                return;
-            }
-
-            // Pour chaque paire de cercle
             for (int i = 0; i < circles.size(); i += 2) {
                 Circle first = circles.get(i);
                 Circle second = circles.get(i+1);
 
-                // Création de la ligne
+                // Création de la ligne, qui relie les coordonnées de la paire de cercle
                 Line line = new Line(
                         first.getBoundsInParent().getCenterX(),
                         first.getBoundsInParent().getCenterY(),
@@ -251,7 +256,6 @@ public record DetailUI(Node rootNode) {
                 line.setStroke(javafx.scene.paint.Color.RED);
                 line.setStrokeWidth(2);
 
-                // On l'ajoute
                 annotationsPane.getChildren().add(line);
             }
         }
