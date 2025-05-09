@@ -89,12 +89,12 @@ public record QueryUI(
         HBox mainBox = new HBox();
 
         // Départ
-        Label depLabel = new Label("Départ\\u202f:");
+        Label depLabel = new Label("Départ\u202f:");
         depStop.textField().setPromptText("Nom de l'arrêt de départ");
         depStop.textField().setId("depStop");
 
         // Arrivée
-        Label arrLabel = new Label("Arrivée\\u202f:");
+        Label arrLabel = new Label("Arrivée\u202f:");
         arrTextField.textField().setPromptText("Nom de l'arrêt d'arrivée");
 
         mainBox.getChildren().addAll(
@@ -113,11 +113,11 @@ public record QueryUI(
 
         HBox hBox = new HBox();
         // Date
-        Label dateLabel = new Label("Date\\u202f:");
+        Label dateLabel = new Label("Date\u202f:");
         datePicker.setId("date");
 
         // Heure
-        Label hourLabeL = new Label("Heure\\u202f:");
+        Label hourLabeL = new Label("Heure\u202f:");
         hourTextField.setId("time");
 
         hBox.getChildren().addAll(
