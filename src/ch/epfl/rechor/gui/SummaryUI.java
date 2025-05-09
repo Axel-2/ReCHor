@@ -52,8 +52,16 @@ public record SummaryUI(Node rootNode, ObservableValue<Journey> selectedJourneyO
         // Création de notre listview à partir d'une liste observable
         ObservableList<Journey> buffer = FXCollections.observableArrayList();
         ListView<Journey> trueList = new ListView<>(buffer);
-        journeyList.subscribe((newList) -> buffer.setAll(newList)); //on veut update à chaque nouveau voyage
 
+        // TODO re tester avec un subscribe ici
+        journeyList.addListener((obs, oldList, newList) -> {
+            buffer.setAll(newList == null ? List.of() : newList);
+        });
+
+        // 2) initialise le buffer une première fois
+        if (journeyList.getValue() != null) {
+            buffer.setAll(journeyList.getValue());
+        }
         // On définit la formes de nos cells
         trueList.setCellFactory(JourneyCell::new);
 
