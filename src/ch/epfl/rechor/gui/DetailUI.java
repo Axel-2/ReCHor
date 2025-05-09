@@ -4,6 +4,7 @@ import ch.epfl.rechor.FormatterFr;
 import ch.epfl.rechor.journey.Journey; // Importer Journey
 import ch.epfl.rechor.journey.JourneyGeoJsonConverter;
 import ch.epfl.rechor.journey.JourneyIcalConverter;
+import javafx.beans.binding.Bindings;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.Node;
 import javafx.scene.control.*;
@@ -60,14 +61,17 @@ public record DetailUI(Node rootNode) {
      */
     public static DetailUI create(ObservableValue<Journey> journeyObservableValue) {
 
-        // Récupération du voyage
-        Journey journey = journeyObservableValue.getValue();
-
-        ScrollPane scroll = new ScrollPane(); // Noeud racine
+        ScrollPane scroll = new ScrollPane();
         scroll.setId(DETAIL_ID);
         scroll.getStylesheets().add(loadCSS(DETAIL_CSS_PATH));
-        scroll.setContent(buildContent(journey)); // Ajout du contenu
 
+        // 1) initialisation
+        scroll.setContent(buildContent(journeyObservableValue.getValue()));
+
+        // 2) à chaque changement, on ré-affiche
+        journeyObservableValue.addListener((obs, oldJ, newJ) -> {
+            scroll.setContent(buildContent(newJ));
+        });
         return new DetailUI(scroll);
 
     }
