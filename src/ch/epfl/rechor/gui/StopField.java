@@ -63,22 +63,24 @@ public record StopField(TextField textField, ObservableValue<String> stopO) {
                 javafx.scene.input.KeyEvent.KEY_PRESSED,
                 event -> {
                     switch(event.getCode()) {
-                        case UP -> {
-                            int currentSelectIndex = suggestions.getSelectionModel().getSelectedIndex();
-                            if (currentSelectIndex > 0) { // Si on est pas tout en haut, on descend
-                                suggestions.getSelectionModel().select(currentSelectIndex - 1);
-                            }  else { // Si on est tout en haut, on va tout en bas
-                                suggestions.getSelectionModel().selectLast();
-                            }
+                        case DOWN -> {
+                            int currentSelectedIndex = suggestions.getSelectionModel().getSelectedIndex();
+                            int nextSelectedIndex = currentSelectedIndex >= suggestions.getItems().size() - 1
+                                    ? 0
+                                    : currentSelectedIndex + 1;
+
+                            suggestions.getSelectionModel().select(nextSelectedIndex);
+                            suggestions.scrollTo(nextSelectedIndex);
                             event.consume();
                         }
-                        case DOWN -> {
-                            int currentSelectIndex = suggestions.getSelectionModel().getSelectedIndex();
-                            if (currentSelectIndex < suggestions.getItems().size() - 1) { // Si on est pas tout en bas, on monte
-                                suggestions.getSelectionModel().select(currentSelectIndex + 1);
-                            } else { // Si on est tout en bas, on va tout en haut
-                                suggestions.getSelectionModel().selectFirst();
-                            }
+                        case UP-> {
+                            int currentSelectedIndex = suggestions.getSelectionModel().getSelectedIndex();
+                            int nextSelectedIndex = currentSelectedIndex > 0
+                                    ? currentSelectedIndex - 1
+                                    : suggestions.getItems().size() - 1;
+
+                            suggestions.getSelectionModel().select(nextSelectedIndex);
+                            suggestions.scrollTo(nextSelectedIndex);
                             event.consume();
                         }
                         case ENTER, ESCAPE  -> {
