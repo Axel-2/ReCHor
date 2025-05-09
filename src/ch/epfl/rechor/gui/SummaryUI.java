@@ -60,18 +60,14 @@ public record SummaryUI(Node rootNode, ObservableValue<Journey> selectedJourneyO
         trueList.setCellFactory(JourneyCell::new);
 
         // 2) --------------- Sélections ---------------------
-
         // On sélectionne le bon quand la journey change
-        autoSelect = Bindings.createObjectBinding(
-                () -> {
-                    // Lorsque l'heure de voyage désirée change, le premier voyage
-                    // partant à cette heure-là, ou plus tard, est sélectionné dans la liste.
-                    // S'il n'y en a aucun, alors le dernier voyage de la liste est sélectionné.
-                    List<Journey> currentJourneyList = journeyList.getValue();
-                    LocalTime currentTime = time.getValue();
-                    if (currentJourneyList == null || currentJourneyList.isEmpty() || currentTime == null) {
-                        return null;
-                    }
+        journeyList.addListener((obs, oldJ, nJ) -> {
+            trueList.getSelectionModel().select(selectedJourney(nJ, time.getValue()));
+        });
+        // On sélectionne le bon quand le time change
+        time.addListener((obs, oldT, nT) -> {
+            trueList.getSelectionModel().select(selectedJourney(journeyList.getValue(), nT));
+        });
 
                     return currentJourneyList.stream()
                             // on ne garde que les voyages qui sont après le temps sélectionnés
@@ -115,7 +111,14 @@ public record SummaryUI(Node rootNode, ObservableValue<Journey> selectedJourneyO
         return new SummaryUI(trueList, userSelection);
 
     }
+    private static Journey selectedJourney(List<Journey> jList, LocalTime t) {
+        return jList.stream()
+                .filter(j -> !j.depTime().toLocalTime().isBefore(t))
+                .findFirst()
+                .orElse(jList.getLast());
+    }
 }
+
 
 /**
  * Classe qui représente une cellule affichant un voyage
