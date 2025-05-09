@@ -18,12 +18,10 @@ import javafx.stage.Stage;
 
 import java.nio.file.Path;
 import java.time.LocalDate;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
 
 public class Main extends Application {
 
@@ -34,6 +32,10 @@ public class Main extends Application {
     public static void main(String[] args) {
         launch(args);
     }
+
+    // Cache du profil
+    private  record ProfileKey(LocalDate date, int arrivalId) {}
+    private final Map<ProfileKey, Profile> profileCache = new HashMap<>();
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -65,15 +67,22 @@ public class Main extends Application {
                     String depStop = queryUI.depStopO().getValue();
                     String arrStop = queryUI.arrStopO().getValue();
 
-                    if (date == null || depStop.equals("") || arrStop.equals("")) {
+                    if (date == null || depStop.isEmpty() || arrStop.isEmpty()) {
                         return Collections.emptyList();
                     }
 
-                    Profile profile = new Router(timeTable).profile(
-                                queryUI.dateO().getValue(),
-                                stationId(timeTable, queryUI.arrStopO().getValue())
-                        );
-                        return JourneyExtractor.journeys(
+                    int arrId = stationId(timeTable, arrStop);
+                    ProfileKey profileKey = new ProfileKey(date, arrId);
+
+                    Profile profile = profileCache.computeIfAbsent(
+                            profileKey,
+                            k -> new Router(timeTable).profile(
+                                    k.date(),
+                                    k.arrivalId()
+                            )
+                    );
+
+                    return JourneyExtractor.journeys(
                                 profile,
                                 stationId(timeTable, queryUI.depStopO().getValue()
                                 )
