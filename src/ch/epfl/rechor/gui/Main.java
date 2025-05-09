@@ -85,6 +85,7 @@ public class Main extends Application {
                 queryUI.arrStopO()
         );
 
+
         SummaryUI summaryUI = SummaryUI.create(journeyList, queryUI.timeO());
         DetailUI detailUI = DetailUI.create(summaryUI.selectedJourneyO());
 

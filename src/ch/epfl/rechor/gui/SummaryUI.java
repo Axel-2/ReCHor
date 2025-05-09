@@ -4,6 +4,7 @@ import ch.epfl.rechor.journey.Journey;
 
 import javafx.beans.binding.Binding;
 import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanBinding;
 import javafx.beans.binding.ObjectBinding;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -46,6 +47,14 @@ public record SummaryUI(Node rootNode, ObservableValue<Journey> selectedJourneyO
     public static SummaryUI create(ObservableValue<List<Journey>> journeyList, ObservableValue<LocalTime> time){
 
         // 2) --------------- Initialisation ---------------------
+
+        journeyList.subscribe(newList -> {
+            System.out.println("SummaryUI: journeyList dependency CHANGED.");
+        });
+
+        time.subscribe(newTime -> {
+            System.out.println("SummaryUI: time dependency CHANGED. New time: " + newTime);
+        });
 
         // Création de notre listview à partir d'une liste observable
         ObservableList<Journey> buffer = FXCollections.observableArrayList();

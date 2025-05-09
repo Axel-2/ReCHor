@@ -66,6 +66,10 @@ public record DetailUI(Node rootNode) {
         scroll.setId(DETAIL_ID);
         scroll.getStylesheets().add(loadCSS(DETAIL_CSS_PATH));
 
+
+        // 1) Contenu initial :
+        scroll.setContent(buildContent(journeyObservableValue.getValue()));
+
         journeyObservableValue.subscribe(
                 () -> {
                     scroll.setContent(buildContent(journeyObservableValue.getValue())); // Ajout du contenu
