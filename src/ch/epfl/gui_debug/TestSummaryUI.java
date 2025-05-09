@@ -52,7 +52,7 @@ public final class TestSummaryUI extends Application {
                 new SimpleObjectProperty<>(journeys);
         ObservableValue<LocalTime> depTimeO =
                 new SimpleObjectProperty<>(LocalTime.of(16, 00));
-        SummaryUI summaryUI = SummaryUI.create(journeysO, depTimeO); //TODO normal que ça marche pas on string atm
+        SummaryUI summaryUI = SummaryUI.create(journeysO, depTimeO);
         Pane root = new BorderPane(summaryUI.rootNode());
 
         // FIN DU NOUVEAU BLOC
