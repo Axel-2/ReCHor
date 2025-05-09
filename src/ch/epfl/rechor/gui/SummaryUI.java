@@ -69,6 +69,7 @@ public record SummaryUI(Node rootNode, ObservableValue<Journey> selectedJourneyO
             trueList.getSelectionModel().select(selectedJourney(journeyList.getValue(), nT));
         });
 
+        ee
                     return currentJourneyList.stream()
                             // on ne garde que les voyages qui sont après le temps sélectionnés
                             .filter(journey -> !journey.depTime().toLocalTime().isBefore(currentTime))
