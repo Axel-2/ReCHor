@@ -40,7 +40,7 @@ public class Main extends Application {
 
         // Chargement des données horaires
         // TODO utiliser le cacheFileTimeTable
-        TimeTable timeTable = FileTimeTable.in(Path.of("timetable"));
+        TimeTable timeTable = new CachedTimeTable(FileTimeTable.in(Path.of("timetable")));
 
         Stations stations = timeTable.stations();
         List<String> stopsLists = IntStream.range(0, stations.size())
@@ -107,7 +107,10 @@ public class Main extends Application {
         primaryStage.setMinWidth(800);
         primaryStage.setTitle("ReCHor");
         primaryStage.show();
-        Platform.runLater(() -> scene.lookup("#depstop").requestFocus());
+
+        if (!journeyList.getValue().isEmpty()) {
+            Platform.runLater(() -> scene.lookup("#depstop").requestFocus());
+        }
 
     }
 
