@@ -6,6 +6,8 @@ import javafx.beans.value.ObservableValue;
 import javafx.geometry.Bounds;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.stage.Popup;
 import javafx.util.Subscription;
 
@@ -41,7 +43,22 @@ public record StopField(TextField textField, ObservableValue<String> stopO) {
 
         popup.getContent().add(suggestions); // ajout à la fenêtre
 
-        // ---------- Gestionnaire du clavier pour UP and DOWN ----------------
+        // -------- Lambda qui gère la selection d'un stopName --------
+        Runnable select = () -> {
+            String selectedStopName = suggestions.getSelectionModel().getSelectedItem();
+            String value = selectedStopName != null ? selectedStopName : "";
+            stopNameWrapper.set(value);
+            textField.setText(value);
+            popup.hide();
+        };
+        // --------- Gestionnaire des events souris -----------
+        suggestions.setOnMouseClicked((MouseEvent me) -> {
+            if (me.getButton() == MouseButton.PRIMARY && me.getClickCount() == 1) {
+                select.run();
+                me.consume();
+            }
+        });
+        // ---------- Gestionnaire des events clavier ----------------
         textField.addEventHandler(
                 javafx.scene.input.KeyEvent.KEY_PRESSED,
                 event -> {
@@ -64,7 +81,9 @@ public record StopField(TextField textField, ObservableValue<String> stopO) {
                             }
                             event.consume();
                         }
-
+                        case ENTER, ESCAPE  -> {
+                            select.run();
+                        }
                         default -> {
                             // On ne fait rien
                         }
