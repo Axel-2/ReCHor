@@ -56,23 +56,13 @@ public record SummaryUI(Node rootNode, ObservableValue<Journey> selectedJourneyO
         trueList.setCellFactory(JourneyCell::new);
 
         // 2) --------------- Sélections ---------------------
-
         // On sélectionne le bon quand la journey change
         journeyList.addListener((obs, oldJ, nJ) -> {
-            Journey toSelect =  nJ.stream() // Sélection du premier voyage après le temps indiqué
-                    .filter(journey -> !journey.depTime().toLocalTime().isBefore(time.getValue()))
-                    .findFirst()
-                    .orElse(nJ.getLast());
-            trueList.getSelectionModel().select(toSelect);
+            trueList.getSelectionModel().select(selectedJourney(nJ, time.getValue()));
         });
         // On sélectionne le bon quand le time change
         time.addListener((obs, oldT, nT) -> {
-            List<Journey> jList = journeyList.getValue();
-            Journey toSelect =  jList.stream() // Sélection du premier voyage après le temps indiqué
-                    .filter(journey -> !journey.depTime().toLocalTime().isBefore(nT))
-                    .findFirst()
-                    .orElse(jList.getLast());
-            trueList.getSelectionModel().select(toSelect);
+            trueList.getSelectionModel().select(selectedJourney(journeyList.getValue(), nT));
         });
 
         ObservableValue<Journey> userSelection = trueList
@@ -95,7 +85,14 @@ public record SummaryUI(Node rootNode, ObservableValue<Journey> selectedJourneyO
         return new SummaryUI(trueList, userSelection);
 
     }
+    private static Journey selectedJourney(List<Journey> jList, LocalTime t) {
+        return jList.stream()
+                .filter(j -> !j.depTime().toLocalTime().isBefore(t))
+                .findFirst()
+                .orElse(jList.getLast());
+    }
 }
+
 
 /**
  * Classe qui représente une cellule affichant un voyage
