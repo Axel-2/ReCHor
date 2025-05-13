@@ -37,7 +37,7 @@ public record QueryUI(
      * @param stopIndex index des arrêts
      * @return une instance de QueryUI
      */
-    private static QueryUI create(StopIndex stopIndex) {
+    public static QueryUI create(StopIndex stopIndex) {
 
 
         // Départ, échange et arrivée
