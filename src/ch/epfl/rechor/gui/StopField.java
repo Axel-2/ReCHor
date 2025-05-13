@@ -54,6 +54,7 @@ public record StopField(TextField textField, ObservableValue<String> stopO) {
             textField.setText(value); // TODO good ?
             popup.hide();
         };
+
         // --------- Gestionnaire des events souris -----------
         suggestions.setOnMouseClicked((MouseEvent me) -> {
             if (me.getButton() == MouseButton.PRIMARY && me.getClickCount() == 1) {
@@ -61,6 +62,7 @@ public record StopField(TextField textField, ObservableValue<String> stopO) {
                 me.consume();
             }
         });
+
         // ---------- Gestionnaire des events clavier ----------------
         textField.addEventHandler(
                 javafx.scene.input.KeyEvent.KEY_PRESSED,

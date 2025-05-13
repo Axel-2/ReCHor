@@ -31,7 +31,7 @@ public final class Submit {
     // -------------
     // Jeton du premier membre du groupe
     // Axel
-    private static final String TOKEN_1 = "fee6OoHa";
+    private static final String TOKEN_1 = "eikohZ7m";
     // Jeton du second membre (identique au premier pour les personnes travaillant seules)
     private static final String TOKEN_2 = "Deefeel7";
     // Yoann

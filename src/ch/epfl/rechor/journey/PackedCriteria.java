@@ -30,7 +30,6 @@ public class PackedCriteria {
     // Constante de conversion pour les minutes
     private static final int COMPLEMENT_CONSTANT = 4095;
 
-
     // Pour rendre la classe non instantiable
     private PackedCriteria() {}
 

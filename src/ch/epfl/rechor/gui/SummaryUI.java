@@ -42,9 +42,9 @@ public record SummaryUI(Node rootNode, ObservableValue<Journey> selectedJourneyO
      * Fonction dont le but est de créer le graphe de scène et de retourner
      * une instance de SummaryUI contenant sa racine ainsi que la valeur
      * observable contenant le voyage sélectionné
-     * @param journeyList
-     * @param time
-     * @return
+     * @param journeyList une liste de voyages
+     * @param time le temps désiré
+     * @return une instance de SummaryUI
      */
     public static SummaryUI create(ObservableValue<List<Journey>> journeyList, ObservableValue<LocalTime> time){
 
@@ -53,7 +53,6 @@ public record SummaryUI(Node rootNode, ObservableValue<Journey> selectedJourneyO
         ObservableList<Journey> buffer = FXCollections.observableArrayList();
         ListView<Journey> trueList = new ListView<>(buffer);
 
-        // TODO re tester avec un subscribe ici
         journeyList.addListener((obs, oldList, newList) -> {
             buffer.setAll(newList == null ? List.of() : newList);
         });
@@ -72,6 +71,7 @@ public record SummaryUI(Node rootNode, ObservableValue<Journey> selectedJourneyO
             trueList.getSelectionModel().select(selectedJourney);
             trueList.scrollTo(selectedJourney);
         });
+
         // On sélectionne le bon quand le time change
         time.addListener((obs, oldT, nT) -> {
             Journey selectedJourney = selectedJourney(journeyList.getValue(), nT);
@@ -173,7 +173,7 @@ class JourneyCell extends ListCell<Journey> {
                         if (node instanceof Circle) {
                             Circle circle = (Circle) node;
                             Object circleData = circle.getUserData();
-                            if (circleData instanceof LocalDateTime){
+                            if (circleData instanceof LocalDateTime) {
                                 // Extraction des données temporelles
                                 LocalDateTime circleTime = (LocalDateTime) circleData;
                                 LocalDateTime startingTime = journey.depTime();
@@ -186,7 +186,9 @@ class JourneyCell extends ListCell<Journey> {
                                 // Centrages aux bonnes positions
                                 circle.setCenterX(positionX);
                                 circle.setCenterY(y);
-                            }}});
+                            }
+                        }
+                    });
         }
     };
 
@@ -229,7 +231,7 @@ class JourneyCell extends ListCell<Journey> {
             // Créations des cercles
             populateCircles(journey);
 
-            // On stock le voyage dans le pane, car on en a besoin à l'intérieur
+            // On stocke le voyage dans le pane, car on en a besoin à l'intérieur
             centerPane.setUserData(journey);
 
             // On affiche !
@@ -270,7 +272,7 @@ class JourneyCell extends ListCell<Journey> {
     /**
      * Fonction qui sert à remplir la liste avec tous
      * les cercles nécessaires pour la ligne
-     * @param journey
+     * @param journey un voyage
      */
     private void populateCircles(Journey journey) {
         circles.getChildren().clear(); // On efface l'affichage précédent
