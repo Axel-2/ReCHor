@@ -24,23 +24,25 @@ import java.util.List;
  * @author Axel Verga (398787)
  */
 public record StopField(TextField textField, ObservableValue<String> stopO) {
+    private static final int SUGGESTION_NUMBER = 30; // Nombre de résultats proposés
+    private static final int MAX_HEIGHT = 240;
+
     /**
      * Fonction qui crée un champ textuel et une fenêtre
      * @param stopIndex index des arrêts
      * @return une instance de StopField
      */
     public static StopField create(StopIndex stopIndex) {
-         final int SUGGESTION_NUMBER = 30;
-        // ------------ Champ textuel et String wrapper ----------------
-        TextField textField = new TextField();
+        // ------------ Champ textuel et String Property ----------------
+        final TextField textField = new TextField();
         Property<String> stringProperty = new SimpleObjectProperty<>("");
         // --------------------- Pop Up et liste déroulante + configurations ----------------
-        Popup popup = new Popup();
+        final Popup popup = new Popup();
         popup.setHideOnEscape(false);
 
         ListView<String> suggestions = new ListView<>();
         suggestions.setFocusTraversable(false);
-        suggestions.setMaxHeight(240);
+        suggestions.setMaxHeight(MAX_HEIGHT);
 
         popup.getContent().add(suggestions); // ajout à la fenêtre
 
@@ -48,8 +50,8 @@ public record StopField(TextField textField, ObservableValue<String> stopO) {
         Runnable select = () -> {
             String selectedStopName = suggestions.getSelectionModel().getSelectedItem();
             String value = selectedStopName != null ? selectedStopName : "";
-            stringProperty.setValue(value);
-            textField.setText(value);
+            stringProperty.setValue(value); // TODO good ?
+            textField.setText(value); // TODO good ?
             popup.hide();
         };
         // --------- Gestionnaire des events souris -----------
@@ -85,7 +87,8 @@ public record StopField(TextField textField, ObservableValue<String> stopO) {
                             event.consume();
                         }
                         case ENTER, ESCAPE  -> {
-                            select.run();
+                            select.run(); //TODO vérif, c'est peut être pas bon
+                            event.consume();
                         }
                         default -> {
                             // On ne fait rien
@@ -96,12 +99,12 @@ public record StopField(TextField textField, ObservableValue<String> stopO) {
 
         // -------- Observers de textField -------------
         ArrayList<Subscription> subscriptions = new ArrayList<>();
-        textField.focusedProperty().subscribe(value -> {
-            if (value) {
+        textField.focusedProperty().subscribe(focusOn -> {
+            if (focusOn) {
                 // On ajoute les auditeurs
-                subscriptions.add(textField.textProperty().subscribe(value2 -> {
+                subscriptions.add(textField.textProperty().subscribe(newText -> {
                     // On met à jour la liste des suggestions
-                    List<String> suggestionsList = stopIndex.stopsMatching(value2, SUGGESTION_NUMBER);
+                    List<String> suggestionsList = stopIndex.stopsMatching(newText, SUGGESTION_NUMBER);
                     suggestions.getItems().clear();
                     suggestions.getItems().addAll(suggestionsList);
 
@@ -113,9 +116,9 @@ public record StopField(TextField textField, ObservableValue<String> stopO) {
                         }
                     }
                 }));
-                subscriptions.add(textField.boundsInLocalProperty().subscribe(value3 -> {
+                subscriptions.add(textField.boundsInLocalProperty().subscribe(newBounds -> {
                     // On met à jour la position de la popup
-                    Bounds bounds = textField.localToScreen(value3);
+                    Bounds bounds = textField.localToScreen(newBounds);
                     popup.setAnchorX(bounds.getMinX());
                     popup.setAnchorY(bounds.getMaxY());
                 }));
