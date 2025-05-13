@@ -22,11 +22,14 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-
+/**
+ * Classe principale du projet, qui initialise l'interface graphique
+ * @author Yoann Salamin (390522)
+ * @author Axel Verga (398787)
+ */
 public class Main extends Application {
 
-    // La consigne nous dit que c'est imporant que la liste des voyages
-    // soit un attribut de la classe Main
+    // Attribut de classe : liste des voyages observables
     private static ObservableValue<List<Journey>> journeyList;
 
     public static void main(String[] args) {
@@ -40,8 +43,9 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
 
-        // Chargement des données horaires
+        // ----------- Chargement des données horaires ---------------------
         TimeTable timeTable = new CachedTimeTable(FileTimeTable.in(Path.of("timetable")));
+        Router router = new Router(timeTable);
 
         Stations stations = timeTable.stations();
         List<String> stopsLists = IntStream.range(0, stations.size())
@@ -56,38 +60,35 @@ public class Main extends Application {
                         aliases::stationName
                 ));
 
-        // Création de QueryUI
         StopIndex stopIndex = new StopIndex(stopsLists, alternatesNamesMap);
-        QueryUI queryUI = QueryUI.create(stopIndex);
 
-        queryUI.dateO().subscribe((e)-> System.out.println(e.getYear()+ " " + e.getDayOfMonth()));
+        // ---------------- UI -------------------------
+        QueryUI queryUI = QueryUI.create(stopIndex); // 1)
 
+        // Mise à jour de la liste des voyages
         journeyList = Bindings.createObjectBinding(
                 ()-> {
 
                     LocalDate date = queryUI.dateO().getValue();
-                    System.out.println(date.getYear()+ " " + date.getDayOfMonth());
                     String depStop = queryUI.depStopO().getValue();
                     String arrStop = queryUI.arrStopO().getValue();
 
-                    if (date == null || depStop.isEmpty() || arrStop.isEmpty()) {
+                    if (depStop.isEmpty() || arrStop.isEmpty()) {
                         return Collections.emptyList();
                     }
 
                     int arrId = stationId(timeTable, arrStop);
 
-                    System.out.println("Profile: " + date.getDayOfMonth());
                     ProfileKey profileKey = new ProfileKey(date, arrId);
-
                     Profile profile = profileCache.computeIfAbsent(
                             profileKey,
 
-                            k -> new Router(timeTable).profile(
+                            k -> router.profile(
                                     date,
                                     arrId
                             )
                     );
-                    
+
                     return JourneyExtractor.journeys(
                                 profile,
                                 stationId(timeTable, queryUI.depStopO().getValue()
@@ -101,22 +102,20 @@ public class Main extends Application {
         );
 
 
-        SummaryUI summaryUI = SummaryUI.create(journeyList, queryUI.timeO());
-        DetailUI detailUI = DetailUI.create(summaryUI.selectedJourneyO());
+        SummaryUI summaryUI = SummaryUI.create(journeyList, queryUI.timeO()); // 2)
+        DetailUI detailUI = DetailUI.create(summaryUI.selectedJourneyO()); // 3)
 
         // SplitPane
         SplitPane splitPane = new SplitPane();
         splitPane.getItems().addAll(summaryUI.rootNode(), detailUI.rootNode());
 
-        //BorderPane
+        // BorderPane
         BorderPane borderPane = new BorderPane();
         borderPane.setCenter(splitPane);
         borderPane.setTop(queryUI.rootNode());
 
         // Scene
         Scene scene = new Scene(borderPane);
-
-        // Mise en place de la fenêtre
         primaryStage.setScene(scene);
         primaryStage.setMinHeight(600);
         primaryStage.setMinWidth(800);
@@ -124,11 +123,12 @@ public class Main extends Application {
         primaryStage.show();
 
         if (!journeyList.getValue().isEmpty()) {
-            Platform.runLater(() -> scene.lookup("#depstop").requestFocus());
+            Platform.runLater(() -> scene.lookup("#depStop").requestFocus());
         }
 
     }
 
+    // Méthode privée nous permettant d'avoir l'id d'une station à partir d'un nom et de l'horaire
     private static int stationId(TimeTable timeTable, String name) {
         var stations = timeTable.stations();
         for (var i = 0; i < stations.size(); i += 1)
