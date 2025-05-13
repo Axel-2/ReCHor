@@ -60,10 +60,13 @@ public class Main extends Application {
         StopIndex stopIndex = new StopIndex(stopsLists, alternatesNamesMap);
         QueryUI queryUI = QueryUI.create(stopIndex);
 
+        queryUI.dateO().subscribe((e)-> System.out.println(e.getYear()+ " " + e.getDayOfMonth()));
+
         journeyList = Bindings.createObjectBinding(
                 ()-> {
 
                     LocalDate date = queryUI.dateO().getValue();
+                    System.out.println(date.getYear()+ " " + date.getDayOfMonth());
                     String depStop = queryUI.depStopO().getValue();
                     String arrStop = queryUI.arrStopO().getValue();
 
@@ -72,16 +75,19 @@ public class Main extends Application {
                     }
 
                     int arrId = stationId(timeTable, arrStop);
+
+                    System.out.println("Profile: " + date.getDayOfMonth());
                     ProfileKey profileKey = new ProfileKey(date, arrId);
 
                     Profile profile = profileCache.computeIfAbsent(
                             profileKey,
+
                             k -> new Router(timeTable).profile(
-                                    k.date(),
-                                    k.arrivalId()
+                                    date,
+                                    arrId
                             )
                     );
-
+                    
                     return JourneyExtractor.journeys(
                                 profile,
                                 stationId(timeTable, queryUI.depStopO().getValue()

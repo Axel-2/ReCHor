@@ -18,10 +18,9 @@ public final class CachedTimeTable implements TimeTable {
     private Connections currentCachedConnection = null;
     private Trips currentCachedTrips = null;
 
-    private LocalDate currentDate = null;
-
-
-
+    private LocalDate cachedTripsDate        = null;
+    private LocalDate cachedConnectionsDate  = null;
+    
     // TODO utile ?
     private CachedTimeTable() {
 
@@ -85,10 +84,10 @@ public final class CachedTimeTable implements TimeTable {
     public Trips tripsFor(LocalDate date) {
 
         // On vérifie si la donnée est déjà mise en cache et si la date a changé
-        if (currentCachedTrips == null || currentDate == null || !currentDate.equals(date)) {
+        if (currentCachedTrips == null || cachedTripsDate == null || !cachedTripsDate.equals(date)) {
             // s'il faut changer le cache, on va chercher les infos dans l'horaire
             currentCachedTrips =  underlyingTimetable.tripsFor(date);
-            currentDate = date;
+            cachedTripsDate = date;
         }
 
         return currentCachedTrips;
@@ -98,10 +97,10 @@ public final class CachedTimeTable implements TimeTable {
     public Connections connectionsFor(LocalDate date) {
 
         // On vérifie si la donnée est déjà mise en cache et si la date a changé
-        if (currentCachedConnection == null || currentDate == null || !currentDate.equals(date)) {
+        if (currentCachedConnection == null || cachedConnectionsDate == null || !cachedConnectionsDate.equals(date)) {
             // s'il faut changer le cache, on va chercher les infos dans l'horaire
             currentCachedConnection = underlyingTimetable.connectionsFor(date);
-            currentDate = date;
+            cachedConnectionsDate = date;
         }
 
         return currentCachedConnection;
