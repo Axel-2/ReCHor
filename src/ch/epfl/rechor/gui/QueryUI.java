@@ -14,6 +14,16 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
+/**
+ * Classe qui représente l'interface utilisateur de la requête
+ * @param rootNode (Noeud racine)
+ * @param depStopO (Arrêt de départ observable
+ * @param arrStopO (Arrêt d'arrivée observable)
+ * @param dateO (Date observable)
+ * @param timeO (Temps observable)
+ * @author Yoann Salamin (390522)
+ * @author Axel Verga (398787)
+ */
 public record QueryUI(
         Node rootNode,
         ObservableValue<String> depStopO,
