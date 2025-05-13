@@ -1,7 +1,9 @@
 package ch.epfl.rechor.gui;
 
 import ch.epfl.rechor.StopIndex;
-import javafx.beans.property.ReadOnlyStringWrapper;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.Property;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.geometry.Bounds;
 import javafx.scene.control.ListView;
@@ -31,8 +33,7 @@ public record StopField(TextField textField, ObservableValue<String> stopO) {
          final int SUGGESTION_NUMBER = 30;
         // ------------ Champ textuel et String wrapper ----------------
         TextField textField = new TextField();
-        // On a besoin de ce type pour utiliser .getReadOnlyProperty() après
-        ReadOnlyStringWrapper stopNameWrapper = new ReadOnlyStringWrapper("");
+        Property<String> stringProperty = new SimpleObjectProperty<>("");
         // --------------------- Pop Up et liste déroulante + configurations ----------------
         Popup popup = new Popup();
         popup.setHideOnEscape(false);
@@ -47,7 +48,7 @@ public record StopField(TextField textField, ObservableValue<String> stopO) {
         Runnable select = () -> {
             String selectedStopName = suggestions.getSelectionModel().getSelectedItem();
             String value = selectedStopName != null ? selectedStopName : "";
-            stopNameWrapper.set(value);
+            stringProperty.setValue(value);
             textField.setText(value);
             popup.hide();
         };
@@ -125,13 +126,12 @@ public record StopField(TextField textField, ObservableValue<String> stopO) {
                 popup.hide();
                 // Récupération de l'arrêt sélectionné
                 String selectedStopName = suggestions.getSelectionModel().getSelectedItem();
-                // Mise à jour de la propriété et du wrapper
-                stopNameWrapper.set(selectedStopName != null ? selectedStopName : ""); // "" en cas de null
+                stringProperty.setValue(selectedStopName != null ? selectedStopName : ""); // "" en cas de null
                 textField.setText(selectedStopName != null ? selectedStopName : ""); // "" en cas de null
             }
         });
 
-        return new StopField(textField, stopNameWrapper.getReadOnlyProperty());
+        return new StopField(textField, stringProperty);
     }
 
     /**
@@ -140,5 +140,8 @@ public record StopField(TextField textField, ObservableValue<String> stopO) {
      */
     public void setTo(String stopName){
         textField.setText(stopName);
+        if (stopO instanceof ObjectProperty<String>){
+             ((ObjectProperty<String>) stopO).setValue(stopName);
+        }
     }
 }
