@@ -1,14 +1,12 @@
 package ch.epfl.rechor.gui;
 
 import ch.epfl.rechor.StopIndex;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.util.converter.LocalTimeStringConverter;
-
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -34,10 +32,12 @@ public record QueryUI(
 
     private final static String CSS_PATH = "/query.css";
 
-
-
-
-    public static QueryUI create(StopIndex stopIndex) {
+    /**
+     * Fonction qui crée l'interface utilisateur de la requête
+     * @param stopIndex index des arrêts
+     * @return une instance de QueryUI
+     */
+    private static QueryUI create(StopIndex stopIndex) {
 
 
         // Départ, échange et arrivée
@@ -49,7 +49,7 @@ public record QueryUI(
         DatePicker datePicker = new DatePicker(LocalDate.now());
         TextField hourTextField = new TextField();
 
-        // TODO ca je suis pas trop sur de capter
+        // Formatage
         DateTimeFormatter displayFormatter = DateTimeFormatter.ofPattern("HH:mm");
         DateTimeFormatter parseFormatter = DateTimeFormatter.ofPattern("H:mm");
         LocalTimeStringConverter timeStringConverter = new LocalTimeStringConverter(displayFormatter, parseFormatter);
@@ -60,19 +60,18 @@ public record QueryUI(
         HBox mainBox = createMainBox(depStopField, changeButton, arrStopField);
         HBox dateHourNode = createDateHourNode(datePicker, hourTextField);
 
+        //  ------------- Logique observable ---------------
+        // Extraction des valeurs observables
         ObservableValue<String> depStopO = depStopField.stopO();
-        ObservableValue<String> arrStop0 = arrStopField.stopO();
-        ObservableValue<LocalDate> date0 = datePicker.valueProperty();
-        ObservableValue<LocalTime> time0 = textFormatter.valueProperty();
-
-
-        // Logique observable
+        ObservableValue<String> arrStopO = arrStopField.stopO();
+        ObservableValue<LocalDate> dateO = datePicker.valueProperty();
+        ObservableValue<LocalTime> timeO = textFormatter.valueProperty();
 
         // Logique du bouton
         changeButton.setText("↔");
         changeButton.setOnAction(e -> {
                     String d = depStopO.getValue();
-                    String a = arrStop0.getValue();
+                    String a = arrStopO.getValue();
                     depStopField.setTo(a);
                     arrStopField.setTo(d);
                 }
@@ -86,7 +85,7 @@ public record QueryUI(
         );
         rootNode.getStylesheets().add(loadCSS(CSS_PATH));
 
-        return new QueryUI(rootNode, depStopO, arrStop0, date0, time0);
+        return new QueryUI(rootNode, depStopO, arrStopO, dateO, timeO);
     }
 
 
@@ -107,6 +106,7 @@ public record QueryUI(
         Label arrLabel = new Label("Arrivée\u202f:");
         arrTextField.textField().setPromptText("Nom de l'arrêt d'arrivée");
 
+        // Ajout du contenu
         mainBox.getChildren().addAll(
                 depLabel,
                 depStop.textField(),
@@ -119,7 +119,7 @@ public record QueryUI(
     }
 
 
-    public static HBox createDateHourNode(DatePicker datePicker, TextField hourTextField) {
+    private static HBox createDateHourNode(DatePicker datePicker, TextField hourTextField) {
 
         HBox hBox = new HBox();
         // Date
@@ -127,13 +127,13 @@ public record QueryUI(
         datePicker.setId("date");
 
         // Heure
-        Label hourLabeL = new Label("Heure\u202f:");
+        Label hourLabel = new Label("Heure\u202f:");
         hourTextField.setId("time");
 
         hBox.getChildren().addAll(
                 dateLabel,
                 datePicker,
-                hourLabeL,
+                hourLabel,
                 hourTextField
         );
 
@@ -149,5 +149,4 @@ public record QueryUI(
             return "";
         }
     }
-
 }
