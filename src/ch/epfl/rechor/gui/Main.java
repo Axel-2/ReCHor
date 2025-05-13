@@ -30,7 +30,7 @@ import java.util.stream.IntStream;
 public class Main extends Application {
 
     // Attribut de classe : liste des voyages observables
-    private static ObservableValue<List<Journey>> journeyList;
+    private ObservableValue<List<Journey>> journeyList;
 
     public static void main(String[] args) {
         launch(args);
