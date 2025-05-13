@@ -24,9 +24,6 @@ public record QueryUI(
 
     private final static String CSS_PATH = "/query.css";
 
-
-
-
     public static QueryUI create(StopIndex stopIndex) {
 
 
@@ -46,7 +43,6 @@ public record QueryUI(
         TextFormatter<LocalTime> textFormatter = new TextFormatter<>(timeStringConverter, LocalTime.now());
         hourTextField.setTextFormatter(textFormatter);
 
-
         HBox mainBox = createMainBox(depStopField, changeButton, arrStopField);
         HBox dateHourNode = createDateHourNode(datePicker, hourTextField);
 
@@ -54,7 +50,6 @@ public record QueryUI(
         ObservableValue<String> arrStop0 = arrStopField.stopO();
         ObservableValue<LocalDate> date0 = datePicker.valueProperty();
         ObservableValue<LocalTime> time0 = textFormatter.valueProperty();
-
 
         // Logique observable
 

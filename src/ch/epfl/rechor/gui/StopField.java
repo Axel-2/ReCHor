@@ -30,17 +30,20 @@ public record StopField(TextField textField, ObservableValue<String> stopO) {
      * @return une instance de StopField
      */
     public static StopField create(StopIndex stopIndex) {
-         final int SUGGESTION_NUMBER = 30;
+        final int SUGGESTION_NUMBER = 30;
+        final int MAX_HEIGHT_POPUP = 240;
+
         // ------------ Champ textuel et String wrapper ----------------
         TextField textField = new TextField();
         Property<String> stringProperty = new SimpleObjectProperty<>("");
+
         // --------------------- Pop Up et liste déroulante + configurations ----------------
         Popup popup = new Popup();
         popup.setHideOnEscape(false);
 
         ListView<String> suggestions = new ListView<>();
         suggestions.setFocusTraversable(false);
-        suggestions.setMaxHeight(240);
+        suggestions.setMaxHeight(MAX_HEIGHT_POPUP);
 
         popup.getContent().add(suggestions); // ajout à la fenêtre
 
@@ -52,6 +55,7 @@ public record StopField(TextField textField, ObservableValue<String> stopO) {
             textField.setText(value);
             popup.hide();
         };
+
         // --------- Gestionnaire des events souris -----------
         suggestions.setOnMouseClicked((MouseEvent me) -> {
             if (me.getButton() == MouseButton.PRIMARY && me.getClickCount() == 1) {
@@ -59,6 +63,7 @@ public record StopField(TextField textField, ObservableValue<String> stopO) {
                 me.consume();
             }
         });
+
         // ---------- Gestionnaire des events clavier ----------------
         textField.addEventHandler(
                 javafx.scene.input.KeyEvent.KEY_PRESSED,

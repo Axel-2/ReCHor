@@ -3,7 +3,6 @@ package ch.epfl.rechor.gui;
 import ch.epfl.rechor.journey.Vehicle;
 import javafx.scene.image.Image;
 
-import javax.swing.text.Element;
 import java.util.EnumMap;
 import java.util.Map;
 

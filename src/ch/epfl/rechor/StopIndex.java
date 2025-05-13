@@ -14,20 +14,24 @@ import java.util.stream.Stream;
  */
 public final class StopIndex {
 
-    private static final Map<Character, String> mapEquivalences = new TreeMap<>();
+    private static final Map<Character, String> MAP_EQUIVALENCES;
     private final Map<String, String> alternateNamesMap;
 
     private final List<String> stopsList;
 
-    public StopIndex(List<String> stopsList, Map<String, String> alternateNamesMap) {
+    // Bloc statique pour initialiser le map
+    static {
+        Map<Character, String> m = new TreeMap<>();
+        m.put('a', "[aáàâä]");
+        m.put('c', "[cç]");
+        m.put('e', "[eéèêë]");
+        m.put('i', "[iíìîï]");
+        m.put('o', "[oóòôö]");
+        m.put('u', "[uúùûü]");
+        MAP_EQUIVALENCES = Collections.unmodifiableMap(m);
+    }
 
-        // remplissage du tableau
-        mapEquivalences.put('a', "[aáàâä]");
-        mapEquivalences.put('c', "[cç]");
-        mapEquivalences.put('e', "[eéèêë]");
-        mapEquivalences.put('i', "[iíìîï]");
-        mapEquivalences.put('o', "[oóòôö]");
-        mapEquivalences.put('u', "[uúùûü]");
+    public StopIndex(List<String> stopsList, Map<String, String> alternateNamesMap) {
 
         this.stopsList = List.copyOf(stopsList);
         this.alternateNamesMap = Map.copyOf(alternateNamesMap);
@@ -113,7 +117,7 @@ public final class StopIndex {
                 // 1) subScore += sub.length() / stop.length()
                 subScore += (int) Math.floor(100 *((double)(matcher.end() - matcher.start()) / stopName.length()));
 
-                // 2) Si début ou espace avant: multiplier * 4
+                // 2) Si début ou espace avant : multiplier * 4
                 if (matcher.start() == 0 || !Character.isLetter(stopName.charAt(matcher.start()-1))) {
                     multiplier *= 4;
                 }
@@ -136,8 +140,8 @@ public final class StopIndex {
      */
     private String transformCharToRE(int c) {
         char ch = (char) c;
-        if (mapEquivalences.containsKey(ch)) {
-            return mapEquivalences.get(ch);
+        if (MAP_EQUIVALENCES.containsKey(ch)) {
+            return MAP_EQUIVALENCES.get(ch);
         } else {
             return Pattern.quote(String.valueOf(ch));
         }

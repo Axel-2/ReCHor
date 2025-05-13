@@ -33,7 +33,7 @@ public sealed interface Json {
         @Override
         public String toString() {
 
-            // on fait de la même façon que dans JArray
+            // On fait de la même façon que dans JArray
             return jsonStringMap.entrySet()
                     .stream()
                     .map(entry -> String.format("\"%s\":%s", entry.getKey(), entry.getValue()))

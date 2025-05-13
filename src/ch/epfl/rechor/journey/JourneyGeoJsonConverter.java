@@ -7,7 +7,17 @@ import java.util.*;
 public final class JourneyGeoJsonConverter {
 
     // pour la rendre non instanciable
-    private JourneyGeoJsonConverter() {};
+    private JourneyGeoJsonConverter() {}
+
+    // Facteur de précision pour arrondir aux 5 décimales
+    private static final double COORDINATE_PRECISION = 1e5;
+
+    /**
+     * Arrondit une valeur double à la précision définie (5 décimales).
+     */
+    private static double roundCoordinate(double value) {
+        return Math.round(value * COORDINATE_PRECISION) / COORDINATE_PRECISION;
+    }
 
     /**
      * Permet de convertir un voyage en un document GeoJSON représentant son tracé.
@@ -34,7 +44,7 @@ public final class JourneyGeoJsonConverter {
 
             // 1) intermediateStop
             for (Journey.Leg.IntermediateStop iStop : leg.intermediateStops()){
-                iStopsCoordsToArray(iStop, coordsContainer);
+                stopsCoordsToArray(iStop.stop(), coordsContainer);
             }
 
             // 2) arrStop
@@ -49,10 +59,15 @@ public final class JourneyGeoJsonConverter {
 
     }
 
+    /**
+     * Fonction qui ajoute les coordonées dans la liste donnée
+     * @param stop un arret
+     * @param list une liste de coordonées
+     */
     private static void stopsCoordsToArray(Stop stop, List<Json> list){
         List<Json> coords = new ArrayList<>();
-        coords.add(new Json.JNumber((Math.round(stop.longitude() * 100000d)/100000d)));
-        coords.add(new Json.JNumber((Math.round(stop.latitude() * 100000d)/100000d)));
+        coords.add(new Json.JNumber(roundCoordinate(stop.longitude())));
+        coords.add(new Json.JNumber(roundCoordinate(stop.latitude())));
         Json.JArray JArrayWithCoords = new Json.JArray(coords);
 
         // On ajoute seulement si les coordonnées sont différentes du dernier stop
@@ -64,25 +79,5 @@ public final class JourneyGeoJsonConverter {
         } else {
             list.add(JArrayWithCoords);
         }
-    }
-
-    private static void iStopsCoordsToArray(Journey.Leg.IntermediateStop iStop, List<Json> list){
-
-        List<Json> coords = new ArrayList<>();
-        coords.add(new Json.JNumber((Math.round(iStop.stop().longitude() * 100000d)/100000d)));
-        coords.add(new Json.JNumber((Math.round(iStop.stop().latitude() * 100000d)/100000d)));
-        Json.JArray JArrayWithCoords = new Json.JArray(coords);
-
-        // On ajoute seulement si les coordonnées sont différentes du dernier stop
-        // Dans le cas ou la liste n'est pas nulle, sinon il n'y a pas de dernier stop
-        if (!list.isEmpty()){
-            if (!list.getLast().equals(JArrayWithCoords)) {
-                list.add(JArrayWithCoords);
-            }
-        } else {
-            list.add(JArrayWithCoords);
-        }
-
-
     }
 }

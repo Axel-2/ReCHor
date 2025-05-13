@@ -66,7 +66,6 @@ public record DetailUI(Node rootNode) {
         scroll.setId(DETAIL_ID);
         scroll.getStylesheets().add(loadCSS(DETAIL_CSS_PATH));
 
-
         // 1) Contenu initial :
         scroll.setContent(buildContent(journeyObservableValue.getValue()));
 
@@ -86,6 +85,7 @@ public record DetailUI(Node rootNode) {
             List<Circle> circles = new ArrayList<>();
 
             Pane annotationsPane = new Pane();
+            annotationsPane.setId(ANNOTATIONS_ID);
             GridPane gridPane = createLegsGrid(journey, annotationsPane, circles);
 
             // Boutons
@@ -140,11 +140,15 @@ public record DetailUI(Node rootNode) {
         // Départ
         Text depTime = new Text(FormatterFr.formatTime(t.depTime()));
         depTime.getStyleClass().add("departure");
+
         gridPane.add(depTime, 0, row);
+
         Circle startCircle = new Circle(CIRCLE_RADIUS);
         circles.add(startCircle);
+
         gridPane.add(startCircle, 1, row);
         gridPane.add(new Text(t.depStop().name()), 2, row);
+
         Text depPlat = new Text(FormatterFr.formatPlatformName(t.depStop()));
         depPlat.getStyleClass().add("departure");
         gridPane.add(depPlat, 3, row);
