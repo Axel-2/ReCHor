@@ -1,7 +1,7 @@
-package ch.epfl.rechor.gui; // Mettre dans le bon package
+package ch.epfl.rechor.gui;
 
 import ch.epfl.rechor.FormatterFr;
-import ch.epfl.rechor.journey.Journey; // Importer Journey
+import ch.epfl.rechor.journey.Journey;
 import ch.epfl.rechor.journey.JourneyGeoJsonConverter;
 import ch.epfl.rechor.journey.JourneyIcalConverter;
 import javafx.beans.value.ObservableValue;
@@ -21,10 +21,9 @@ import java.nio.file.Files;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects; // Pour gérer le chemin CSS
+import java.util.Objects;
 
 import static java.awt.Desktop.getDesktop;
-
 
 /**
  * Classe qui représente la partie de l'interface
@@ -52,6 +51,18 @@ public record DetailUI(Node rootNode) {
     private final static int CIRCLE_RADIUS = 3;
     private final static int ICON_SIZE = 31;
 
+    private final static int COLUMN_INDEX_LEGS_GRID = 2;
+    private final static String DEPARTURE_LABEL = "departure";
+
+    // Accordéon
+    private final static int ACC_COL_INDEX = 2;
+    private final static int ACC_COL_SPAN = 2;
+    private final static int ACC_ROW_SPAN = 1;
+
+    private final static int STROKE_WIDTH = 2;
+
+    private final static String INTERMEDIATE_STOP_STYLE = "intermediate-stops";
+
 
     /**
      * Fonction dont le but est de créer le graphe de
@@ -69,6 +80,7 @@ public record DetailUI(Node rootNode) {
         // 1) Contenu initial :
         scroll.setContent(buildContent(journeyObservableValue.getValue()));
 
+        // dès que le voyage change, on change également le contenu
         journeyObservableValue.subscribe(
                 () -> {
                     scroll.setContent(buildContent(journeyObservableValue.getValue())); // Ajout du contenu
@@ -76,11 +88,10 @@ public record DetailUI(Node rootNode) {
         );
 
         return new DetailUI(scroll);
-
     }
 
 
-        // ---------- Création des composants ----------- (de bas en haut)
+        // ---------- Création des composants à ajouter dans le scrollPane-----------
         private static Node buildContent(Journey journey) {
             List<Circle> circles = new ArrayList<>();
 
@@ -90,10 +101,11 @@ public record DetailUI(Node rootNode) {
 
             // Boutons
             Button mapBtn = new Button(MAP_BUTTON_TEXT);
-            mapBtn.setOnAction(e -> mapClick(journey));
             Button calBtn = new Button(CALENDAR_BUTTON_TEXT);
-            calBtn.setOnAction(e -> calendarClick(journey, calBtn));
             HBox btnBox = new HBox(mapBtn, calBtn);
+
+            mapBtn.setOnAction(e -> mapClick(journey));
+            calBtn.setOnAction(e -> calendarClick(journey, calBtn));
             btnBox.setId(HBOX_ID);
 
             // À afficher s'il n'y a aucun voyage à charger
@@ -118,16 +130,17 @@ public record DetailUI(Node rootNode) {
 
         // On parcourt toutes les étapes et on affiche ce qu'il faut en fonction du type
         int currentRow = 0;
+
         if (journey != null) {
             for (Journey.Leg leg : journey.legs()) {
                 switch (leg) {
                     case Journey.Leg.Foot footLeg -> {
                         Text walkText = new Text(FormatterFr.formatLeg(footLeg));
-                        gridPane.add(walkText, 2, currentRow);
+                        gridPane.add(walkText, COLUMN_INDEX_LEGS_GRID, currentRow);
                     }
-                    case Journey.Leg.Transport transportLeg -> {
-                        currentRow = addTransportLeg(gridPane, circles, transportLeg, currentRow);
-                    }
+
+                    case Journey.Leg.Transport transportLeg ->
+                            currentRow = addTransportLeg(gridPane, circles, transportLeg, currentRow);
                 }
                 ++currentRow;
             }
@@ -137,56 +150,80 @@ public record DetailUI(Node rootNode) {
 
     private static int addTransportLeg(GridPane gridPane, List<Circle> circles,
                                        Journey.Leg.Transport t, int row) {
+
+
         // Départ
         Text depTime = new Text(FormatterFr.formatTime(t.depTime()));
-        depTime.getStyleClass().add("departure");
-
-        gridPane.add(depTime, 0, row);
+        depTime.getStyleClass().add(DEPARTURE_LABEL);
 
         Circle startCircle = new Circle(CIRCLE_RADIUS);
         circles.add(startCircle);
 
-        gridPane.add(startCircle, 1, row);
-        gridPane.add(new Text(t.depStop().name()), 2, row);
+        final Text DEPSTOP_NAME_TEXT = new Text(t.depStop().name());
+        final Text PLATFORM_NAME_TEXT = new Text(FormatterFr.formatPlatformName(t.depStop()));
+        final Text ROUTE_DESTINATION_TEXT = new Text(FormatterFr.formatRouteDestination(t));
+        PLATFORM_NAME_TEXT.getStyleClass().add(DEPARTURE_LABEL);
 
-        Text depPlat = new Text(FormatterFr.formatPlatformName(t.depStop()));
-        depPlat.getStyleClass().add("departure");
-        gridPane.add(depPlat, 3, row);
-        ++row;
+        gridPane.addRow(row++, depTime, startCircle, DEPSTOP_NAME_TEXT, PLATFORM_NAME_TEXT);
 
-        // Trajet
+
+        // Gestion de l'icone
         ImageView icon = new ImageView(VehicleIcons.iconFor(t.vehicle()));
         icon.setFitWidth(ICON_SIZE);
         icon.setFitHeight(ICON_SIZE);
-        int span = t.intermediateStops().isEmpty() ? 1 : 2;
-        gridPane.add(icon, 0, row, 1, span);
-        gridPane.add(new Text(FormatterFr.formatRouteDestination(t)), 2, row, 2, 1);
+        int iconSpan = t.intermediateStops().isEmpty() ? 1 : 2;
+        int colSpan = 1;
+
+
+        gridPane.add(icon, 0, row, colSpan++, iconSpan);
+        gridPane.add(ROUTE_DESTINATION_TEXT, 2, row, colSpan, 1);
+
+
         if (!t.intermediateStops().isEmpty()) {
+            // On passe au row suivant
             ++row;
+
             GridPane inner = new GridPane();
-            inner.getStyleClass().add("intermediate-stops");
-            int r = 0;
+            inner.getStyleClass().add(INTERMEDIATE_STOP_STYLE);
+
+            int rowIndex = 0;
             for (Journey.Leg.IntermediateStop stop : t.intermediateStops()) {
-                inner.add(new Text(FormatterFr.formatTime(stop.arrTime())), 0, r);
-                inner.add(new Text(FormatterFr.formatTime(stop.depTime())), 1, r);
-                inner.add(new Text(stop.stop().name()), 2, r++);
+                final Text ARR_TIME_TEXT = new Text(FormatterFr.formatTime(stop.arrTime()));
+                final Text DEP_TIME_TEXT = new Text(FormatterFr.formatTime(stop.depTime()));
+                final Text STOP_NAME_TEXT = new Text(stop.stop().name());
+
+                inner.addRow(rowIndex++, ARR_TIME_TEXT, DEP_TIME_TEXT, STOP_NAME_TEXT);
             }
-            String title = t.intermediateStops().size() == 1 ?
-                    "1 arrêt, " + FormatterFr.formatDuration(t.duration()) :
-                    t.intermediateStops().size() + " arrêts, " + FormatterFr.formatDuration(t.duration());
+
+            // Création du titre
+            int stopCount = t.intermediateStops().size();
+            String stopLabel = stopCount == 1 ? "arrêt" : "arrêts";
+            String duration   = FormatterFr.formatDuration(t.duration());
+            final String title = String.format("%d %s, %s", stopCount, stopLabel, duration);
+
             Accordion acc = new Accordion(new TitledPane(title, inner));
-            gridPane.add(acc, 2, row, 2, 1);
+            gridPane.add(acc, ACC_COL_INDEX, row, ACC_COL_SPAN, ACC_ROW_SPAN);
         }
+
         ++row;
 
         // Arrivée
         Text arrTime = new Text(FormatterFr.formatTime(t.arrTime()));
-        gridPane.add(arrTime, 0, row);
+        Text arrStopName = new Text(t.arrStop().name());
+        Text platformName = new Text(FormatterFr.formatPlatformName(t.arrStop()));
+
+        // Cercle d'arrivée
         Circle endCircle = new Circle(CIRCLE_RADIUS);
         circles.add(endCircle);
-        gridPane.add(endCircle, 1, row);
-        gridPane.add(new Text(t.arrStop().name()), 2, row);
-        gridPane.add(new Text(FormatterFr.formatPlatformName(t.arrStop())), 3, row);
+
+        // Ajout de la ligne
+        gridPane.addRow(
+                row,
+                arrTime,
+                endCircle,
+                arrStopName,
+                platformName
+        );
 
         return row;
     }
@@ -204,7 +241,7 @@ public record DetailUI(Node rootNode) {
     // Méthode privée pour la gestion d'un clic sur le bouton carte
     private static void mapClick(Journey j){
         try {
-            URI url = new URI(
+            final URI url = new URI(
                     "https",
                     "umap.osm.ch",
                     "/fr/map",
@@ -236,7 +273,7 @@ public record DetailUI(Node rootNode) {
     }
 
     // Redéfinition d'un gridPane pour afficher les lignes / cercles comme on veut
-    private static class LineGridPane extends GridPane{
+    private static class LineGridPane extends GridPane {
         private final Pane annotationsPane;
         private final List<Circle> circles;
 
@@ -246,7 +283,8 @@ public record DetailUI(Node rootNode) {
         }
 
         @Override
-        protected void layoutChildren(){
+        protected void layoutChildren() {
+
             super.layoutChildren();
 
             // Vider l’ancien contenu
@@ -261,11 +299,12 @@ public record DetailUI(Node rootNode) {
                         first.getBoundsInParent().getCenterX(),
                         first.getBoundsInParent().getCenterY(),
                         second.getBoundsInParent().getCenterX(),
-                        second.getBoundsInParent().getCenterY());
+                        second.getBoundsInParent().getCenterY()
+                );
 
                 // Modifications selon énoncé
                 line.setStroke(javafx.scene.paint.Color.RED);
-                line.setStrokeWidth(2);
+                line.setStrokeWidth(STROKE_WIDTH);
 
                 annotationsPane.getChildren().add(line);
             }

@@ -94,6 +94,7 @@ public record QueryUI(
 
         HBox mainBox = new HBox();
 
+        // TODO
         // Départ
         Label depLabel = new Label("Départ\u202f:");
         depStop.textField().setPromptText("Nom de l'arrêt de départ");
@@ -119,6 +120,8 @@ public record QueryUI(
     private static HBox createDateHourNode(DatePicker datePicker, TextField hourTextField) {
 
         HBox hBox = new HBox();
+
+        // TODO VARIABLE
         // Date
         Label dateLabel = new Label("Date\u202f:");
         datePicker.setId("date");

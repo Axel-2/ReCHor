@@ -7,7 +7,10 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.geometry.Bounds;
 import javafx.scene.control.ListView;
+import javafx.scene.control.MultipleSelectionModel;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Popup;
@@ -65,38 +68,27 @@ public record StopField(TextField textField, ObservableValue<String> stopO) {
         });
 
         // ---------- Gestionnaire des events clavier ----------------
-        textField.addEventHandler(
-                javafx.scene.input.KeyEvent.KEY_PRESSED,
-                event -> {
-                    switch(event.getCode()) {
-                        case DOWN -> {
-                            int currentSelectedIndex = suggestions.getSelectionModel().getSelectedIndex();
-                            int nextSelectedIndex = currentSelectedIndex >= suggestions.getItems().size() - 1
-                                    ? 0
-                                    : currentSelectedIndex + 1;
+        textField.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
+            switch (event.getCode()) {
+                case DOWN, UP -> {
+                    MultipleSelectionModel<String> model = suggestions.getSelectionModel();
+                    int size  = suggestions.getItems().size();
+                    int currentIndex = model.getSelectedIndex();
+                    // +1 pour DOWN, –1 pour UP, avec rebouclage via modulo
+                    int step  = event.getCode() == KeyCode.DOWN ? 1 : -1;
+                    int next  = (currentIndex + step + size) % size;
 
-                            suggestions.getSelectionModel().select(nextSelectedIndex);
-                            suggestions.scrollTo(nextSelectedIndex);
-                            event.consume();
-                        }
-                        case UP-> {
-                            int currentSelectedIndex = suggestions.getSelectionModel().getSelectedIndex();
-                            int nextSelectedIndex = currentSelectedIndex > 0
-                                    ? currentSelectedIndex - 1
-                                    : suggestions.getItems().size() - 1;
+                    model.select(next);
+                    suggestions.scrollTo(next);
+                    event.consume();
+                }
+                case ENTER, ESCAPE -> select.run();
+                default -> {
+                    // rien à faire
+                }
+            }
+        });
 
-                            suggestions.getSelectionModel().select(nextSelectedIndex);
-                            suggestions.scrollTo(nextSelectedIndex);
-                            event.consume();
-                        }
-                        case ENTER, ESCAPE  -> {
-                            select.run();
-                        }
-                        default -> {
-                            // On ne fait rien
-                        }
-                    }
-                });
 
 
         // -------- Observers de textField -------------
@@ -111,9 +103,9 @@ public record StopField(TextField textField, ObservableValue<String> stopO) {
                     suggestions.getItems().addAll(suggestionsList);
 
                     // MAJ de la popup
-                    if(!suggestionsList.isEmpty()) {
+                    if (!suggestionsList.isEmpty()) {
                         suggestions.getSelectionModel().selectFirst();
-                        if(!popup.isShowing()) {
+                        if (!popup.isShowing()) {
                             popup.show(textField.getScene().getWindow()); // On affiche
                         }
                     }

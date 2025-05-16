@@ -29,6 +29,10 @@ import java.util.stream.IntStream;
  */
 public class Main extends Application {
 
+    private final static int STAGE_HEIGHT = 600;
+    private final static int STAGE_WIDTH= 800;
+    private final static String NAME = "ReCHor";
+
     // Attribut de classe : liste des voyages observables
     private static ObservableValue<List<Journey>> journeyList;
 
@@ -117,9 +121,9 @@ public class Main extends Application {
         // Scene
         Scene scene = new Scene(borderPane);
         primaryStage.setScene(scene);
-        primaryStage.setMinHeight(600);
-        primaryStage.setMinWidth(800);
-        primaryStage.setTitle("ReCHor");
+        primaryStage.setMinHeight(STAGE_HEIGHT);
+        primaryStage.setMinWidth(STAGE_WIDTH);
+        primaryStage.setTitle(NAME);
         primaryStage.show();
 
         if (!journeyList.getValue().isEmpty()) {

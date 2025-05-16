@@ -10,9 +10,9 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 
 /**
- * Classe qui représente un "Routeur" c.-à-d. un objet
+ * Classe qui représente un "Routeur" qui est un objet
  * capable de calculer le profil de tous les voyages optimaux
- * permettant de se rendre de n'importe quelle gare du réseau à un gare d'arrivée donnée,
+ * permettant de se rendre de n'importe quelle gare du réseau à une gare d'arrivée donnée,
  * un jour donné
  * @author Yoann Salamin (390522)
  * @author Axel Verga (398787)

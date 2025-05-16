@@ -38,6 +38,7 @@ public record SummaryUI(Node rootNode, ObservableValue<Journey> selectedJourneyO
 
     private static ObjectBinding<Journey> autoSelect;
 
+
     /**
      * Fonction dont le but est de créer le graphe de scène et de retourner
      * une instance de SummaryUI contenant sa racine ainsi que la valeur
@@ -111,8 +112,19 @@ public record SummaryUI(Node rootNode, ObservableValue<Journey> selectedJourneyO
 
 /**
  * Classe qui représente une cellule affichant un voyage
+ * @author Yoann Salamin (390522)
+ * @author Axel Verga (398787)
  */
 class JourneyCell extends ListCell<Journey> {
+
+    // Style class names
+    private static final String STYLE_ROUTE = "route";
+    private static final String STYLE_JOURNEY = "journey";
+    private static final String STYLE_DEPARTURE = "departure";
+    private static final String STYLE_ARRIVAL = "arrival";
+    private static final String STYLE_DURATION = "duration";
+    private static final String STYLE_DEP_ARR = "dep-arr";
+    private static final String STYLE_TRANSFER = "transfer";
 
     // Magic numbers
     private final static int ICON_SIZE = 20;
@@ -135,13 +147,17 @@ class JourneyCell extends ListCell<Journey> {
     private final Text durationText = new Text(); // Bas
     private final HBox bottomBox = new HBox(); //
     private final Group circles = new Group();
+
     // Centre
     private final Pane centerPane = new Pane() {
+
          // "Collection" qui va contenir les cercles
         private final Line line = new Line();      // Ligne modifiée par la suite
 
         {
-            setPrefSize(0, 0);
+            int prefWidth = 0;
+            int prefHeight = 0;
+            setPrefSize(prefWidth, prefHeight);
             getChildren().addAll(line, circles);
         }
 
@@ -207,11 +223,12 @@ class JourneyCell extends ListCell<Journey> {
             bottomBox.getChildren().add(durationText);
 
             // Styles
-            topBox.getStyleClass().add("route");
-            root.getStyleClass().add("journey");
-            depTimeText.getStyleClass().add("departure");
-            arrTimeText.getStyleClass().add("arrival");
-            bottomBox.getStyleClass().add("duration");
+            // TODO variables
+            topBox.getStyleClass().add(STYLE_ROUTE);
+            root.getStyleClass().add(STYLE_JOURNEY);
+            depTimeText.getStyleClass().add(STYLE_DEPARTURE);
+            arrTimeText.getStyleClass().add(STYLE_ARRIVAL);
+            bottomBox.getStyleClass().add(STYLE_DURATION);
     }
 
     @Override
@@ -223,6 +240,7 @@ class JourneyCell extends ListCell<Journey> {
             setText(null);
             setGraphic(null);
         }
+
         else {
 
             // Mise à jour des textes et des images
@@ -234,7 +252,7 @@ class JourneyCell extends ListCell<Journey> {
             // On stocke le voyage dans le pane, car on en a besoin à l'intérieur
             centerPane.setUserData(journey);
 
-            // On affiche !
+            // On affiche
             setGraphic(root);
         }
     }
@@ -244,6 +262,7 @@ class JourneyCell extends ListCell<Journey> {
      * @param journey un voyage
      */
     private void updateData(Journey journey) {
+
         // 1) On met à jour tous les texts
         depTimeText.setText(FormatterFr.formatTime(journey.depTime()));
         arrTimeText.setText(FormatterFr.formatTime(journey.arrTime()));
@@ -258,7 +277,7 @@ class JourneyCell extends ListCell<Journey> {
                 .map(leg -> (Journey.Leg.Transport) leg)
                 // Première occurrence
                 .findFirst()
-                // Si elle existe, faire tes updates
+                // Si elle existe, faire les updates
                 .ifPresent(firstTransportLeg -> {
                     directionText.setText(
                             FormatterFr.formatRouteDestination(firstTransportLeg)
@@ -279,7 +298,7 @@ class JourneyCell extends ListCell<Journey> {
 
         // Cercle de départ
         Circle depCircle = new Circle(CIRCLE_RADIUS);
-        depCircle.getStyleClass().add("dep-arr");
+        depCircle.getStyleClass().add(STYLE_DEPARTURE);
         depCircle.setUserData(journey.depTime());
         circles.getChildren().add(depCircle);
 
@@ -290,14 +309,14 @@ class JourneyCell extends ListCell<Journey> {
                 .filter(footLeg -> !journey.legs().getFirst().equals(footLeg))
                 .forEach(leg -> {
                     Circle intermediateCircle = new Circle(CIRCLE_RADIUS);
-                    intermediateCircle.getStyleClass().add("transfer");
+                    intermediateCircle.getStyleClass().add(STYLE_TRANSFER);
                     intermediateCircle.setUserData(leg.depTime());
                     circles.getChildren().add(intermediateCircle);
                 });
 
         // Cercle d'arrivée
         Circle arrCircle = new Circle(CIRCLE_RADIUS);
-        arrCircle.getStyleClass().add("dep-arr");
+        arrCircle.getStyleClass().add(STYLE_DEP_ARR);
         arrCircle.setUserData(journey.arrTime());
         circles.getChildren().add(arrCircle);
 
