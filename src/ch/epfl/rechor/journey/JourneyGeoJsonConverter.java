@@ -4,9 +4,14 @@ import ch.epfl.rechor.Json;
 
 import java.util.*;
 
+/**
+ * Classe qui permet de convertir un voyage en un document GeoJSON
+ * @author Yoann Salamin (390522)
+ * @author Axel Verga (398787)
+ */
 public final class JourneyGeoJsonConverter {
 
-    // pour la rendre non instanciable
+    // Pour la rendre non instantiable
     private JourneyGeoJsonConverter() {}
 
     // Facteur de précision pour arrondir aux 5 décimales
@@ -35,7 +40,7 @@ public final class JourneyGeoJsonConverter {
         // ------------------- AJOUT DE TOUTES LES COORDONNÉES ----------------- //
 
         // On s'occupe juste du premier stop, avant de rentrer dans la boucle
-        stopsCoordsToArray(journey.depStop(), coordsContainer);
+        addStopCoordinates(journey.depStop(), coordsContainer);
 
         // Boucle sur TOUS les stops du voyage, et ajoute leurs coordonnées dans la liste
         for (Journey.Leg leg : journey.legs()){
@@ -44,11 +49,11 @@ public final class JourneyGeoJsonConverter {
 
             // 1) intermediateStop
             for (Journey.Leg.IntermediateStop iStop : leg.intermediateStops()){
-                stopsCoordsToArray(iStop.stop(), coordsContainer);
+                addStopCoordinates(iStop.stop(), coordsContainer);
             }
 
             // 2) arrStop
-            stopsCoordsToArray(leg.arrStop(), coordsContainer);
+            addStopCoordinates(leg.arrStop(), coordsContainer);
 
         }
 
@@ -60,24 +65,19 @@ public final class JourneyGeoJsonConverter {
     }
 
     /**
-     * Fonction qui ajoute les coordonées dans la liste donnée
-     * @param stop un arret
-     * @param list une liste de coordonées
+     * Méthode qui ajoute les coordonnées dans la liste donnée
+     * @param stop un arrêt
+     * @param list une liste de coordonnées
      */
-    private static void stopsCoordsToArray(Stop stop, List<Json> list){
+    private static void addStopCoordinates(Stop stop, List<Json> list){
         List<Json> coords = new ArrayList<>();
         coords.add(new Json.JNumber(roundCoordinate(stop.longitude())));
         coords.add(new Json.JNumber(roundCoordinate(stop.latitude())));
-        Json.JArray JArrayWithCoords = new Json.JArray(coords);
+        Json.JArray jArrayWithCoords = new Json.JArray(coords);
 
         // On ajoute seulement si les coordonnées sont différentes du dernier stop
-        // Dans le cas ou la liste n'est pas nulle, sinon il n'y a pas de dernier stop
-        if (!list.isEmpty()){
-            if (!list.getLast().equals(JArrayWithCoords)) {
-                list.add(JArrayWithCoords);
-            }
-        } else {
-            list.add(JArrayWithCoords);
+        if (list.isEmpty() || !list.getLast().equals(jArrayWithCoords)){
+            list.add(jArrayWithCoords);
         }
     }
 }
