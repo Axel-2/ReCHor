@@ -49,7 +49,6 @@ public final class StopIndex {
         Preconditions.checkArgument(maxNumbersOfStopsToReturn > 0);
 
         // --- étape 1 : découper en subqueries------
-
         String[] originalSubQueries = rqt.split(" ");
         
         // transformation des subQueries en liste de pattern RegEx
@@ -121,7 +120,6 @@ public final class StopIndex {
                 if (matcher.start() == 0 || !Character.isLetter(stopName.charAt(matcher.start()-1))) {
                     multiplier *= 4;
                 }
-
 
                 // 3) Si fin ou espace après : multiplier * 2
                 if (matcher.end() == stopName.length() || !Character.isLetter(stopName.charAt(matcher.end()))) {

@@ -164,8 +164,8 @@ public record Router(TimeTable timetable) {
 
     /**
      * Fonction qui vérifie l'option 1
-     * @param p un batisseur de profil
-     * @param f un batisseur de frontière
+     * @param p un bâtisseur de profil
+     * @param f un bâtisseur de frontière
      * @param minutesBetweenForEveryStation tableau qui contient les minutes entre les stations
      * @param currentConnArrStationId l'id de la station d'arrivée
      * @param currentConnArrMins minutes minimum de la connection
@@ -176,7 +176,7 @@ public record Router(TimeTable timetable) {
             int[] minutesBetweenForEveryStation,
             int currentConnArrStationId,
             int currentConnArrMins,
-            int i
+            int i // l'id de la connection courante
     ) {
         // ------------------ Option 1) Marcher depuis arr(l) vers la destination finale ---------------
         // Si il existe un changement jusqu'à la gare
@@ -185,16 +185,16 @@ public record Router(TimeTable timetable) {
         // changement existe entre les deux gares
         int walkDuration = minutesBetweenForEveryStation[currentConnArrStationId];
 
-        if (walkDuration != -1) { // je suppose que le i est l'id de la course, il n'existe pas de currentConnId
+        if (walkDuration != -1) {
             f.add(PackedCriteria.pack(currentConnArrMins + walkDuration, 0, i));
         }
     }
 
     /**
      * Fonction qui vérifie l'option 2
-     * @param p un batisseur de profil
-     * @param f un batisseur de frontière
-     * @param currentConnTripId l'id de la connection courantee
+     * @param p un bâtisseur de profil
+     * @param f un bâtisseur de frontière
+     * @param currentConnTripId l'id de la connection courante
      */
     private void checkOption2(Profile.Builder p, ParetoFront.Builder f, int currentConnTripId) {
         // ------------------ Option 2) Rester sur la même course ---------------
@@ -209,9 +209,9 @@ public record Router(TimeTable timetable) {
 
     /**
      * Fonction qui vérifie l'option 3
-     * @param p un batisseur de profil
-     * @param f un batisseur de frontière
-     * @param currentConnArrStopID l'id de l'arret courant
+     * @param p un bâtisseur de profil
+     * @param f un bâtisseur de frontière
+     * @param currentConnArrStopID l'id de l'arrêt courant
      * @param currentConnArrMins minutes minimum de la connection
      */
     private void checkOption3(

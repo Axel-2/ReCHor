@@ -38,6 +38,7 @@ public record QueryUI(
      * @return une instance de QueryUI
      */
     public static QueryUI create(StopIndex stopIndex) {
+
         // Départ, échange et arrivée
         StopField depStopField =  StopField.create(stopIndex);
         Button changeButton = new Button();

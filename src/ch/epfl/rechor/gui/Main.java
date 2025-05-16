@@ -34,7 +34,7 @@ public class Main extends Application {
     private final static String NAME = "ReCHor";
 
     // Attribut de classe : liste des voyages observables
-    private static ObservableValue<List<Journey>> journeyList;
+    private ObservableValue<List<Journey>> journeyList;
 
     public static void main(String[] args) {
         launch(args);

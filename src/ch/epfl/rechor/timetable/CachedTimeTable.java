@@ -21,13 +21,10 @@ public final class CachedTimeTable implements TimeTable {
     private LocalDate cachedTripsDate        = null;
     private LocalDate cachedConnectionsDate  = null;
     
-    // TODO utile ?
     private CachedTimeTable() {
-
     }
 
     public  CachedTimeTable(TimeTable timeTable) {
-        // TODO immuabilité ??
         this.underlyingTimetable = timeTable;
     }
 
