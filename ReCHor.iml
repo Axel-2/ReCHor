@@ -39,5 +39,7 @@
       </library>
     </orderEntry>
     <orderEntry type="library" name="OpenJFX 21" level="application" />
+    <orderEntry type="library" name="javafx-sdk-21.0" level="project" />
+    <orderEntry type="library" name="lib" level="project" />
   </component>
 </module>

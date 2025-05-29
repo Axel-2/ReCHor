@@ -17,6 +17,9 @@ public final class StopIndex {
     private static final Map<Character, String> MAP_EQUIVALENCES;
     private final Map<String, String> alternateNamesMap;
 
+    public static final int BEGIN_OR_SPACE_MULTIPLIER = 4;
+    public static final int END_OR_SPACE_MULTIPLIER = 2;
+
     private final List<String> stopsList;
 
     // Bloc statique pour initialiser le map
@@ -57,11 +60,11 @@ public final class StopIndex {
         // --- étape 1 : découper en subqueries------
         String[] originalSubQueries = rqt.split(" ");
         
-        // transformation des subQueries en liste de pattern RegEx
+        // transformation des subQueries en liste de "pattern" RegEx
         List<Pattern> subQueriesWithPattern = Arrays.stream(originalSubQueries)
                 .filter(subQuery -> !subQuery.isEmpty())
                 .map(subQuery -> {
-                    // Gestion du case sensitive pour chaque sous-requête
+                    // Gestion du "case sensitive" pour chaque sous-requête
                     int flags;
                     boolean containsCapitalLetter = !subQuery.equals(subQuery.toLowerCase());
                     if (containsCapitalLetter) {flags = Pattern.UNICODE_CASE;}
@@ -86,7 +89,7 @@ public final class StopIndex {
                         subQueriesWithPattern.stream().allMatch(subQueryPattern ->
                                 subQueryPattern.matcher(entry.getKey()).find())
                 )
-                .map(Map.Entry::getValue);
+                .map(Map.Entry::getKey);
 
         return Stream.concat(stopsMatching, alternatesMatching)
                 // on enlève les doublons
@@ -95,6 +98,10 @@ public final class StopIndex {
                 .sorted((stopName1, stopName2) -> Integer.compare(
                         score(stopName2, subQueriesWithPattern),
                         score(stopName1, subQueriesWithPattern)))
+                // on remplace les alternates par le vrai nom
+                .map(name -> alternateNamesMap.getOrDefault(name, name))
+                // on enlève encore les doublons
+                .distinct()
                 .limit(maxNumbersOfStopsToReturn)
                 .collect(Collectors.toList());
     }
@@ -124,12 +131,12 @@ public final class StopIndex {
 
                 // 2) Si début ou espace avant : multiplier * 4
                 if (matcher.start() == 0 || !Character.isLetter(stopName.charAt(matcher.start()-1))) {
-                    multiplier *= 4;
+                    multiplier *= BEGIN_OR_SPACE_MULTIPLIER;
                 }
 
                 // 3) Si fin ou espace après : multiplier * 2
                 if (matcher.end() == stopName.length() || !Character.isLetter(stopName.charAt(matcher.end()))) {
-                    multiplier *= 2;
+                    multiplier *= END_OR_SPACE_MULTIPLIER;
                 }
 
                 finalScore += subScore * multiplier;

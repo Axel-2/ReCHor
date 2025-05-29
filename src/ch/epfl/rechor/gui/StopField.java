@@ -53,8 +53,8 @@ public record StopField(TextField textField, ObservableValue<String> stopO) {
         Runnable select = () -> {
             String selectedStopName = suggestions.getSelectionModel().getSelectedItem();
             String value = selectedStopName != null ? selectedStopName : "";
-            stringProperty.setValue(value); // TODO good ?
-            textField.setText(value); // TODO good ?
+            stringProperty.setValue(value);
+            textField.setText(value);
             popup.hide();
         };
 

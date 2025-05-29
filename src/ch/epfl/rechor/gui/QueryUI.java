@@ -44,6 +44,10 @@ public record QueryUI(
     private static final DateTimeFormatter DISPLAY_TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm");
     private static final DateTimeFormatter PARSE_TIME_FORMAT = DateTimeFormatter.ofPattern("H:mm");
 
+    private static final String SWAP_BUTTON_TEXT  = "↔";
+    private static final String PROMPT_TEXT_DEP   = "Nom de l'arrêt de départ";
+    private static final String PROMPT_TEXT_ARR   = "Nom de l'arrêt d'arrivée";
+
     /**
      * Fonction qui crée l'interface utilisateur de la requête
      * @param stopIndex index des arrêts
@@ -61,7 +65,10 @@ public record QueryUI(
         TextField hourTextField = new TextField();
 
         // Formatage
-        LocalTimeStringConverter timeStringConverter = new LocalTimeStringConverter(DISPLAY_TIME_FORMAT, PARSE_TIME_FORMAT);
+        LocalTimeStringConverter timeStringConverter = new LocalTimeStringConverter(
+                DISPLAY_TIME_FORMAT,
+                PARSE_TIME_FORMAT
+        );
         TextFormatter<LocalTime> textFormatter = new TextFormatter<>(timeStringConverter, LocalTime.now());
         hourTextField.setTextFormatter(textFormatter);
 
@@ -76,7 +83,7 @@ public record QueryUI(
         ObservableValue<LocalTime> timeO = textFormatter.valueProperty();
 
         // Logique du bouton
-        changeButton.setText("↔");
+        changeButton.setText(SWAP_BUTTON_TEXT);
         changeButton.setOnAction(e -> {
                     String d = depStopO.getValue();
                     String a = arrStopO.getValue();
@@ -107,12 +114,12 @@ public record QueryUI(
 
         // Départ
         Label depLabel = new Label(LABEL_TEXT_DEP);
-        depStop.textField().setPromptText("Nom de l'arrêt de départ");
+        depStop.textField().setPromptText(PROMPT_TEXT_DEP);
         depStop.textField().setId(ID_DEP_FIELD);
 
         // Arrivée
         Label arrLabel = new Label(LABEL_TEXT_ARR);
-        arrTextField.textField().setPromptText("Nom de l'arrêt d'arrivée");
+        arrTextField.textField().setPromptText(PROMPT_TEXT_ARR);
 
         // Ajout du contenu
         mainBox.getChildren().addAll(

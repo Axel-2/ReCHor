@@ -52,9 +52,13 @@ public record DetailUI(Node rootNode) {
 
     // Nombres magiques
     private static final int
-            CIRCLE_RADIUS = 3,
-            ICON_SIZE = 31,
-            STROKE_WIDTH = 2;
+            CIRCLE_RADIUS  = 3,
+            COL_INDEX = 2,
+            C_SPAN = 2,
+            R_SPAN = 1,
+            ICON_SIZE      = 31,
+            STROKE_WIDTH   = 2;
+
 
     /**
      * Crée une instance de DetailUI avec mise à jour automatique selon le voyage observable
@@ -111,7 +115,13 @@ public record DetailUI(Node rootNode) {
                 case Journey.Leg.Foot footLeg -> {
                     // Étape à pied : simple texte sur colonnes 2-3
                     Text walkText = new Text(FormatterFr.formatLeg(footLeg));
-                    gridPane.add(walkText, 2, currentRow, 2, 1);
+                    gridPane.add(
+                            walkText,
+                            COL_INDEX,
+                            currentRow,
+                            C_SPAN,
+                            R_SPAN
+                    );
                     yield currentRow;
                 }
                 case Journey.Leg.Transport transportLeg ->
@@ -148,8 +158,8 @@ public record DetailUI(Node rootNode) {
         Text routeDestination = new Text(FormatterFr.formatRouteDestination(transport));
 
         int iconRowSpan = transport.intermediateStops().isEmpty() ? 1 : 2;
-        gridPane.add(icon, 0, row, 1, iconRowSpan);
-        gridPane.add(routeDestination, 2, row++, 2, 1);
+        gridPane.add(icon, COL_INDEX-2, row, C_SPAN-1, iconRowSpan);
+        gridPane.add(routeDestination, COL_INDEX, row++, C_SPAN, R_SPAN);
 
         // Arrêts intermédiaires optionnels dans un accordéon
         if (!transport.intermediateStops().isEmpty()) {
@@ -171,7 +181,7 @@ public record DetailUI(Node rootNode) {
                     FormatterFr.formatDuration(transport.duration()));
 
             Accordion accordion = new Accordion(new TitledPane(title, innerGrid));
-            gridPane.add(accordion, 2, row++, 2, 1);
+            gridPane.add(accordion, COL_INDEX, row++, C_SPAN, R_SPAN);
         }
 
         // Ligne d'arrivée avec heure, cercle, gare, voie/quai

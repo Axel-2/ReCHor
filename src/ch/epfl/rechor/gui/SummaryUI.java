@@ -16,6 +16,7 @@ import javafx.scene.control.ListView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import javafx.scene.text.Text;
@@ -35,9 +36,6 @@ import java.util.Objects;
  * @author Axel Verga (398787)
  */
 public record SummaryUI(Node rootNode, ObservableValue<Journey> selectedJourneyO) {
-
-    private static ObjectBinding<Journey> autoSelect;
-
 
     /**
      * Fonction dont le but est de créer le graphe de scène et de retourner
@@ -130,6 +128,7 @@ class JourneyCell extends ListCell<Journey> {
     private final static int ICON_SIZE = 20;
     private final static int LINE_MARGIN = 5;
     private final static int CIRCLE_RADIUS = 3;
+    private final static int GREY_LINE_STROKE = 2;
 
     // ---- Elements du graphe de scène ----
     // Haut
@@ -158,6 +157,8 @@ class JourneyCell extends ListCell<Journey> {
             int prefWidth = 0;
             int prefHeight = 0;
             setPrefSize(prefWidth, prefHeight);
+            line.setStroke(Color.GRAY);
+            line.setStrokeWidth(GREY_LINE_STROKE);
             getChildren().addAll(line, circles);
         }
 
@@ -223,7 +224,6 @@ class JourneyCell extends ListCell<Journey> {
             bottomBox.getChildren().add(durationText);
 
             // Styles
-            // TODO variables
             topBox.getStyleClass().add(STYLE_ROUTE);
             root.getStyleClass().add(STYLE_JOURNEY);
             depTimeText.getStyleClass().add(STYLE_DEPARTURE);
