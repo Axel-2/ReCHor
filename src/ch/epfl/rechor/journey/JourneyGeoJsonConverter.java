@@ -11,7 +11,7 @@ import java.util.*;
  */
 public final class JourneyGeoJsonConverter {
 
-    // Pour la rendre non instantiable
+    // Pour rendre la classe non instantiable
     private JourneyGeoJsonConverter() {}
 
     // Facteur de précision pour arrondir aux 5 décimales
@@ -19,6 +19,7 @@ public final class JourneyGeoJsonConverter {
 
     /**
      * Arrondit une valeur double à la précision définie (5 décimales).
+     * @param value la valeur à arrondir
      */
     private static double roundCoordinate(double value) {
         return Math.round(value * COORDINATE_PRECISION) / COORDINATE_PRECISION;
@@ -70,10 +71,12 @@ public final class JourneyGeoJsonConverter {
      * @param list une liste de coordonnées
      */
     private static void addStopCoordinates(Stop stop, List<Json> list){
-        List<Json> coords = new ArrayList<>();
-        coords.add(new Json.JNumber(roundCoordinate(stop.longitude())));
-        coords.add(new Json.JNumber(roundCoordinate(stop.latitude())));
-        Json.JArray jArrayWithCoords = new Json.JArray(coords);
+        Json.JArray jArrayWithCoords = new Json.JArray(
+                List.of(
+                        new Json.JNumber(roundCoordinate(stop.longitude())),
+                        new Json.JNumber(roundCoordinate(stop.latitude()))
+                )
+        );
 
         // On ajoute seulement si les coordonnées sont différentes du dernier stop
         if (list.isEmpty() || !list.getLast().equals(jArrayWithCoords)){

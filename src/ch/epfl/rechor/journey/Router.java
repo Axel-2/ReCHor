@@ -1,6 +1,7 @@
 package ch.epfl.rechor.journey;
 
 import ch.epfl.rechor.PackedRange;
+import ch.epfl.rechor.timetable.Connections;
 import ch.epfl.rechor.timetable.TimeTable;
 
 import java.time.LocalDate;
@@ -10,7 +11,7 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 
 /**
- * Classe qui représente un "Routeur" qui est un objet
+ * Classe qui représente un routeur qui est un objet
  * capable de calculer le profil de tous les voyages optimaux
  * permettant de se rendre de n'importe quelle gare du réseau à une gare d'arrivée donnée,
  * un jour donné
@@ -29,6 +30,7 @@ public record Router(TimeTable timetable) {
      * @return le profil des voyages optimaux
      */
     public Profile profile(LocalDate date, int arrStationId) {
+        // La date ne doit pas être nulle
         Objects.requireNonNull(date);
 
         // On crée un profil vide à l'aide du Builder
@@ -38,20 +40,22 @@ public record Router(TimeTable timetable) {
 
         // Algorithme CSA
 
+        Connections connections = timetable.connectionsFor(date);
+
         // On parcourt la totalité des liaisons de l'horaire, dans l'ordre décroissant
         // comme "connectionsFor" retourne déjà les connections dans l'ordre décroissant,
         // il suffit de parcourir dans l'ordre croissant.
-        for (int i = 0; i < timetable.connectionsFor(date).size(); i++) {
+        for (int i = 0, n = connections.size(); i < n; i++) {
             // 'f' est la frontière temporaire pour cette liaison 'l'
             ParetoFront.Builder f = new ParetoFront.Builder();
 
             // Extraction des informations de notre liaison actuelle
-            int currentConnDepStopID = timetable.connectionsFor(date).depStopId(i);
-            int currentConnArrStopID = timetable.connectionsFor(date).arrStopId(i);
-            int currentConnDepMins = timetable.connectionsFor(date).depMins(i);
-            int currentConnArrMins = timetable.connectionsFor(date).arrMins(i);
-            int currentConnTripId = timetable.connectionsFor(date).tripId(i);
-            int currentConnTripPos = timetable.connectionsFor(date).tripPos(i);
+            int currentConnDepStopID = connections.depStopId(i);
+            int currentConnArrStopID = connections.arrStopId(i);
+            int currentConnDepMins   = connections.depMins(i);
+            int currentConnArrMins   = connections.arrMins(i);
+            int currentConnTripId    = connections.tripId(i);
+            int currentConnTripPos   = connections.tripPos(i);
 
             int currentConnArrStationId = timetable.stationId(currentConnArrStopID);
             int currentConnDepStationId = timetable.stationId(currentConnDepStopID);
@@ -116,7 +120,7 @@ public record Router(TimeTable timetable) {
 
                     // GESTION DU PAYLOAD
                     int lastConnexionOfTripID = PackedCriteria.payload(tuple);
-                    int lastConnOfTripPos = timetable.connectionsFor(date).tripPos(lastConnexionOfTripID);
+                    int lastConnOfTripPos = connections.tripPos(lastConnexionOfTripID);
                     int intermediateStopsNumber = lastConnOfTripPos - currentConnTripPos;
                     // Le payload contient la liaison l dans les 24 bits de gauche,
                     // et le nombre d'arrêts intermédiaires dans les 8 bits de droite.
@@ -131,6 +135,7 @@ public record Router(TimeTable timetable) {
             }
 
         }
+
         return p.build();
     }
 
@@ -146,6 +151,7 @@ public record Router(TimeTable timetable) {
 
         for (int i = 0; i < timetable.stations().size(); ++i) {
             int currentMinutesBetween;
+
             try {
                 // On essaie d'obtenir le temps de transfer pour chaque gare
                 currentMinutesBetween = timetable.transfers().minutesBetween(i, arrStationId);
@@ -155,7 +161,6 @@ public record Router(TimeTable timetable) {
             }
 
             // Et on le met dans notre tableau
-
             minutesBetweenForEveryStation[i] = currentMinutesBetween;
         }
 
@@ -164,7 +169,6 @@ public record Router(TimeTable timetable) {
 
     /**
      * Fonction qui vérifie l'option 1
-     * @param p un bâtisseur de profil
      * @param f un bâtisseur de frontière
      * @param minutesBetweenForEveryStation tableau qui contient les minutes entre les stations
      * @param currentConnArrStationId l'id de la station d'arrivée
@@ -186,7 +190,9 @@ public record Router(TimeTable timetable) {
         int walkDuration = minutesBetweenForEveryStation[currentConnArrStationId];
 
         if (walkDuration != -1) {
-            f.add(PackedCriteria.pack(currentConnArrMins + walkDuration, 0, i));
+            long t = PackedCriteria.pack(currentConnArrMins + walkDuration, 0, i);
+            t = PackedCriteria.withDepMins(t, currentConnArrMins);
+            f.add(t);
         }
     }
 
@@ -208,7 +214,9 @@ public record Router(TimeTable timetable) {
     }
 
     /**
-     * Fonction qui vérifie l'option 3
+     * Fonction qui vérifie l'option 3 qui est
+     * le changement de véhicule, donc les transitions
+     * entre les routes
      * @param p un bâtisseur de profil
      * @param f un bâtisseur de frontière
      * @param currentConnArrStopID l'id de l'arrêt courant
@@ -221,9 +229,8 @@ public record Router(TimeTable timetable) {
             int currentConnArrMins,
             int connId
     ) {
-        // Gère le changement de véhicule, donc les transitions entre les routes
 
-        // Préparons le flot pour effectuer méthodes
+        // liste qui va contenir les tuples à ajouter
         List<Long> tuples = new ArrayList<>();
 
         // On vérifie que ce n'est pas null, sinon null.forEach lèvera une exception
@@ -237,12 +244,11 @@ public record Router(TimeTable timetable) {
                                     && PackedCriteria.depMins(criteria) >= currentConnArrMins
                     ) // d'anomalie temporelle
                     .forEach(criteria -> {
-                        // Extraction des données
-                        int criteriaArrMin = PackedCriteria.arrMins(criteria);
-                        int criteriaChanges = PackedCriteria.changes(criteria);
-
-                        // Ajout à la frontière en cours de construction
-                        f.add(PackedCriteria.pack(criteriaArrMin, criteriaChanges + 1, connId));
+                        int arrMin    = PackedCriteria.arrMins(criteria);
+                        int changes   = PackedCriteria.changes(criteria);
+                        long t        = PackedCriteria.pack(arrMin, changes + 1, connId);
+                        t             = PackedCriteria.withDepMins(t, currentConnArrMins);
+                        f.add(t);
                     }
                     );
         }

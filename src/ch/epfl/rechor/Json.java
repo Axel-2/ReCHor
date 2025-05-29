@@ -7,11 +7,17 @@ import java.util.stream.Collectors;
 
 /**
  * Interface qui représente un document JSON
+ * Un document JSON peut être un tableau,
+ * un objet, une chaîne ou un nombre.
  * @author Yoann Salamin (390522)
  * @author Axel Verga (398787)
  */
 public sealed interface Json {
 
+    /**
+     * Représente un tableau JSON.
+     * @param jsonList la liste des éléments JSON du tableau
+     */
     record JArray(List<Json> jsonList) implements Json {
 
         @Override
@@ -22,17 +28,19 @@ public sealed interface Json {
             // avec les bons delimiters
             return jsonList.stream()
                     .map(Json::toString)
-                    // un assistant nous a conseillé d'utiliser joining
                     .collect(Collectors.joining(",", "[", "]"));
 
         }
     }
 
+    /**
+     * Représente un objet JSON (une collection de paires clé/valeur).
+     * @param jsonStringMap la map associant chaque clé à sa valeur Json
+     */
     record JObject(Map<String, Json> jsonStringMap) implements Json {
 
         @Override
         public String toString() {
-
             // On fait de la même façon que dans JArray
             return jsonStringMap.entrySet()
                     .stream()
@@ -42,7 +50,10 @@ public sealed interface Json {
     }
 
 
-
+    /**
+     * Représente une chaîne JSON.
+     * @param jsonString la valeur de la chaîne (sans guillemets)
+     */
     record JString(String jsonString) implements Json {
 
         @Override
@@ -52,6 +63,10 @@ public sealed interface Json {
         }
     }
 
+    /**
+     * Représente un nombre JSON.
+     * @param jsonNumber la valeur numérique
+     */
     record JNumber(double jsonNumber) implements Json {
 
         @Override

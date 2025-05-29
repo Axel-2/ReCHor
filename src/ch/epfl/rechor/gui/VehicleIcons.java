@@ -25,7 +25,7 @@ public final class VehicleIcons {
      * @return une image JFX
      */
     public static Image iconFor(Vehicle vehicle) {
-        String vehiclePath = vehicle.name() + ".png";
+        String vehiclePath = "%s.png".formatted(vehicle.name());
         return vehicleCacheMap.computeIfAbsent(
                 vehicle, k -> new Image(vehiclePath)
         );

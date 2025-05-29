@@ -1,7 +1,5 @@
 package ch.epfl.rechor.timetable;
-
 import java.time.LocalDate;
-import java.util.Date;
 
 /**
  * Classe qui représente un horaire dont les données qui dépendent de la date sont stockées
@@ -12,19 +10,20 @@ import java.util.Date;
  */
 public final class CachedTimeTable implements TimeTable {
 
-    private TimeTable underlyingTimetable;
+    private final TimeTable underlyingTimetable;
 
     // Variables qui vont contenir les données misent en cache
-    private Connections currentCachedConnection = null;
-    private Trips currentCachedTrips = null;
+    private Connections currentCachedConnections = null;
+    private Trips       currentCachedTrips       = null;
 
-    private LocalDate cachedTripsDate        = null;
-    private LocalDate cachedConnectionsDate  = null;
-    
-    private CachedTimeTable() {
-    }
+    // La date actuelle du cache
+    private LocalDate cachedDate = null;
 
-    public  CachedTimeTable(TimeTable timeTable) {
+    /**
+     * Crée un horaire mis en cache autour de l'horaire sous-jacent donné.
+     * @param timeTable l'horaire dont on veut mettre en cache les données
+     */
+    public CachedTimeTable(TimeTable timeTable) {
         this.underlyingTimetable = timeTable;
     }
 
@@ -75,17 +74,13 @@ public final class CachedTimeTable implements TimeTable {
         return underlyingTimetable.platformName(stopId);
     }
 
-    // Fonctions avec données cachées
+    // Fonctions avec données mises en cache
 
     @Override
     public Trips tripsFor(LocalDate date) {
 
         // On vérifie si la donnée est déjà mise en cache et si la date a changé
-        if (currentCachedTrips == null || cachedTripsDate == null || !cachedTripsDate.equals(date)) {
-            // s'il faut changer le cache, on va chercher les infos dans l'horaire
-            currentCachedTrips =  underlyingTimetable.tripsFor(date);
-            cachedTripsDate = date;
-        }
+        ensureCacheFor(date);
 
         return currentCachedTrips;
     }
@@ -94,12 +89,24 @@ public final class CachedTimeTable implements TimeTable {
     public Connections connectionsFor(LocalDate date) {
 
         // On vérifie si la donnée est déjà mise en cache et si la date a changé
-        if (currentCachedConnection == null || cachedConnectionsDate == null || !cachedConnectionsDate.equals(date)) {
-            // s'il faut changer le cache, on va chercher les infos dans l'horaire
-            currentCachedConnection = underlyingTimetable.connectionsFor(date);
-            cachedConnectionsDate = date;
-        }
+        ensureCacheFor(date);
 
-        return currentCachedConnection;
+        return currentCachedConnections;
+    }
+
+
+    /**
+     * Fonction qui recalcule le cache s'il le faut
+     * @param date la date voulue
+     */
+    private void ensureCacheFor(LocalDate date) {
+        if (currentCachedTrips == null
+                || currentCachedConnections == null
+                || cachedDate == null
+                || !cachedDate.equals(date)) {
+            currentCachedTrips       = underlyingTimetable.tripsFor(date);
+            currentCachedConnections = underlyingTimetable.connectionsFor(date);
+            cachedDate               = date;
+        }
     }
 }

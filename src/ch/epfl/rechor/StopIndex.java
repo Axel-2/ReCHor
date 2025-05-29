@@ -31,6 +31,12 @@ public final class StopIndex {
         MAP_EQUIVALENCES = Collections.unmodifiableMap(m);
     }
 
+    /**
+     * Crée un index de recherche sur la liste d'arrêts donnée
+     * et leurs noms alternatifs.
+     * @param stopsList la liste des noms d'arrêts à indexer
+     * @param alternateNamesMap map des noms alternatifs vers noms principaux
+     */
     public StopIndex(List<String> stopsList, Map<String, String> alternateNamesMap) {
 
         this.stopsList = List.copyOf(stopsList);
@@ -135,6 +141,7 @@ public final class StopIndex {
 
     /**
      * Transforme un caractère en sa représentation RE
+     * @param c le char c
      */
     private String transformCharToRE(int c) {
         char ch = (char) c;

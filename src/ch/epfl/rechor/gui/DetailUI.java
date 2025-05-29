@@ -75,12 +75,12 @@ public record DetailUI(Node rootNode) {
 
         ScrollPane scroll = new ScrollPane(); // Noeud racine
         scroll.setId(DETAIL_ID);
-        scroll.getStylesheets().add(loadCSS(DETAIL_CSS_PATH));
+        scroll.getStylesheets().add(loadCSS());
 
         // 1) Contenu initial :
         scroll.setContent(buildContent(journeyObservableValue.getValue()));
 
-        // dès que le voyage change, on change également le contenu
+        // 2) Dès que le voyage change, on change également le contenu
         journeyObservableValue.subscribe(
                 () -> {
                     scroll.setContent(buildContent(journeyObservableValue.getValue())); // Ajout du contenu
@@ -92,7 +92,14 @@ public record DetailUI(Node rootNode) {
 
 
         // ---------- Création des composants à ajouter dans le scrollPane-----------
-        private static Node buildContent(Journey journey) {
+
+    /**
+     * Fonction qui sert à construire un nœud contenant
+     * la description détaillée d'un voyage
+     * @param journey un voyage donné
+     * @return un noeud
+     */
+    private static Node buildContent(Journey journey) {
             List<Circle> circles = new ArrayList<>();
 
             Pane annotationsPane = new Pane();
@@ -103,10 +110,10 @@ public record DetailUI(Node rootNode) {
             Button mapBtn = new Button(MAP_BUTTON_TEXT);
             Button calBtn = new Button(CALENDAR_BUTTON_TEXT);
             HBox btnBox = new HBox(mapBtn, calBtn);
+            btnBox.setId(HBOX_ID);
 
             mapBtn.setOnAction(e -> mapClick(journey));
             calBtn.setOnAction(e -> calendarClick(journey, calBtn));
-            btnBox.setId(HBOX_ID);
 
             // À afficher s'il n'y a aucun voyage à charger
             Text noTxt = new Text(NO_JOURNEY_TEXT);
@@ -123,7 +130,14 @@ public record DetailUI(Node rootNode) {
             return new StackPane(noBox, yesBox); // Enfant direct du nœud racine
         }
 
-    // Création de la grille contenant toutes les étapes
+
+    /**
+     * Fonction qui s'occupe de la création de la grille contenant toutes les étapes
+     * @param journey un voyage
+     * @param annotationsPane une pane
+     * @param circles la liste des cercles
+     * @return la grille
+     */
     private static GridPane createLegsGrid(Journey journey, Pane annotationsPane, List<Circle> circles) {
         GridPane gridPane = new LineGridPane(annotationsPane, circles);
         gridPane.setId(LEGS_ID);
@@ -159,9 +173,9 @@ public record DetailUI(Node rootNode) {
         Circle startCircle = new Circle(CIRCLE_RADIUS);
         circles.add(startCircle);
 
-        final Text DEPSTOP_NAME_TEXT = new Text(t.depStop().name());
-        final Text PLATFORM_NAME_TEXT = new Text(FormatterFr.formatPlatformName(t.depStop()));
-        final Text ROUTE_DESTINATION_TEXT = new Text(FormatterFr.formatRouteDestination(t));
+        Text DEPSTOP_NAME_TEXT = new Text(t.depStop().name());
+        Text PLATFORM_NAME_TEXT = new Text(FormatterFr.formatPlatformName(t.depStop()));
+        Text ROUTE_DESTINATION_TEXT = new Text(FormatterFr.formatRouteDestination(t));
         PLATFORM_NAME_TEXT.getStyleClass().add(DEPARTURE_LABEL);
 
         gridPane.addRow(row++, depTime, startCircle, DEPSTOP_NAME_TEXT, PLATFORM_NAME_TEXT);
@@ -229,34 +243,37 @@ public record DetailUI(Node rootNode) {
     }
 
     // Méthode privée s'occupant du CSS
-    private static String loadCSS(String cssPath) {
+    private static String loadCSS() {
         try {
-            return Objects.requireNonNull(DetailUI.class.getResource(cssPath)).toExternalForm();
+            return Objects.requireNonNull(DetailUI.class.getResource(DetailUI.DETAIL_CSS_PATH)).toExternalForm();
         } catch (NullPointerException e) {
-            System.err.println("Erreur de chargement CSS : " + cssPath);
+            System.err.printf("Erreur de chargement CSS : %s%n", DetailUI.DETAIL_CSS_PATH);
             return "";
         }
     }
 
     // Méthode privée pour la gestion d'un clic sur le bouton carte
-    private static void mapClick(Journey j){
+    private static void mapClick(Journey j) {
         try {
             final URI url = new URI(
                     "https",
                     "umap.osm.ch",
                     "/fr/map",
-                    "data=" + JourneyGeoJsonConverter.toGeoJson(j),
+                    "data=%s".formatted(JourneyGeoJsonConverter.toGeoJson(j)),
                     null
             );
 
             getDesktop().browse(url);
-        } catch(Exception e){
+        } catch(Exception e) {
             System.out.println("Erreur dans l'ouverture du browser");
         }
     }
 
-
-    // Méthode privée pour la gestion d'un clic sur le bouton calendrier
+    /**
+     * Méthode privée pour la gestion d'un clic sur le bouton calendrier
+     * @param j un voyage
+     * @param node un noeud
+     */
     private static void calendarClick(Journey j, Node node){
         try {
             FileChooser fileChooser = new FileChooser();

@@ -32,6 +32,7 @@ public class Main extends Application {
     private final static int STAGE_HEIGHT = 600;
     private final static int STAGE_WIDTH= 800;
     private final static String NAME = "ReCHor";
+    private final static String TIME_TABLE_PATH = "timetable";
 
     // Attribut de classe : liste des voyages observables
     private ObservableValue<List<Journey>> journeyList;
@@ -41,21 +42,23 @@ public class Main extends Application {
     }
 
     // Cache du profil
-    private  record ProfileKey(LocalDate date, int arrivalId) {}
+    private record ProfileKey(LocalDate date, int arrivalId) {}
     private final Map<ProfileKey, Profile> profileCache = new HashMap<>();
 
     @Override
     public void start(Stage primaryStage) throws Exception {
 
         // ----------- Chargement des données horaires ---------------------
-        TimeTable timeTable = new CachedTimeTable(FileTimeTable.in(Path.of("timetable")));
+        TimeTable timeTable = new CachedTimeTable(FileTimeTable.in(Path.of(TIME_TABLE_PATH)));
         Router router = new Router(timeTable);
 
+        // Liste des arrêts
         Stations stations = timeTable.stations();
         List<String> stopsLists = IntStream.range(0, stations.size())
                 .mapToObj(stations::name)
                 .toList();
 
+        // Liste des noms alternatifs
         StationAliases aliases = timeTable.stationAliases();
         Map<String, String> alternatesNamesMap = IntStream.range(0, aliases.size())
                 .boxed()
