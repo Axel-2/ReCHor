@@ -32,6 +32,18 @@ public record QueryUI(
 
     private final static String CSS_PATH = "/query.css";
 
+    private static final String LABEL_TEXT_DEP    = "Départ\u202f:";
+    private static final String LABEL_TEXT_ARR    = "Arrivée\u202f:";
+    private static final String LABEL_TEXT_DATE   = "Date\u202f:";
+    private static final String LABEL_TEXT_HOUR   = "Heure\u202f:";
+
+    private static final String ID_DEP_FIELD      = "depStop";
+    private static final String ID_DATE_PICKER    = "date";
+    private static final String ID_TIME_FIELD     = "time";
+
+    private static final DateTimeFormatter DISPLAY_TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm");
+    private static final DateTimeFormatter PARSE_TIME_FORMAT = DateTimeFormatter.ofPattern("H:mm");
+
     /**
      * Fonction qui crée l'interface utilisateur de la requête
      * @param stopIndex index des arrêts
@@ -49,9 +61,7 @@ public record QueryUI(
         TextField hourTextField = new TextField();
 
         // Formatage
-        DateTimeFormatter displayFormatter = DateTimeFormatter.ofPattern("HH:mm");
-        DateTimeFormatter parseFormatter = DateTimeFormatter.ofPattern("H:mm");
-        LocalTimeStringConverter timeStringConverter = new LocalTimeStringConverter(displayFormatter, parseFormatter);
+        LocalTimeStringConverter timeStringConverter = new LocalTimeStringConverter(DISPLAY_TIME_FORMAT, PARSE_TIME_FORMAT);
         TextFormatter<LocalTime> textFormatter = new TextFormatter<>(timeStringConverter, LocalTime.now());
         hourTextField.setTextFormatter(textFormatter);
 
@@ -95,14 +105,13 @@ public record QueryUI(
 
         HBox mainBox = new HBox();
 
-        // TODO
         // Départ
-        Label depLabel = new Label("Départ\u202f:");
+        Label depLabel = new Label(LABEL_TEXT_DEP);
         depStop.textField().setPromptText("Nom de l'arrêt de départ");
-        depStop.textField().setId("depStop");
+        depStop.textField().setId(ID_DEP_FIELD);
 
         // Arrivée
-        Label arrLabel = new Label("Arrivée\u202f:");
+        Label arrLabel = new Label(LABEL_TEXT_ARR);
         arrTextField.textField().setPromptText("Nom de l'arrêt d'arrivée");
 
         // Ajout du contenu
@@ -122,14 +131,13 @@ public record QueryUI(
 
         HBox hBox = new HBox();
 
-        // TODO VARIABLE
         // Date
-        Label dateLabel = new Label("Date\u202f:");
-        datePicker.setId("date");
+        Label dateLabel = new Label(LABEL_TEXT_DATE);
+        datePicker.setId(ID_DATE_PICKER);
 
         // Heure
-        Label hourLabel = new Label("Heure\u202f:");
-        hourTextField.setId("time");
+        Label hourLabel = new Label(LABEL_TEXT_HOUR);
+        hourTextField.setId(ID_TIME_FIELD);
 
         hBox.getChildren().addAll(
                 dateLabel,

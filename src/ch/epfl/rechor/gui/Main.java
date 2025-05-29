@@ -27,23 +27,31 @@ import java.util.stream.IntStream;
  * @author Yoann Salamin (390522)
  * @author Axel Verga (398787)
  */
-public class Main extends Application {
+public final class Main extends Application {
 
     private final static int STAGE_HEIGHT = 600;
     private final static int STAGE_WIDTH= 800;
     private final static String NAME = "ReCHor";
     private final static String TIME_TABLE_PATH = "timetable";
 
+    // Constantes pour l'UI
+    private static final String DEPARTURE_STOP_FIELD_ID = "#depStop";
+
     // Attribut de classe : liste des voyages observables
     private ObservableValue<List<Journey>> journeyList;
-
-    public static void main(String[] args) {
-        launch(args);
-    }
 
     // Cache du profil
     private record ProfileKey(LocalDate date, int arrivalId) {}
     private final Map<ProfileKey, Profile> profileCache = new HashMap<>();
+
+    /**
+     * Point d'entrée de l'application
+     * @param args arguments
+     */
+    public static void main(String[] args) {
+        launch(args);
+    }
+
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -75,7 +83,6 @@ public class Main extends Application {
         // Mise à jour de la liste des voyages
         journeyList = Bindings.createObjectBinding(
                 ()-> {
-
                     LocalDate date = queryUI.dateO().getValue();
                     String depStop = queryUI.depStopO().getValue();
                     String arrStop = queryUI.arrStopO().getValue();
@@ -130,12 +137,17 @@ public class Main extends Application {
         primaryStage.show();
 
         if (!journeyList.getValue().isEmpty()) {
-            Platform.runLater(() -> scene.lookup("#depStop").requestFocus());
+            Platform.runLater(() -> scene.lookup(DEPARTURE_STOP_FIELD_ID).requestFocus());
         }
 
     }
 
-    // Méthode privée nous permettant d'avoir l'id d'une station à partir d'un nom et de l'horaire
+    /**
+     * Méthode privée nous permettant d'avoir l'id d'une station à partir d'un nom et de l'horaire
+     * @param timeTable l'horaire
+     * @param name le nom d'une station
+     * @return un id
+     */
     private static int stationId(TimeTable timeTable, String name) {
         var stations = timeTable.stations();
         for (var i = 0; i < stations.size(); i += 1)
